@@ -56,3 +56,127 @@ const { t } = useI18n({
         }
     }
 });
+
+const contentTypes = [
+    { title: t('text'), value: 'text' },
+    { title: t('html'), value: 'html' },
+    { title: t('rich text'), value: 'rich' },
+]
+
+const send = async () => {
+    try {
+        await api.fetch(`/admin/send_mail`, {
+            method: 'POST',
+            body: JSON.stringify({
+                from_name: sendMailModel.value.fromName,
+                from_mail: sendMailModel.value.fromMail,
+                to_name: sendMailModel.value.toName,
+                to_mail: sendMailModel.value.toMail,
+                subject: sendMailModel.value.subject,
+                is_html: sendMailModel.value.contentType != 'text',
+                content: sendMailModel.value.content,
+            })
+        })
+        sendMailModel.value = {
+            fromName: "",
+            fromMail: "",
+            toName: "",
+            toMail: "",
+            subject: "",
+            contentType: 'text',
+            content: "",
+        }
+    } catch (error) {
+        showSnackbar(error.message || "error", 'error')
+    } finally {
+        showSnackbar(t("successSend"), 'success')
+    }
+}
+
+const toolbarConfig = {
+    excludeKeys: ["uploadVideo"]
+}
+
+const editorConfig = {
+    MENU_CONF: {
+        'uploadImage': {
+            async customUpload() {
+                showSnackbar(t('tooLarge'), 'error')
+            },
+            maxFileSize: 1 * 1024 * 1024,
+            base64LimitSize: 1 * 1024 * 1024,
+        }
+    }
+}
+
+onBeforeUnmount(() => {
+    const editor = editorRef.value
+    if (editor == null) return
+    editor.destroy()
+})
+
+const handleCreated = (editor) => {
+    editorRef.value = editor;
+}
+</script>
+
+<template>
+    <div class="center">
+        <v-card variant="flat" max-width="800" width="100%">
+            <div class="d-flex justify-end mb-4">
+                <v-btn color="primary" @click="send">{{ t('send') }}</v-btn>
+            </div>
+            <v-form class="text-left">
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('fromName') }}</div>
+                    <div class="d-flex ga-2">
+                        <v-text-field v-model="sendMailModel.fromName" variant="outlined" density="compact" hide-details class="flex-grow-1"></v-text-field>
+                        <v-text-field v-model="sendMailModel.fromMail" variant="outlined" density="compact" hide-details class="flex-grow-1"></v-text-field>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('toName') }}</div>
+                    <div class="d-flex ga-2">
+                        <v-text-field v-model="sendMailModel.toName" variant="outlined" density="compact" hide-details class="flex-grow-1"></v-text-field>
+                        <v-text-field v-model="sendMailModel.toMail" variant="outlined" density="compact" hide-details class="flex-grow-1"></v-text-field>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('subject') }}</div>
+                    <v-text-field v-model="sendMailModel.subject" variant="outlined" density="compact" hide-details></v-text-field>
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('options') }}</div>
+                    <div class="d-flex align-center ga-2">
+                        <v-btn-toggle v-model="sendMailModel.contentType" mandatory>
+                            <v-btn v-for="option in contentTypes" :key="option.value" :value="option.value">{{ option.title }}</v-btn>
+                        </v-btn-toggle>
+                        <v-btn v-if="sendMailModel.contentType != 'text'" variant="tonal" @click="isPreview = !isPreview">
+                            {{ isPreview ? t('edit') : t('preview') }}
+                        </v-btn>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('content') }}</div>
+                    <v-card v-if="isPreview" variant="tonal" class="pa-4">
+                        <div v-html="sendMailModel.content"></div>
+                    </v-card>
+                    <div v-else-if="sendMailModel.contentType == 'rich'" style="border: 1px solid #ccc">
+                        <Toolbar style="border-bottom: 1px solid #ccc" :defaultConfig="toolbarConfig" :editor="editorRef" mode="default" />
+                        <Editor style="height: 500px; overflow-y: hidden;" v-model="sendMailModel.content" :defaultConfig="editorConfig" mode="default" @onCreated="handleCreated" />
+                    </div>
+                    <v-textarea v-else v-model="sendMailModel.content" variant="outlined" density="compact" rows="3" auto-grow></v-textarea>
+                </div>
+            </v-form>
+        </v-card>
+    </div>
+</template>
+
+<style scoped>
+.center {
+    display: flex;
+    text-align: center;
+    place-items: center;
+    justify-content: center;
+}
+</style>

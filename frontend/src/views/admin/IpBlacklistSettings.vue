@@ -5,8 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const { loading } = useGlobalState()
-const message = useMessage()
+const { loading, showSnackbar } = useGlobalState()
 
 const { t } = useI18n({
     messages: {
@@ -77,7 +76,7 @@ const fetchData = async () => {
         enableDailyLimit.value = res.enableDailyLimit || false
         dailyRequestLimit.value = res.dailyRequestLimit || 1000
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         loading.value = false
     }
@@ -97,9 +96,9 @@ const save = async () => {
                 dailyRequestLimit: dailyRequestLimit.value
             })
         })
-        message.success(t('successTip'))
+        showSnackbar(t('successTip'), 'success')
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         loading.value = false
     }
@@ -111,16 +110,13 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :title="t('title')" :bordered="false" embedded style="max-width: 800px;">
-            <template #header-extra>
-                <n-button @click="save" type="primary" :loading="loading">
-                    {{ t('save') }}
-                </n-button>
+    <div class="center ma-4">
+        <v-card :title="t('title')" variant="flat" max-width="800" width="100%">
+            <template v-slot:append>
+                <v-btn color="primary" :loading="loading" @click="save">{{ t('save') }}</v-btn>
             </template>
-
-            <n-space vertical :size="20">
-                <n-alert :show-icon="false" :bordered="false" type="info">
+            <v-card-text>
+                <v-alert type="info" variant="tonal" class="mb-4">
                     <div style="line-height: 1.8;">
                         <div><strong>{{ t("tip_scope") }}</strong></div>
                         <div>• {{ t("tip_ip") }}</div>
@@ -128,84 +124,29 @@ onMounted(async () => {
                         <div>• {{ t("tip_fingerprint") }}</div>
                         <div>• {{ t("tip_daily_limit") }}</div>
                     </div>
-                </n-alert>
+                </v-alert>
 
-                <n-form-item-row :label="t('enable_ip_blacklist')">
-                    <n-switch v-model:value="enabled" :round="false" />
-                    <n-text depth="3" style="margin-left: 10px; font-size: 12px;">
-                        {{ t('enable_tip') }}
-                    </n-text>
-                </n-form-item-row>
+                <div class="d-flex align-center mb-4">
+                    <v-switch v-model="enabled" :label="t('enable_ip_blacklist')" hide-details color="primary"></v-switch>
+                    <span class="text-caption text-grey ml-2">{{ t('enable_tip') }}</span>
+                </div>
 
-                <n-form-item-row :label="t('ip_blacklist')">
-                    <n-select
-                        v-model:value="ipBlacklist"
-                        filterable
-                        multiple
-                        tag
-                        :placeholder="t('ip_blacklist_placeholder')"
-                        :disabled="!enabled">
-                        <template #empty>
-                            <n-text depth="3">
-                                {{ t('manualInputPrompt') }}
-                            </n-text>
-                        </template>
-                    </n-select>
-                </n-form-item-row>
+                <v-combobox v-model="ipBlacklist" :label="t('ip_blacklist')" :placeholder="t('ip_blacklist_placeholder')" multiple chips closable-chips variant="outlined" density="compact" :disabled="!enabled" class="mb-4"></v-combobox>
 
-                <n-form-item-row :label="t('asn_blacklist')">
-                    <n-select
-                        v-model:value="asnBlacklist"
-                        filterable
-                        multiple
-                        tag
-                        :placeholder="t('asn_blacklist_placeholder')"
-                        :disabled="!enabled">
-                        <template #empty>
-                            <n-text depth="3">
-                                {{ t('manualInputPrompt') }}
-                            </n-text>
-                        </template>
-                    </n-select>
-                </n-form-item-row>
+                <v-combobox v-model="asnBlacklist" :label="t('asn_blacklist')" :placeholder="t('asn_blacklist_placeholder')" multiple chips closable-chips variant="outlined" density="compact" :disabled="!enabled" class="mb-4"></v-combobox>
 
-                <n-form-item-row :label="t('fingerprint_blacklist')">
-                    <n-select
-                        v-model:value="fingerprintBlacklist"
-                        filterable
-                        multiple
-                        tag
-                        :placeholder="t('fingerprint_blacklist_placeholder')"
-                        :disabled="!enabled">
-                        <template #empty>
-                            <n-text depth="3">
-                                {{ t('manualInputPrompt') }}
-                            </n-text>
-                        </template>
-                    </n-select>
-                </n-form-item-row>
+                <v-combobox v-model="fingerprintBlacklist" :label="t('fingerprint_blacklist')" :placeholder="t('fingerprint_blacklist_placeholder')" multiple chips closable-chips variant="outlined" density="compact" :disabled="!enabled" class="mb-4"></v-combobox>
 
-                <n-divider />
+                <v-divider class="mb-4"></v-divider>
 
-                <n-form-item-row :label="t('enable_daily_limit')">
-                    <n-switch v-model:value="enableDailyLimit" :round="false" />
-                    <n-text depth="3" style="margin-left: 10px; font-size: 12px;">
-                        {{ t('enable_daily_limit_tip') }}
-                    </n-text>
-                </n-form-item-row>
+                <div class="d-flex align-center mb-4">
+                    <v-switch v-model="enableDailyLimit" :label="t('enable_daily_limit')" hide-details color="primary"></v-switch>
+                    <span class="text-caption text-grey ml-2">{{ t('enable_daily_limit_tip') }}</span>
+                </div>
 
-                <n-form-item-row :label="t('daily_request_limit')">
-                    <n-input-number
-                        v-model:value="dailyRequestLimit"
-                        :min="1"
-                        :max="1000000"
-                        :placeholder="t('daily_request_limit_placeholder')"
-                        :disabled="!enableDailyLimit"
-                        style="width: 100%;"
-                    />
-                </n-form-item-row>
-            </n-space>
-        </n-card>
+                <v-text-field v-model.number="dailyRequestLimit" :label="t('daily_request_limit')" type="number" :min="1" :max="1000000" :placeholder="t('daily_request_limit_placeholder')" :disabled="!enableDailyLimit" variant="outlined" density="compact"></v-text-field>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
 
@@ -215,6 +156,5 @@ onMounted(async () => {
     text-align: left;
     place-items: center;
     justify-content: center;
-    margin: 20px;
 }
 </style>
