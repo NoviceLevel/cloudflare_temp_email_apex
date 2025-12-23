@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import { useIsMobile } from '../../utils/composables'
 import { useGlobalState } from '../../store'
+
 const props = defineProps({
     showUseSimpleIndex: {
         type: Boolean,
@@ -15,6 +16,13 @@ const {
     globalTabplacement, useSideMargin, useUTCDate, useSimpleIndex
 } = useGlobalState()
 const isMobile = useIsMobile()
+
+const tabPlacementOptions = [
+    { title: 'top', value: 'top' },
+    { title: 'left', value: 'left' },
+    { title: 'right', value: 'right' },
+    { title: 'bottom', value: 'bottom' }
+]
 
 const { t } = useI18n({
     messages: {
@@ -51,56 +59,38 @@ const { t } = useI18n({
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded>
-            <n-form-item-row v-if="!isMobile" :label="t('mailboxSplitSize')">
-                <n-slider v-model:value="mailboxSplitSize" :min="0.25" :max="0.75" :step="0.01" :marks="{
-                    0.25: '0.25',
-                    0.5: '0.5',
-                    0.75: '0.75'
-                }" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('autoRefreshInterval')">
-                <n-slider v-model:value="configAutoRefreshInterval" :min="30" :max="300" :step="1" :marks="{
-                    60: '60', 120: '120', 180: '180', 240: '240'
-                }" />
-            </n-form-item-row>
-            <n-form-item-row v-if="props.showUseSimpleIndex" :label="t('useSimpleIndex')">
-                <n-switch v-model:value="useSimpleIndex" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('preferShowTextMail')">
-                <n-switch v-model:value="preferShowTextMail" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('useIframeShowMail')">
-                <n-switch v-model:value="useIframeShowMail" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('useUTCDate')">
-                <n-switch v-model:value="useUTCDate" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row v-if="!isMobile" :label="t('useSideMargin')">
-                <n-switch v-model:value="useSideMargin" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('globalTabplacement')">
-                <n-radio-group v-model:value="globalTabplacement">
-                    <n-radio-button value="top" :label="t('top')" />
-                    <n-radio-button value="left" :label="t('left')" />
-                    <n-radio-button value="right" :label="t('right')" />
-                    <n-radio-button value="bottom" :label="t('bottom')" />
-                </n-radio-group>
-            </n-form-item-row>
-        </n-card>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-text>
+                <div v-if="!isMobile" class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('mailboxSplitSize') }}</div>
+                    <v-slider v-model="mailboxSplitSize" :min="0.25" :max="0.75" :step="0.01" thumb-label
+                        hide-details />
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('autoRefreshInterval') }}</div>
+                    <v-slider v-model="configAutoRefreshInterval" :min="30" :max="300" :step="1" thumb-label
+                        hide-details />
+                </div>
+                <v-switch v-if="props.showUseSimpleIndex" v-model="useSimpleIndex" :label="t('useSimpleIndex')"
+                    color="primary" hide-details class="mb-2" />
+                <v-switch v-model="preferShowTextMail" :label="t('preferShowTextMail')" color="primary" hide-details
+                    class="mb-2" />
+                <v-switch v-model="useIframeShowMail" :label="t('useIframeShowMail')" color="primary" hide-details
+                    class="mb-2" />
+                <v-switch v-model="useUTCDate" :label="t('useUTCDate')" color="primary" hide-details class="mb-2" />
+                <v-switch v-if="!isMobile" v-model="useSideMargin" :label="t('useSideMargin')" color="primary"
+                    hide-details class="mb-4" />
+                <div class="mb-2">
+                    <div class="text-subtitle-2 mb-2">{{ t('globalTabplacement') }}</div>
+                    <v-btn-toggle v-model="globalTabplacement" mandatory color="primary" variant="outlined">
+                        <v-btn value="top">{{ t('top') }}</v-btn>
+                        <v-btn value="left">{{ t('left') }}</v-btn>
+                        <v-btn value="right">{{ t('right') }}</v-btn>
+                        <v-btn value="bottom">{{ t('bottom') }}</v-btn>
+                    </v-btn-toggle>
+                </div>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    justify-content: center;
-}
-
-
-.n-card {
-    max-width: 800px;
-    text-align: left;
-}
-</style>

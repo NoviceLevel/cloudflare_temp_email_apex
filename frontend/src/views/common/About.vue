@@ -1,47 +1,26 @@
 <script setup>
-import { GithubAlt, Discord, Telegram } from '@vicons/fa'
 import { useGlobalState } from '../../store'
 const { announcement } = useGlobalState()
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded>
-            <div v-html="announcement"></div>
-            <n-button tag="a" target="_blank" href="https://github.com/dreamhunter2333/cloudflare_temp_email">
-                <template #icon>
-                    <n-icon :component="GithubAlt" />
-                </template>
-                Github
-            </n-button>
-            <n-button tag="a" target="_blank" href="https://discord.gg/dQEwTWhA6Q">
-                <template #icon>
-                    <n-icon :component="Discord" />
-                </template>
-                Discord
-            </n-button>
-            <n-button tag="a" target="_blank" href="https://t.me/cloudflare_temp_email">
-                <template #icon>
-                    <n-icon :component="Telegram" />
-                </template>
-                Telegram
-            </n-button>
-        </n-card>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="800">
+            <v-card-text>
+                <div v-html="announcement"></div>
+                <div class="d-flex ga-2 flex-wrap mt-4">
+                    <v-btn href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank"
+                        prepend-icon="mdi-github">
+                        Github
+                    </v-btn>
+                    <v-btn href="https://discord.gg/dQEwTWhA6Q" target="_blank" prepend-icon="mdi-discord">
+                        Discord
+                    </v-btn>
+                    <v-btn href="https://t.me/cloudflare_temp_email" target="_blank" prepend-icon="mdi-send">
+                        Telegram
+                    </v-btn>
+                </div>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    justify-content: center;
-}
-
-.n-card {
-    max-width: 800px;
-}
-
-.n-button {
-    margin-top: 10px;
-    margin-left: 10px;
-}
-</style>

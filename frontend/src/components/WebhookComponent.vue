@@ -20,8 +20,11 @@ const props = defineProps({
     },
 })
 
-// @ts-ignore
-const message = useMessage()
+const snackbar = ref({ show: false, text: '', color: 'success' })
+
+const showMessage = (text: string, color: string = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -77,11 +80,12 @@ const messagePusherDemo = {
 
 const fillMessagePuhserDemo = () => {
     Object.assign(webhookSettings.value, messagePusherDemo)
-    message.success(t('fillInDemoTip'))
+    showMessage(t('fillInDemoTip'), 'info')
 }
 
 const webhookSettings = ref<WebhookSettings>(new WebhookSettings())
 const enableWebhook = ref(false)
+const methodOptions = [{ title: 'POST', value: 'POST' }]
 
 const fetchData = async () => {
     try {
@@ -89,33 +93,33 @@ const fetchData = async () => {
         Object.assign(webhookSettings.value, res)
         enableWebhook.value = true
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error')
     }
 }
 
 const saveSettings = async () => {
     if (!webhookSettings.value.url) {
-        message.error(t('urlMissing'))
+        showMessage(t('urlMissing'), 'error')
         return
     }
     try {
         await props.saveSettings(webhookSettings.value)
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error')
     }
 }
 
 const testSettings = async () => {
     if (!webhookSettings.value.url) {
-        message.error(t('urlMissing'))
+        showMessage(t('urlMissing'), 'error')
         return
     }
     try {
         await props.testSettings(webhookSettings.value)
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error')
     }
 }
 
@@ -125,55 +129,38 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded v-if="enableWebhook" style="max-width: 800px; overflow: auto;">
-            <n-flex justify="end">
-                <n-button tag="a" :href="messagePusherDocLink" target="_blank" secondary>
+    <div class="d-flex justify-center align-center">
+        <v-card v-if="enableWebhook" variant="flat" max-width="800" width="100%">
+            <v-card-actions class="justify-end flex-wrap ga-2">
+                <v-btn :href="messagePusherDocLink" target="_blank" variant="outlined">
                     {{ t('messagePusherDoc') }}
-                </n-button>
-                <n-button @click="fillMessagePuhserDemo" secondary>
+                </v-btn>
+                <v-btn @click="fillMessagePuhserDemo" variant="outlined">
                     {{ t('messagePusherDemo') }}
-                </n-button>
-                <n-button v-if="webhookSettings.enabled" @click="testSettings" secondary>
+                </v-btn>
+                <v-btn v-if="webhookSettings.enabled" @click="testSettings" variant="outlined">
                     {{ t('test') }}
-                </n-button>
-                <n-button @click="saveSettings" type="primary">
+                </v-btn>
+                <v-btn @click="saveSettings" color="primary">
                     {{ t('save') }}
-                </n-button>
-            </n-flex>
-            <n-form-item-row :label="t('enable')">
-                <n-switch v-model:value="webhookSettings.enabled" :round="false" />
-            </n-form-item-row>
-            <div v-if="webhookSettings.enabled">
-                <n-form-item-row label="URL">
-                    <n-input v-model:value="webhookSettings.url" />
-                </n-form-item-row>
-                <n-form-item-row label="METHOD">
-                    <n-select v-model:value="webhookSettings.method" tag :options='[
-                        { label: "POST", value: "POST" }
-                    ]' />
-                </n-form-item-row>
-                <n-form-item-row label="HEADERS">
-                    <n-input v-model:value="webhookSettings.headers" type="textarea" :autosize="{ minRows: 3 }" />
-                </n-form-item-row>
-                <n-form-item-row label="BODY">
-                    <n-input v-model:value="webhookSettings.body" type="textarea" :autosize="{ minRows: 3 }" />
-                </n-form-item-row>
-            </div>
-        </n-card>
-        <n-result v-else status="404" :title="t('notEnabled')" />
+                </v-btn>
+            </v-card-actions>
+            <v-card-text>
+                <v-switch v-model="webhookSettings.enabled" :label="t('enable')" color="primary" hide-details />
+                <div v-if="webhookSettings.enabled" class="mt-4">
+                    <v-text-field v-model="webhookSettings.url" label="URL" variant="outlined" density="compact"
+                        class="mb-3" />
+                    <v-select v-model="webhookSettings.method" label="METHOD" :items="methodOptions" variant="outlined"
+                        density="compact" class="mb-3" />
+                    <v-textarea v-model="webhookSettings.headers" label="HEADERS" variant="outlined" rows="3"
+                        auto-grow class="mb-3" />
+                    <v-textarea v-model="webhookSettings.body" label="BODY" variant="outlined" rows="3" auto-grow />
+                </div>
+            </v-card-text>
+        </v-card>
+        <v-empty-state v-else icon="mdi-alert-circle-outline" :title="t('notEnabled')" />
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-}
-
-.n-button {
-    margin-top: 10px;
-}
-</style>
