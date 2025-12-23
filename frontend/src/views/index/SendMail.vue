@@ -8,10 +8,13 @@ import AdminContact from '../common/AdminContact.vue'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const message = useMessage()
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
+
 const isPreview = ref(false)
 const editorRef = shallowRef()
-
 
 const { settings, sendMailModel, indexTab, userSettings } = useGlobalState()
 
@@ -35,6 +38,7 @@ const { t } = useI18n({
             html: 'HTML',
             'rich text': 'Rich Text',
             tooLarge: 'Too large file, please upload file less than 1MB.',
+            success: 'Success',
         },
         zh: {
             successSend: '请查看您的发件箱, 如果失败, 请检查您的余额或稍后重试。',
@@ -53,31 +57,30 @@ const { t } = useI18n({
             html: 'HTML',
             'rich text': '富文本',
             tooLarge: '文件过大, 请上传小于1MB的文件。',
+            success: '成功',
         }
     }
 });
 
 const contentTypes = [
-    { label: t('text'), value: 'text' },
-    { label: t('html'), value: 'html' },
-    { label: t('rich text'), value: 'rich' },
+    { title: t('text'), value: 'text' },
+    { title: t('html'), value: 'html' },
+    { title: t('rich text'), value: 'rich' },
 ]
 
 const send = async () => {
     try {
-        await api.fetch(`/api/send_mail`,
-            {
-                method: 'POST',
-                body:
-                    JSON.stringify({
-                        from_name: sendMailModel.value.fromName,
-                        to_name: sendMailModel.value.toName,
-                        to_mail: sendMailModel.value.toMail,
-                        subject: sendMailModel.value.subject,
-                        is_html: sendMailModel.value.contentType != 'text',
-                        content: sendMailModel.value.content,
-                    })
+        await api.fetch(`/api/send_mail`, {
+            method: 'POST',
+            body: JSON.stringify({
+                from_name: sendMailModel.value.fromName,
+                to_name: sendMailModel.value.toName,
+                to_mail: sendMailModel.value.toMail,
+                subject: sendMailModel.value.subject,
+                is_html: sendMailModel.value.contentType != 'text',
+                content: sendMailModel.value.content,
             })
+        })
         sendMailModel.value = {
             fromName: "",
             toName: "",
@@ -87,25 +90,23 @@ const send = async () => {
             content: "",
         }
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     } finally {
-        message.success(t("successSend"));
+        showMessage(t("successSend"));
         indexTab.value = 'sendbox'
     }
 }
 
 const requestAccess = async () => {
     try {
-        await api.fetch(`/api/requset_send_mail_access`,
-            {
-                method: 'POST',
-                body: JSON.stringify({})
-            }
-        )
-        message.success(t("success"))
+        await api.fetch(`/api/requset_send_mail_access`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        })
+        showMessage(t("success"))
         await api.getSettings();
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -117,7 +118,7 @@ const editorConfig = {
     MENU_CONF: {
         'uploadImage': {
             async customUpload() {
-                message.error(t('tooLarge'))
+                showMessage(t('tooLarge'), 'error')
             },
             maxFileSize: 1 * 1024 * 1024,
             base64LimitSize: 1 * 1024 * 1024,
@@ -136,102 +137,80 @@ const handleCreated = (editor) => {
 }
 
 onMounted(async () => {
-    // make sure user_id is fetched
-    if (!userSettings.value.user_id) await api.getUserSettings(message);
+    if (!userSettings.value.user_id) await api.getUserSettings(snackbar);
     await api.getSettings();
 })
 </script>
 
 <template>
-    <div class="center" v-if="settings.address">
-        <n-card :bordered="false" embedded>
-            <div v-if="!settings.send_balance || settings.send_balance <= 0">
-                <n-alert type="warning" :show-icon="false" :bordered="false">
-                    {{ t('requestAccessTip') }}
-                    <n-button type="primary" tertiary @click="requestAccess" size="small">{{ t('requestAccess')
-                        }}</n-button>
-                </n-alert>
-                <AdminContact />
-            </div>
-            <div v-else>
-                <n-alert type="info" :show-icon="false" :bordered="false" closable>
-                    {{ t('send_balance') }}: {{ settings.send_balance }}
-                </n-alert>
-                <n-flex justify="end">
-                    <n-button type="primary" @click="send">{{ t('send') }}</n-button>
-                </n-flex>
-                <div class="left">
-                    <n-form :model="sendMailModel">
-                        <n-form-item :label="t('fromName')" label-placement="top">
-                            <n-input-group>
-                                <n-input v-model:value="sendMailModel.fromName" />
-                                <n-input :value="settings.address" disabled />
-                            </n-input-group>
-                        </n-form-item>
-                        <n-form-item :label="t('toName')" label-placement="top">
-                            <n-input-group>
-                                <n-input v-model:value="sendMailModel.toName" />
-                                <n-input v-model:value="sendMailModel.toMail" />
-                            </n-input-group>
-                        </n-form-item>
-                        <n-form-item :label="t('subject')" label-placement="top">
-                            <n-input v-model:value="sendMailModel.subject" />
-                        </n-form-item>
-                        <n-form-item :label="t('options')" label-placement="top">
-                            <n-radio-group v-model:value="sendMailModel.contentType">
-                                <n-radio-button v-for="option in contentTypes" :key="option.value" :value="option.value"
-                                    :label="option.label" />
-                            </n-radio-group>
-                            <n-button v-if="sendMailModel.contentType != 'text'" @click="isPreview = !isPreview"
-                                style="margin-left: 10px;">
-                                {{ isPreview ? t('edit') : t('preview') }}
-                            </n-button>
-                        </n-form-item>
-                        <n-form-item :label="t('content')" label-placement="top">
-                            <n-card :bordered="false" embedded v-if="isPreview">
-                                <div v-html="sendMailModel.content" />
-                            </n-card>
-                            <div v-else-if="sendMailModel.contentType == 'rich'" style="border: 1px solid #ccc">
-                                <Toolbar style="border-bottom: 1px solid #ccc" :defaultConfig="toolbarConfig"
-                                    :editor="editorRef" mode="default" />
-                                <Editor style="height: 500px; overflow-y: hidden;" v-model="sendMailModel.content"
-                                    :defaultConfig="editorConfig" mode="default" @onCreated="handleCreated" />
-                            </div>
-                            <n-input v-else type="textarea" v-model:value="sendMailModel.content" :autosize="{
-                                minRows: 3
-                            }" />
-                        </n-form-item>
-                    </n-form>
+    <div class="d-flex justify-center" v-if="settings.address">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-text>
+                <div v-if="!settings.send_balance || settings.send_balance <= 0">
+                    <v-alert type="warning" variant="tonal" class="mb-3">
+                        {{ t('requestAccessTip') }}
+                        <v-btn color="primary" variant="tonal" size="small" @click="requestAccess" class="ml-2">
+                            {{ t('requestAccess') }}
+                        </v-btn>
+                    </v-alert>
+                    <AdminContact />
                 </div>
-            </div>
-        </n-card>
+                <div v-else>
+                    <v-alert type="info" variant="tonal" closable class="mb-3">
+                        {{ t('send_balance') }}: {{ settings.send_balance }}
+                    </v-alert>
+                    <div class="d-flex justify-end mb-4">
+                        <v-btn color="primary" @click="send">{{ t('send') }}</v-btn>
+                    </div>
+                    <v-text-field :label="t('fromName')" variant="outlined" density="compact" class="mb-3">
+                        <template #prepend-inner>
+                            <v-text-field v-model="sendMailModel.fromName" variant="plain" density="compact"
+                                hide-details single-line style="max-width: 150px;" />
+                        </template>
+                        <template #default>
+                            <span class="text-medium-emphasis">{{ settings.address }}</span>
+                        </template>
+                    </v-text-field>
+                    <div class="d-flex ga-2 mb-3">
+                        <v-text-field v-model="sendMailModel.toName" :label="t('toName')" variant="outlined"
+                            density="compact" hide-details />
+                        <v-text-field v-model="sendMailModel.toMail" label="Email" variant="outlined" density="compact"
+                            hide-details />
+                    </div>
+                    <v-text-field v-model="sendMailModel.subject" :label="t('subject')" variant="outlined"
+                        density="compact" class="mb-3" />
+                    <div class="d-flex align-center ga-2 mb-3">
+                        <span class="text-subtitle-2">{{ t('options') }}:</span>
+                        <v-btn-toggle v-model="sendMailModel.contentType" mandatory color="primary" variant="outlined"
+                            density="compact">
+                            <v-btn v-for="option in contentTypes" :key="option.value" :value="option.value" size="small">
+                                {{ option.title }}
+                            </v-btn>
+                        </v-btn-toggle>
+                        <v-btn v-if="sendMailModel.contentType != 'text'" @click="isPreview = !isPreview"
+                            variant="outlined" size="small">
+                            {{ isPreview ? t('edit') : t('preview') }}
+                        </v-btn>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-subtitle-2 mb-2">{{ t('content') }}</div>
+                        <v-card v-if="isPreview" variant="tonal">
+                            <v-card-text v-html="sendMailModel.content" />
+                        </v-card>
+                        <div v-else-if="sendMailModel.contentType == 'rich'" style="border: 1px solid #ccc">
+                            <Toolbar style="border-bottom: 1px solid #ccc" :defaultConfig="toolbarConfig"
+                                :editor="editorRef" mode="default" />
+                            <Editor style="height: 500px; overflow-y: hidden;" v-model="sendMailModel.content"
+                                :defaultConfig="editorConfig" mode="default" @onCreated="handleCreated" />
+                        </div>
+                        <v-textarea v-else v-model="sendMailModel.content" variant="outlined" rows="5" />
+                    </div>
+                </div>
+            </v-card-text>
+        </v-card>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-card {
-    max-width: 800px;
-}
-
-.n-button {
-    text-align: left;
-    margin-right: 10px;
-}
-
-.center {
-    display: flex;
-    text-align: center;
-    place-items: center;
-    justify-content: center;
-}
-
-.left {
-    text-align: left;
-    place-items: left;
-    justify-content: left;
-}
-
-.n-alert {
-    margin-bottom: 10px;
-}
-</style>
