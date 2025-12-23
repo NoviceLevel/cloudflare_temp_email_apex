@@ -8,6 +8,8 @@
 
 ## v1.2.0(main)
 
+- feat: |UI| 迁移至 Vuetify 3 (Material Design 3) 风格
+- feat: |UI| 登录页面、用户页面、管理员页面布局优化居中显示
 - feat: |邮件过滤| 移除后端 keyword 参数，改为前端过滤当前页邮件，优化查询性能
 - feat: |数据库| 为 `message_id` 字段添加索引，优化邮件更新操作性能，需执行 `db/2025-12-15-message-id-index.sql` 更新数据库
 - feat: |Admin| 维护页面增加自定义 SQL 清理功能，支持定时任务执行自定义清理语句
