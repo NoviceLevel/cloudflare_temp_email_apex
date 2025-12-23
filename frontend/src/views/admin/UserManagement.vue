@@ -1,8 +1,6 @@
 <script setup>
 import { ref, h, onMounted, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n'
-import { NMenu, NButton, NBadge, NTag } from 'naive-ui';
-import { MenuFilled } from '@vicons/material'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
@@ -10,8 +8,7 @@ import { hashPassword } from '../../utils';
 
 import UserAddressManagement from './UserAddressManagement.vue'
 
-const { loading, openSettings } = useGlobalState()
-const message = useMessage()
+const { loading, openSettings, showSnackbar } = useGlobalState()
 
 const { t } = useI18n({
     messages: {
@@ -37,6 +34,7 @@ const { t } = useI18n({
             domains: 'Domains',
             roleDonotExist: 'Current Role does not exist',
             userAddressManagement: 'Address Management',
+            cancel: 'Cancel',
         },
         zh: {
             success: '成功',
@@ -60,9 +58,11 @@ const { t } = useI18n({
             domains: '域名',
             roleDonotExist: '当前角色不存在',
             userAddressManagement: '地址管理',
+            cancel: '取消',
         }
     }
 });
+
 const data = ref([])
 const count = ref(0)
 const page = ref(1)
@@ -85,11 +85,20 @@ const curUserRole = ref('')
 const userRolesOptions = computed(() => {
     return userRoles.value.map(role => {
         return {
-            label: role.role,
+            title: role.role,
             value: role.role
         }
     });
 })
+
+const headers = [
+    { title: 'ID', key: 'id', width: '80px' },
+    { title: t('user_email'), key: 'user_email' },
+    { title: t('role'), key: 'role_text', width: '150px' },
+    { title: t('address_count'), key: 'address_count', width: '150px' },
+    { title: t('created_at'), key: 'created_at' },
+    { title: t('actions'), key: 'actions', width: '120px', sortable: false },
+];
 
 const fetchUserRoles = async () => {
     try {
@@ -97,7 +106,7 @@ const fetchUserRoles = async () => {
         userRoles.value = results;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
@@ -116,13 +125,13 @@ const fetchData = async () => {
         }
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
 const resetPassword = async () => {
     if (!newResetPassword.value) {
-        message.error(t('pleaseInput'));
+        showSnackbar(t('pleaseInput'), 'error')
         return;
     }
     try {
@@ -132,17 +141,17 @@ const resetPassword = async () => {
                 password: await hashPassword(newResetPassword.value)
             })
         });
-        message.success(t('success'));
+        showSnackbar(t('success'), 'success')
         showResetPassword.value = false;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
 const createUser = async () => {
     if (!user.value.email || !user.value.password) {
-        message.error(t('pleaseInput'));
+        showSnackbar(t('pleaseInput'), 'error')
         return;
     }
     try {
@@ -153,12 +162,12 @@ const createUser = async () => {
                 password: await hashPassword(user.value.password)
             })
         });
-        message.success(t('success'));
+        showSnackbar(t('success'), 'success')
         await fetchData();
         showCreateUser.value = false;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
@@ -167,11 +176,12 @@ const deleteUser = async () => {
         await api.fetch(`/admin/users/${curUserId.value}`, {
             method: "DELETE"
         });
-        message.success(t('success'));
+        showSnackbar(t('success'), 'success')
         showDeleteUser.value = false;
+        await fetchData();
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
@@ -184,140 +194,14 @@ const changeRole = async () => {
                 role_text: curUserRole.value
             })
         });
-        message.success(t('success'));
+        showSnackbar(t('success'), 'success')
         showChangeRole.value = false;
         await fetchData();
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
-
-const columns = [
-    {
-        title: "ID",
-        key: "id"
-    },
-    {
-        title: t('user_email'),
-        key: "user_email"
-    },
-    {
-        title: t('role'),
-        key: "role_text",
-        render(row) {
-            if (!row.role_text) return null;
-            return h(NTag, {
-                bordered: false,
-                type: "info"
-            }, {
-                default: () => row.role_text
-            })
-        }
-    },
-    {
-        title: t('address_count'),
-        key: "address_count",
-        render(row) {
-            return h(NButton,
-                {
-                    text: true,
-                    onClick: () => {
-                        if (row.address_count <= 0) return;
-                        curUserId.value = row.id;
-                        showUserAddressManagement.value = true;
-                    }
-                },
-                {
-                    icon: () => h(NBadge, {
-                        value: row.address_count,
-                        'show-zero': true,
-                        max: 99,
-                        type: "success"
-                    }),
-                    default: () => row.address_count > 0 ? t('userAddressManagement') : ""
-                }
-            )
-        }
-    },
-    {
-        title: t('created_at'),
-        key: "created_at"
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render(row) {
-            return h('div', [
-                h(NMenu, {
-                    mode: "horizontal",
-                    options: [
-                        {
-                            label: t('actions'),
-                            icon: () => h(MenuFilled),
-                            key: "action",
-                            children: [
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                showUserAddressManagement.value = true;
-                                            }
-                                        },
-                                        { default: () => t('userAddressManagement') }
-                                    ),
-                                    show: row.address_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                curUserRole.value = row.role_text;
-                                                showChangeRole.value = true;
-                                            }
-                                        },
-                                        { default: () => t('changeRole') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                newResetPassword.value = '';
-                                                showResetPassword.value = true;
-                                            }
-                                        },
-                                        { default: () => t('resetPassword') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                user.value.email = '';
-                                                user.value.password = '';
-                                                showDeleteUser.value = true;
-                                            }
-                                        },
-                                        { default: () => t('delete') }
-                                    )
-                                }
-                            ]
-                        }
-                    ]
-                })
-            ])
-        }
-    }
-]
 
 const getRolePrefix = (role) => {
     const res = userRoles.value.find(r => r.role === role)?.prefix;
@@ -335,6 +219,8 @@ const roleDonotExist = computed(() => {
     return curUserRole.value && !userRoles.value.some(r => r.role === curUserRole.value);
 })
 
+const totalPages = computed(() => Math.ceil(count.value / pageSize.value));
+
 watch([page, pageSize], async () => {
     await fetchData()
 })
@@ -344,91 +230,3 @@ onMounted(async () => {
     await fetchData();
 })
 </script>
-
-<template>
-    <div style="margin-top: 10px;">
-        <n-modal v-model:show="showCreateUser" preset="dialog" :title="t('createUser')">
-            <n-form>
-                <n-form-item-row :label="t('email')" required>
-                    <n-input v-model:value="user.email" />
-                </n-form-item-row>
-                <n-form-item-row :label="t('password')" required>
-                    <n-input v-model:value="user.password" type="password" show-password-on="click" />
-                </n-form-item-row>
-            </n-form>
-            <template #action>
-                <n-button :loading="loading" @click="createUser" size="small" tertiary type="primary">
-                    {{ t('createUser') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showResetPassword" preset="dialog" :title="t('resetPassword')">
-            <n-form-item-row :label="t('password')" required>
-                <n-input v-model:value="newResetPassword" type="password" show-password-on="click" />
-            </n-form-item-row>
-            <template #action>
-                <n-button :loading="loading" @click="resetPassword" size="small" tertiary type="primary">
-                    {{ t('resetPassword') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showDeleteUser" preset="dialog" :title="t('deleteUser')">
-            <p>{{ t('deleteUserTip') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="deleteUser" size="small" tertiary type="error">
-                    {{ t('deleteUser') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showChangeRole" preset="dialog" :title="t('changeRole')">
-            <n-alert type="error" :bordered="false" v-if="roleDonotExist">
-                <span>{{ t('roleDonotExist') }}</span>
-            </n-alert>
-            <p>{{ t('prefix') + ": " + getRolePrefix(curUserRole) }}</p>
-            <p>{{ t('domains') + ": " + JSON.stringify(getRoleDomains(curUserRole)) }}</p>
-            <n-select clearable v-model:value="curUserRole" :options="userRolesOptions" />
-            <template #action>
-                <n-button :loading="loading" @click="changeRole" size="small" tertiary type="primary">
-                    {{ t('changeRole') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showUserAddressManagement" preset="card" :title="t('userAddressManagement')">
-            <UserAddressManagement :user_id="curUserId" />
-        </n-modal>
-        <n-input-group>
-            <n-input v-model:value="userQuery" @keydown.enter="fetchData" />
-            <n-button @click="fetchData" type="primary" tertiary>
-                {{ t('query') }}
-            </n-button>
-        </n-input-group>
-        <div style="overflow: auto;">
-            <div style="display: inline-block;">
-                <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count"
-                    :page-sizes="[20, 50, 100]" show-size-picker>
-                    <template #prefix="{ itemCount }">
-                        {{ t('itemCount') }}: {{ itemCount }}
-                    </template>
-                    <template #suffix>
-                        <n-button @click="showCreateUser = true" size="small" tertiary type="primary"
-                            style="margin-left: 10px">
-                            {{ t('createUser') }}
-                        </n-button>
-                    </template>
-                </n-pagination>
-            </div>
-            <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
-        </div>
-    </div>
-</template>
-
-<style scoped>
-.n-pagination {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.n-data-table {
-    min-width: 800px;
-}
-</style>
