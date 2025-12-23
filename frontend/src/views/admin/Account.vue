@@ -1,18 +1,15 @@
 <script setup>
-import { ref, h, onMounted, watch, computed } from 'vue';
-import { NBadge, useMessage } from 'naive-ui'
+import { ref, onMounted, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
-import { NButton, NMenu } from 'naive-ui';
-import { MenuFilled } from '@vicons/material'
 
 const {
     loading, adminTab, openSettings,
-    adminMailTabAddress, adminSendBoxTabAddress
+    adminMailTabAddress, adminSendBoxTabAddress,
+    showSnackbar
 } = useGlobalState()
-const message = useMessage()
 
 const { t } = useI18n({
     messages: {
@@ -52,6 +49,8 @@ const { t } = useI18n({
             multiClearInboxTip: 'Are you sure to clear inbox for selected addresses?',
             multiClearSentItems: 'Multi Clear Sent Items',
             multiClearSentItemsTip: 'Are you sure to clear sent items for selected addresses?',
+            cancel: 'Cancel',
+            confirm: 'Confirm',
         },
         zh: {
             name: '名称',
@@ -89,6 +88,8 @@ const { t } = useI18n({
             multiClearInboxTip: '确定要清空选中邮箱的收件箱吗？',
             multiClearSentItems: '批量清空发件箱',
             multiClearSentItemsTip: '确定要清空选中邮箱的发件箱吗？',
+            cancel: '取消',
+            confirm: '确认',
         }
     }
 });
@@ -108,6 +109,14 @@ const showMultiActionModal = ref(false);
 const multiActionProgress = ref({ percentage: 0, tip: '0/0' });
 const multiActionTitle = ref('');
 
+// Confirm dialogs
+const showDeleteConfirm = ref(false);
+const showClearInboxConfirm = ref(false);
+const showClearSentItemsConfirm = ref(false);
+const showMultiDeleteConfirm = ref(false);
+const showMultiClearInboxConfirm = ref(false);
+const showMultiClearSentItemsConfirm = ref(false);
+
 const selectedCount = computed(() => checkedRowKeys.value.length);
 const showMultiActionBar = computed(() => checkedRowKeys.value.length > 0);
 
@@ -121,12 +130,26 @@ const showDeleteAccount = ref(false)
 const showClearInbox = ref(false)
 const showClearSentItems = ref(false)
 
+// Action menu
+const actionMenuOpen = ref({});
+
+const headers = [
+    { title: '', key: 'data-table-select', width: '50px' },
+    { title: 'ID', key: 'id', width: '80px' },
+    { title: t('name'), key: 'name' },
+    { title: t('created_at'), key: 'created_at' },
+    { title: t('updated_at'), key: 'updated_at' },
+    { title: t('mail_count'), key: 'mail_count', width: '150px' },
+    { title: t('send_count'), key: 'send_count', width: '150px' },
+    { title: t('actions'), key: 'actions', width: '120px', sortable: false },
+];
+
 const showCredential = async (id) => {
     try {
         curEmailCredential.value = await api.adminShowAddressCredential(id)
         showEmailCredential.value = true
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
         showEmailCredential.value = false
         curEmailCredential.value = ""
     }
@@ -135,10 +158,10 @@ const showCredential = async (id) => {
 const deleteEmail = async () => {
     try {
         await api.adminDeleteAddress(curDeleteAddressId.value)
-        message.success(t("success"));
+        showSnackbar(t("success"), 'success')
         await fetchData()
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         showDeleteAccount.value = false
     }
@@ -149,10 +172,10 @@ const clearInbox = async () => {
         await api.fetch(`/admin/clear_inbox/${curClearInboxAddressId.value}`, {
             method: 'DELETE'
         });
-        message.success(t("success"));
+        showSnackbar(t("success"), 'success')
         await fetchData()
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         showClearInbox.value = false
     }
@@ -163,10 +186,10 @@ const clearSentItems = async () => {
         await api.fetch(`/admin/clear_sent_items/${curClearSentItemsAddressId.value}`, {
             method: 'DELETE'
         });
-        message.success(t("success"));
+        showSnackbar(t("success"), 'success')
         await fetchData()
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         showClearSentItems.value = false
     }
@@ -180,11 +203,11 @@ const resetPassword = async () => {
                 password: newPassword.value
             })
         });
-        message.success(t("passwordResetSuccess"));
+        showSnackbar(t("passwordResetSuccess"), 'success')
         newPassword.value = '';
         showResetPassword.value = false;
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
@@ -211,7 +234,7 @@ const executeBatchOperation = async ({
         );
 
         if (selectedAddresses.length === 0) {
-            message.error(t('pleaseSelectAddress'));
+            showSnackbar(t('pleaseSelectAddress'), 'error')
             return;
         }
 
@@ -242,9 +265,9 @@ const executeBatchOperation = async ({
 
         await fetchData();
         checkedRowKeys.value = failedIds;
-        message.success(t("success"));
+        showSnackbar(t("success"), 'success')
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     } finally {
         loading.value = false;
     }
@@ -295,189 +318,25 @@ const fetchData = async () => {
         }
     } catch (error) {
         console.error(error);
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
-const columns = [
-    {
-        type: 'selection'
-    },
-    {
-        title: "ID",
-        key: "id"
-    },
-    {
-        title: t('name'),
-        key: "name"
-    },
-    {
-        title: t('created_at'),
-        key: "created_at"
-    },
-    {
-        title: t('updated_at'),
-        key: "updated_at"
-    },
-    {
-        title: t('mail_count'),
-        key: "mail_count",
-        render(row) {
-            return h(NButton,
-                {
-                    text: true,
-                    onClick: () => {
-                        if (row.mail_count > 0) {
-                            adminMailTabAddress.value = row.name;
-                            adminTab.value = "mails";
-                        }
-                    }
-                },
-                {
-                    icon: () => h(NBadge, {
-                        value: row.mail_count,
-                        'show-zero': true,
-                        max: 99,
-                        type: "success"
-                    }),
-                    default: () => row.mail_count > 0 ? t('viewMails') : ""
-                }
-            )
-        }
-    },
-    {
-        title: t('send_count'),
-        key: "send_count",
-        render(row) {
-            return h(NButton,
-                {
-                    text: true,
-                    onClick: () => {
-                        if (row.send_count > 0) {
-                            adminSendBoxTabAddress.value = row.name;
-                            adminTab.value = "sendBox";
-                        }
-                    }
-                },
-                {
-                    icon: () => h(NBadge, {
-                        value: row.send_count,
-                        'show-zero': true,
-                        max: 99,
-                        type: "success"
-                    }),
-                    default: () => row.send_count > 0 ? t('viewSendBox') : ""
-                }
-            )
-        }
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render(row) {
-            return h('div', [
-                h(NMenu, {
-                    mode: "horizontal",
-                    options: [
-                        {
-                            label: t('actions'),
-                            icon: () => h(MenuFilled),
-                            key: "action",
-                            children: [
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => showCredential(row.id)
-                                        },
-                                        { default: () => t('showCredential') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                adminMailTabAddress.value = row.name;
-                                                adminTab.value = "mails";
-                                            }
-                                        },
-                                        { default: () => t('viewMails') }
-                                    ),
-                                    show: row.mail_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                adminSendBoxTabAddress.value = row.name;
-                                                adminTab.value = "sendBox";
-                                            }
-                                        },
-                                        { default: () => t('viewSendBox') }
-                                    ),
-                                    show: row.send_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curClearInboxAddressId.value = row.id;
-                                                showClearInbox.value = true;
-                                            }
-                                        },
-                                        { default: () => t('clearInbox') }
-                                    ),
-                                    show: row.mail_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curClearSentItemsAddressId.value = row.id;
-                                                showClearSentItems.value = true;
-                                            }
-                                        },
-                                        { default: () => t('clearSentItems') }
-                                    ),
-                                    show: row.send_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curResetPasswordAddressId.value = row.id;
-                                                showResetPassword.value = true;
-                                            }
-                                        },
-                                        { default: () => t('resetPassword') }
-                                    ),
-                                    show: openSettings.value?.enableAddressPassword
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curDeleteAddressId.value = row.id;
-                                                showDeleteAccount.value = true;
-                                            }
-                                        },
-                                        { default: () => t('delete') }
-                                    )
-                                }
-                            ]
-                        }
-                    ]
-                })
-            ])
-        }
+const totalPages = computed(() => Math.ceil(count.value / pageSize.value));
+
+const viewMails = (row) => {
+    if (row.mail_count > 0) {
+        adminMailTabAddress.value = row.name;
+        adminTab.value = "mails";
     }
-]
+}
+
+const viewSendBox = (row) => {
+    if (row.send_count > 0) {
+        adminSendBoxTabAddress.value = row.name;
+        adminTab.value = "sendBox";
+    }
+}
 
 watch([page, pageSize], async () => {
     await fetchData()
@@ -489,126 +348,284 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div style="margin-top: 10px;">
-        <n-modal v-model:show="showEmailCredential" preset="dialog" title="Dialog">
-            <template #header>
-                <div>{{ t("addressCredential") }}</div>
-            </template>
-            <span>
-                <p>{{ t("addressCredentialTip") }}</p>
-            </span>
-            <n-card :bordered="false" embedded>
-                <b>{{ curEmailCredential }}</b>
-            </n-card>
-            <template #action>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showDeleteAccount" preset="dialog" :title="t('deleteAccount')">
-            <p>{{ t('deleteTip') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="deleteEmail" size="small" tertiary type="error">
-                    {{ t('deleteAccount') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showClearInbox" preset="dialog" :title="t('clearInbox')">
-            <p>{{ t('clearInboxTip') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearInbox" size="small" tertiary type="error">
-                    {{ t('clearInbox') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showClearSentItems" preset="dialog" :title="t('clearSentItems')">
-            <p>{{ t('clearSentItemsTip') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearSentItems" size="small" tertiary type="error">
-                    {{ t('clearSentItems') }}
-                </n-button>
-            </template>
-        </n-modal>
+    <div class="mt-4">
+        <!-- Credential Dialog -->
+        <v-dialog v-model="showEmailCredential" max-width="500">
+            <v-card>
+                <v-card-title>{{ t("addressCredential") }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">{{ t("addressCredentialTip") }}</p>
+                    <v-card variant="tonal" class="pa-4">
+                        <strong>{{ curEmailCredential }}</strong>
+                    </v-card>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showEmailCredential = false">{{ t('cancel') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
-        <n-modal v-model:show="showResetPassword" preset="dialog" :title="t('resetPassword')">
-            <n-form-item :label="t('newPassword')">
-                <n-input v-model:value="newPassword" type="password" placeholder="" show-password-on="click" />
-            </n-form-item>
-            <template #action>
-                <n-button :loading="loading" @click="resetPassword" size="small" tertiary type="info">
-                    {{ t('resetPassword') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-input-group style="margin-bottom: 10px;">
-            <n-input v-model:value="addressQuery" clearable :placeholder="t('addressQueryTip')"
-                @keydown.enter="fetchData" />
-            <n-button @click="fetchData" type="primary" tertiary>
+        <!-- Delete Account Dialog -->
+        <v-dialog v-model="showDeleteAccount" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('deleteAccount') }}</v-card-title>
+                <v-card-text>{{ t('deleteTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showDeleteAccount = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" :loading="loading" @click="deleteEmail">
+                        {{ t('deleteAccount') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Clear Inbox Dialog -->
+        <v-dialog v-model="showClearInbox" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('clearInbox') }}</v-card-title>
+                <v-card-text>{{ t('clearInboxTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showClearInbox = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" :loading="loading" @click="clearInbox">
+                        {{ t('clearInbox') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Clear Sent Items Dialog -->
+        <v-dialog v-model="showClearSentItems" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('clearSentItems') }}</v-card-title>
+                <v-card-text>{{ t('clearSentItemsTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showClearSentItems = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" :loading="loading" @click="clearSentItems">
+                        {{ t('clearSentItems') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Reset Password Dialog -->
+        <v-dialog v-model="showResetPassword" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('resetPassword') }}</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                        v-model="newPassword"
+                        :label="t('newPassword')"
+                        type="password"
+                        variant="outlined"
+                        density="compact"
+                    ></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showResetPassword = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="primary" :loading="loading" @click="resetPassword">
+                        {{ t('resetPassword') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Multi Delete Confirm -->
+        <v-dialog v-model="showMultiDeleteConfirm" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('multiDelete') }}</v-card-title>
+                <v-card-text>{{ t('multiDeleteTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showMultiDeleteConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" @click="showMultiDeleteConfirm = false; multiActionDeleteAccounts()">
+                        {{ t('confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Multi Clear Inbox Confirm -->
+        <v-dialog v-model="showMultiClearInboxConfirm" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('multiClearInbox') }}</v-card-title>
+                <v-card-text>{{ t('multiClearInboxTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showMultiClearInboxConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="warning" @click="showMultiClearInboxConfirm = false; multiActionClearInbox()">
+                        {{ t('confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Multi Clear Sent Items Confirm -->
+        <v-dialog v-model="showMultiClearSentItemsConfirm" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('multiClearSentItems') }}</v-card-title>
+                <v-card-text>{{ t('multiClearSentItemsTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showMultiClearSentItemsConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="warning" @click="showMultiClearSentItemsConfirm = false; multiActionClearSentItems()">
+                        {{ t('confirm') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Multi Action Progress Dialog -->
+        <v-dialog v-model="showMultiActionModal" max-width="300" persistent>
+            <v-card>
+                <v-card-title class="text-center">{{ multiActionTitle }}</v-card-title>
+                <v-card-text class="text-center">
+                    <v-progress-circular
+                        :model-value="multiActionProgress.percentage"
+                        :size="100"
+                        :width="10"
+                        color="primary"
+                    >
+                        {{ multiActionProgress.tip }}
+                    </v-progress-circular>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showMultiActionModal = false">OK</v-btn>
+                    <v-spacer></v-spacer>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Search Bar -->
+        <div class="d-flex mb-4">
+            <v-text-field
+                v-model="addressQuery"
+                :placeholder="t('addressQueryTip')"
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+                @keydown.enter="fetchData"
+                class="flex-grow-1 mr-2"
+            ></v-text-field>
+            <v-btn color="primary" variant="tonal" @click="fetchData">
                 {{ t('query') }}
-            </n-button>
-        </n-input-group>
-
-        <n-space v-if="showMultiActionBar" style="margin-bottom: 10px;">
-            <n-button @click="multiActionSelectAll" tertiary>
-                {{ t('selectAll') }}
-            </n-button>
-            <n-button @click="multiActionUnselectAll" tertiary>
-                {{ t('unselectAll') }}
-            </n-button>
-            <n-popconfirm @positive-click="multiActionDeleteAccounts">
-                <template #trigger>
-                    <n-button tertiary type="error">{{ t('multiDelete') }}</n-button>
-                </template>
-                {{ t('multiDeleteTip') }}
-            </n-popconfirm>
-            <n-popconfirm @positive-click="multiActionClearInbox">
-                <template #trigger>
-                    <n-button tertiary type="warning">{{ t('multiClearInbox') }}</n-button>
-                </template>
-                {{ t('multiClearInboxTip') }}
-            </n-popconfirm>
-            <n-popconfirm @positive-click="multiActionClearSentItems">
-                <template #trigger>
-                    <n-button tertiary type="warning">{{ t('multiClearSentItems') }}</n-button>
-                </template>
-                {{ t('multiClearSentItemsTip') }}
-            </n-popconfirm>
-            <n-tag type="info">
-                {{ t('selectedItems') }}: {{ selectedCount }}
-            </n-tag>
-        </n-space>
-        <div style="overflow: auto;">
-            <div style="display: inline-block;">
-                <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count"
-                    :page-sizes="[20, 50, 100]" show-size-picker>
-                    <template #prefix="{ itemCount }">
-                        {{ t('itemCount') }}: {{ itemCount }}
-                    </template>
-                </n-pagination>
-            </div>
-            <n-data-table v-model:checked-row-keys="checkedRowKeys" :columns="columns" :data="data" :bordered="false"
-                :row-key="row => row.id" embedded />
+            </v-btn>
         </div>
 
-        <!-- Multi-action progress modal -->
-        <n-modal v-model:show="showMultiActionModal" preset="dialog" :title="multiActionTitle" negative-text="OK">
-            <n-space justify="center">
-                <n-progress type="circle" status="info" :percentage="multiActionProgress.percentage">
-                    <span style="text-align: center">
-                        {{ multiActionProgress.tip }}
-                    </span>
-                </n-progress>
-            </n-space>
-        </n-modal>
+        <!-- Multi Action Bar -->
+        <div v-if="showMultiActionBar" class="d-flex flex-wrap align-center ga-2 mb-4">
+            <v-btn variant="tonal" @click="multiActionSelectAll">
+                {{ t('selectAll') }}
+            </v-btn>
+            <v-btn variant="tonal" @click="multiActionUnselectAll">
+                {{ t('unselectAll') }}
+            </v-btn>
+            <v-btn variant="tonal" color="error" @click="showMultiDeleteConfirm = true">
+                {{ t('multiDelete') }}
+            </v-btn>
+            <v-btn variant="tonal" color="warning" @click="showMultiClearInboxConfirm = true">
+                {{ t('multiClearInbox') }}
+            </v-btn>
+            <v-btn variant="tonal" color="warning" @click="showMultiClearSentItemsConfirm = true">
+                {{ t('multiClearSentItems') }}
+            </v-btn>
+            <v-chip color="info">
+                {{ t('selectedItems') }}: {{ selectedCount }}
+            </v-chip>
+        </div>
 
+        <!-- Pagination -->
+        <div class="d-flex flex-wrap align-center ga-2 mb-4">
+            <span>{{ t('itemCount') }}: {{ count }}</span>
+            <v-pagination v-model="page" :length="totalPages" density="compact" :total-visible="5"></v-pagination>
+            <v-select
+                v-model="pageSize"
+                :items="[20, 50, 100]"
+                variant="outlined"
+                density="compact"
+                hide-details
+                style="max-width: 100px"
+            ></v-select>
+        </div>
+
+        <!-- Data Table -->
+        <div style="overflow: auto;">
+            <v-data-table
+                v-model="checkedRowKeys"
+                :headers="headers"
+                :items="data"
+                item-value="id"
+                show-select
+                hide-default-footer
+                class="elevation-0"
+                style="min-width: 1000px;"
+            >
+                <template v-slot:item.mail_count="{ item }">
+                    <v-btn
+                        v-if="item.mail_count > 0"
+                        variant="text"
+                        size="small"
+                        @click="viewMails(item)"
+                    >
+                        <v-badge :content="item.mail_count" color="success" inline></v-badge>
+                        <span class="ml-1">{{ t('viewMails') }}</span>
+                    </v-btn>
+                    <v-badge v-else :content="item.mail_count" color="success" inline></v-badge>
+                </template>
+
+                <template v-slot:item.send_count="{ item }">
+                    <v-btn
+                        v-if="item.send_count > 0"
+                        variant="text"
+                        size="small"
+                        @click="viewSendBox(item)"
+                    >
+                        <v-badge :content="item.send_count" color="success" inline></v-badge>
+                        <span class="ml-1">{{ t('viewSendBox') }}</span>
+                    </v-btn>
+                    <v-badge v-else :content="item.send_count" color="success" inline></v-badge>
+                </template>
+
+                <template v-slot:item.actions="{ item }">
+                    <v-menu>
+                        <template v-slot:activator="{ props }">
+                            <v-btn icon="mdi-menu" variant="text" v-bind="props" size="small"></v-btn>
+                        </template>
+                        <v-list density="compact">
+                            <v-list-item @click="showCredential(item.id)">
+                                <v-list-item-title>{{ t('showCredential') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item v-if="item.mail_count > 0" @click="viewMails(item)">
+                                <v-list-item-title>{{ t('viewMails') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item v-if="item.send_count > 0" @click="viewSendBox(item)">
+                                <v-list-item-title>{{ t('viewSendBox') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item v-if="item.mail_count > 0" @click="curClearInboxAddressId = item.id; showClearInbox = true">
+                                <v-list-item-title>{{ t('clearInbox') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item v-if="item.send_count > 0" @click="curClearSentItemsAddressId = item.id; showClearSentItems = true">
+                                <v-list-item-title>{{ t('clearSentItems') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item v-if="openSettings?.enableAddressPassword" @click="curResetPasswordAddressId = item.id; showResetPassword = true">
+                                <v-list-item-title>{{ t('resetPassword') }}</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="curDeleteAddressId = item.id; showDeleteAccount = true">
+                                <v-list-item-title>{{ t('delete') }}</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </template>
+            </v-data-table>
+        </div>
     </div>
 </template>
 
 <style scoped>
-.n-pagination {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.n-data-table {
-    min-width: 1000px;
-}
 </style>
