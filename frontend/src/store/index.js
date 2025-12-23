@@ -112,6 +112,24 @@ export const useGlobalState = createGlobalState(
         const userOauth2SessionState = useSessionStorage('userOauth2SessionState', '');
         const userOauth2SessionClientID = useSessionStorage('userOauth2SessionClientID', '');
         const browserFingerprint = ref('');
+        
+        // Snackbar state for Vuetify
+        const snackbar = ref({
+            show: false,
+            message: '',
+            color: 'success',
+            timeout: 3000
+        });
+        
+        const showSnackbar = (message, color = 'success', timeout = 3000) => {
+            snackbar.value = {
+                show: true,
+                message,
+                color,
+                timeout
+            };
+        };
+        
         return {
             isDark,
             toggleDark,
@@ -150,6 +168,8 @@ export const useGlobalState = createGlobalState(
             useSimpleIndex,
             addressPassword,
             browserFingerprint,
+            snackbar,
+            showSnackbar,
         }
     },
 )

@@ -10,7 +10,7 @@ import Footer from './views/Footer.vue';
 import { api } from './api'
 
 const {
-  isDark, loading, useSideMargin, telegramApp, isTelegram
+  isDark, loading, useSideMargin, telegramApp, isTelegram, snackbar
 } = useGlobalState()
 const adClient = import.meta.env.VITE_GOOGLE_AD_CLIENT;
 const adSlot = import.meta.env.VITE_GOOGLE_AD_SLOT;
@@ -108,6 +108,19 @@ onMounted(async () => {
     </v-main>
 
     <v-snackbar-queue></v-snackbar-queue>
+    
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.message }}
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar.show = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
