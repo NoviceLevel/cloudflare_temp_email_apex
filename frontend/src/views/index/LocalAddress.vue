@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, h, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { useI18n } from 'vue-i18n'
-import { NPopconfirm, NButton } from 'naive-ui'
 
 // @ts-ignore
 import { useGlobalState } from '../../store'
@@ -10,8 +9,15 @@ import { useGlobalState } from '../../store'
 import Login from '../common/Login.vue';
 
 const { jwt } = useGlobalState()
-// @ts-ignore
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text: string, color: string = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
+
+const showChangeConfirm = ref(false)
+const showUnbindConfirm = ref(false)
+const selectedRow = ref<any>(null)
 
 const { t } = useI18n({
     messages: {
@@ -24,6 +30,7 @@ const { t } = useI18n({
             unbindMailAddress: 'Unbind Mail Address credential',
             create_or_bind: 'Create or Bind',
             bindAddressSuccess: 'Bind Address Success',
+            cancel: 'Cancel',
         },
         zh: {
             tip: '这些地址存储在您的浏览器中，如果您清除浏览器缓存，可能会丢失。',
@@ -34,16 +41,16 @@ const { t } = useI18n({
             unbindMailAddress: '解绑邮箱地址',
             create_or_bind: '创建或绑定',
             bindAddressSuccess: '绑定地址成功',
+            cancel: '取消',
         }
     }
 });
 
 const tabValue = ref('address')
-const localAddressCache = useLocalStorage("LocalAddressCache", []);
+const localAddressCache = useLocalStorage("LocalAddressCache", [] as string[]);
+
 const data = computed(() => {
-    // @ts-ignore
     if (!localAddressCache.value.includes(jwt.value)) {
-        // @ts-ignore
         localAddressCache.value.push(jwt.value)
     }
     return localAddressCache.value.map((curJwt: string) => {
@@ -68,92 +75,113 @@ const data = computed(() => {
             }
         }
     })
-
 })
 
 const bindAddress = async () => {
     try {
-        // @ts-ignore
         if (!localAddressCache.value.includes(jwt.value)) {
-            // @ts-ignore
             localAddressCache.value.push(jwt.value)
         }
         tabValue.value = 'address'
-        message.success(t('bindAddressSuccess'));
+        showMessage(t('bindAddressSuccess'));
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
-const columns = [
-    {
-        title: t('address'),
-        key: "address"
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render(row: any) {
-            return h('div', [
-                h(NPopconfirm,
-                    {
-                        onPositiveClick: () => {
-                            jwt.value = row.jwt
-                            location.reload()
-                        }
-                    },
-                    {
-                        trigger: () => h(NButton,
-                            {
-                                tertiary: true,
-                                type: "primary",
-                            },
-                            { default: () => t('changeMailAddress') }
-                        ),
-                        default: () => `${t('changeMailAddress')}?`
-                    }
-                ),
-                h(NPopconfirm,
-                    {
-                        onPositiveClick: () => {
-                            if (jwt.value === row.jwt) {
-                                return;
-                            }
-                            localAddressCache.value = localAddressCache.value.filter(
-                                (curJwt: string) => curJwt !== row.jwt
-                            );
-                        }
-                    },
-                    {
-                        trigger: () => h(NButton,
-                            {
-                                tertiary: true,
-                                disabled: jwt.value === row.jwt,
-                                type: "warning",
-                            },
-                            { default: () => t('unbindMailAddress') }
-                        ),
-                        default: () => `${t('unbindMailAddress')}?`
-                    }
-                )
-            ])
-        }
+const confirmChange = (row: any) => {
+    selectedRow.value = row
+    showChangeConfirm.value = true
+}
+
+const confirmUnbind = (row: any) => {
+    selectedRow.value = row
+    showUnbindConfirm.value = true
+}
+
+const changeAddress = () => {
+    jwt.value = selectedRow.value.jwt
+    location.reload()
+}
+
+const unbindAddress = () => {
+    if (jwt.value === selectedRow.value.jwt) {
+        return;
     }
-]
+    localAddressCache.value = localAddressCache.value.filter(
+        (curJwt: string) => curJwt !== selectedRow.value.jwt
+    );
+    showUnbindConfirm.value = false
+}
 </script>
 
 <template>
     <div>
-        <n-alert type="warning" :show-icon="false" :bordered="false">
-            <span>{{ t('tip') }}</span>
-        </n-alert>
-        <n-tabs type="segment" v-model:value="tabValue">
-            <n-tab-pane name="address" :tab="t('address')">
-                <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
-            </n-tab-pane>
-            <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">
-                <Login :bindUserAddress="bindAddress" />
-            </n-tab-pane>
-        </n-tabs>
+        <v-alert type="warning" variant="tonal" density="compact" class="mb-4">
+            {{ t('tip') }}
+        </v-alert>
+
+        <v-tabs v-model="tabValue" color="primary">
+            <v-tab value="address">{{ t('address') }}</v-tab>
+            <v-tab value="create_or_bind">{{ t('create_or_bind') }}</v-tab>
+        </v-tabs>
+
+        <v-window v-model="tabValue">
+            <v-window-item value="address">
+                <v-table class="mt-4">
+                    <thead>
+                        <tr>
+                            <th>{{ t('address') }}</th>
+                            <th>{{ t('actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="row in data" :key="row.jwt">
+                            <td>{{ row.address }}</td>
+                            <td>
+                                <v-btn size="small" color="primary" variant="text" @click="confirmChange(row)">
+                                    {{ t('changeMailAddress') }}
+                                </v-btn>
+                                <v-btn size="small" color="warning" variant="text" :disabled="jwt === row.jwt"
+                                    @click="confirmUnbind(row)">
+                                    {{ t('unbindMailAddress') }}
+                                </v-btn>
+                            </td>
+                        </tr>
+                    </tbody>
+                </v-table>
+            </v-window-item>
+            <v-window-item value="create_or_bind">
+                <div class="mt-4">
+                    <Login :bindUserAddress="bindAddress" />
+                </div>
+            </v-window-item>
+        </v-window>
+
+        <v-dialog v-model="showChangeConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('changeMailAddress') }}?</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showChangeConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="primary" @click="changeAddress">{{ t('changeMailAddress') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showUnbindConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('unbindMailAddress') }}?</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showUnbindConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="warning" @click="unbindAddress">{{ t('unbindMailAddress') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>

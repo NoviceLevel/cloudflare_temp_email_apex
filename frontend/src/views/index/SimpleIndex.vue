@@ -1,15 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useMessage } from 'naive-ui'
-import {
-    ExitToAppFilled,
-    ContentCopyFilled,
-    RefreshFilled,
-    ArrowBackIosNewFilled,
-    ArrowForwardIosFilled,
-    SettingsFilled
-} from '@vicons/material'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
@@ -19,9 +10,12 @@ import { processItem } from '../../utils/email-parser'
 import MailContentRenderer from '../../components/MailContentRenderer.vue'
 
 const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings, loading } = useGlobalState()
-const message = useMessage()
 
-// 邮件数据
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
+
 const currentPage = ref(1)
 const totalCount = ref(0)
 const currentMail = ref(null)
@@ -46,6 +40,7 @@ const { t } = useI18n({
             addressCredentialTip: 'Please copy the Mail Address Credential and you can use it to login',
             deleteSuccess: 'Mail deleted successfully',
             refreshAfter: 'Refresh After {msg} Seconds',
+            close: 'Close',
         },
         zh: {
             exitSimpleIndex: '退出极简',
@@ -62,21 +57,20 @@ const { t } = useI18n({
             addressCredentialTip: '请复制邮箱地址凭证，你可以使用它登录你的邮箱。',
             deleteSuccess: '邮件删除成功',
             refreshAfter: '{msg}秒后刷新',
+            close: '关闭',
         }
     }
 })
 
-// 复制地址
 const copyAddress = async () => {
     try {
         await navigator.clipboard.writeText(settings.value.address)
-        message.success(t('addressCopied'))
+        showMessage(t('addressCopied'))
     } catch (error) {
-        message.error('复制失败')
+        showMessage('复制失败', 'error')
     }
 }
 
-// 获取邮件数据
 const fetchMails = async () => {
     if (!settings.value.address) return
     try {
@@ -86,35 +80,32 @@ const fetchMails = async () => {
         currentMail.value = rawMail ? await processItem(rawMail) : null
     } catch (error) {
         console.error('Failed to fetch mails:', error)
-        message.error('获取邮件失败')
+        showMessage('获取邮件失败', 'error')
     }
 }
 
-// 删除邮件
 const deleteMail = async () => {
     if (!currentMail.value) return;
     try {
         await api.fetch(`/api/mails/${currentMail.value.id}`, { method: 'DELETE' });
-        message.success(t('deleteSuccess'));
+        showMessage(t('deleteSuccess'));
         currentMail.value = null;
         await refreshMails();
     } catch (error) {
         console.error('Failed to delete mail:', error);
-        message.error('删除邮件失败');
+        showMessage('删除邮件失败', 'error');
     }
 }
 
-// 刷新邮件
 const refreshMails = async () => {
     if (loading.value) return
     currentPage.value = 1
     showAccountSettingsCard.value = false
     currentAutoRefreshInterval.value = 60
     await fetchMails()
-    message.success(t('refreshSuccess'))
+    showMessage(t('refreshSuccess'))
 }
 
-// 分页控制
 const currentPageDisplay = computed(() => currentPage.value)
 const totalPages = computed(() => Math.max(1, totalCount.value))
 const canGoPrev = computed(() => currentPage.value > 1)
@@ -133,7 +124,6 @@ const nextPage = async () => {
     }
 }
 
-// 监听页面变化
 watch(currentPage, () => {
     fetchMails()
 })
@@ -142,7 +132,6 @@ onMounted(async () => {
     await api.getSettings()
     await fetchMails()
 
-    // 启动自动刷新
     timer.value = setInterval(async () => {
         if (!isFirstPage.value) {
             currentAutoRefreshInterval.value = 60
@@ -161,123 +150,108 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="center">
+    <div class="simple-index-container">
         <div v-if="!settings.address">
-            <n-card :bordered="false" embedded>
-                <Login />
-            </n-card>
+            <v-card variant="flat">
+                <v-card-text>
+                    <Login />
+                </v-card-text>
+            </v-card>
         </div>
 
         <div v-else>
-            <n-card :bordered="false" embedded>
-                <div style="text-align: center; margin-bottom: 16px; font-size: 18px;">
-                    <n-text strong size="large">{{ settings.address }}</n-text>
-                </div>
-                <n-flex justify="center">
-                    <n-button @click="refreshMails" :loading="loading" type="primary" tertiary size="small">
-                        <template #icon>
-                            <n-icon>
-                                <RefreshFilled />
-                            </n-icon>
-                        </template>
-                        {{ t('refreshMails') }}
-                    </n-button>
-                    <n-button @click="copyAddress" tertiary size="small">
-                        <template #icon>
-                            <n-icon>
-                                <ContentCopyFilled />
-                            </n-icon>
-                        </template>
-                        {{ t('copyAddress') }}
-                    </n-button>
-                    <n-button @click="useSimpleIndex = false" tertiary size="small">
-                        <template #icon>
-                            <n-icon>
-                                <ExitToAppFilled />
-                            </n-icon>
-                        </template>
-                        {{ t('exitSimpleIndex') }}
-                    </n-button>
-                    <n-button @click="showAccountSettingsCard = true" tertiary size="small">
-                        <template #icon>
-                            <n-icon>
-                                <SettingsFilled />
-                            </n-icon>
-                        </template>
-                        {{ t('accountSettings') }}
-                    </n-button>
-                </n-flex>
-                <div v-if="isFirstPage" style="text-align: center; margin-top: 12px;">
-                    <n-text depth="3" size="12">
+            <v-card variant="flat" class="mb-4">
+                <v-card-text class="text-center">
+                    <div class="text-h6 font-weight-bold mb-4">{{ settings.address }}</div>
+                    <div class="d-flex justify-center ga-2 flex-wrap">
+                        <v-btn @click="refreshMails" :loading="loading" color="primary" variant="tonal" size="small"
+                            prepend-icon="mdi-refresh">
+                            {{ t('refreshMails') }}
+                        </v-btn>
+                        <v-btn @click="copyAddress" variant="tonal" size="small" prepend-icon="mdi-content-copy">
+                            {{ t('copyAddress') }}
+                        </v-btn>
+                        <v-btn @click="useSimpleIndex = false" variant="tonal" size="small"
+                            prepend-icon="mdi-exit-to-app">
+                            {{ t('exitSimpleIndex') }}
+                        </v-btn>
+                        <v-btn @click="showAccountSettingsCard = true" variant="tonal" size="small"
+                            prepend-icon="mdi-cog">
+                            {{ t('accountSettings') }}
+                        </v-btn>
+                    </div>
+                    <div v-if="isFirstPage" class="text-caption text-medium-emphasis mt-3">
                         {{ t('refreshAfter', { msg: Math.max(0, currentAutoRefreshInterval) }) }}
-                    </n-text>
-                </div>
-            </n-card>
+                    </div>
+                </v-card-text>
+            </v-card>
 
-            <!-- 账户设置卡片 -->
-            <n-card v-if="showAccountSettingsCard" :bordered="false" embedded closable
-                @close="showAccountSettingsCard = false" :title="t('accountSettings')">
-                <AccountSettings />
-            </n-card>
+            <v-card v-if="showAccountSettingsCard" variant="flat" class="mb-4">
+                <v-card-title class="d-flex justify-space-between align-center">
+                    {{ t('accountSettings') }}
+                    <v-btn icon variant="text" @click="showAccountSettingsCard = false">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </v-card-title>
+                <v-card-text>
+                    <AccountSettings />
+                </v-card-text>
+            </v-card>
 
-            <n-card v-else :bordered="false" embedded style="text-align: left;">
-
-                <div v-if="totalCount > 1">
-                    <n-flex justify="space-between">
-                        <n-button @click="prevPage" :disabled="!canGoPrev" text size="small">
-                            <template #icon>
-                                <n-icon>
-                                    <ArrowBackIosNewFilled />
-                                </n-icon>
-                            </template>
+            <v-card v-else variant="flat" class="text-left">
+                <v-card-text>
+                    <div v-if="totalCount > 1" class="d-flex justify-space-between align-center mb-4">
+                        <v-btn @click="prevPage" :disabled="!canGoPrev" variant="text" size="small"
+                            prepend-icon="mdi-chevron-left">
                             {{ t('prevPage') }}
-                        </n-button>
-                        <n-text size="small">
+                        </v-btn>
+                        <span class="text-caption">
                             {{ t('mailCount', { current: currentPageDisplay, total: totalCount }) }}
-                        </n-text>
-                        <n-button @click="nextPage" :disabled="!canGoNext" text size="small" icon-placement="right">
-                            <template #icon>
-                                <n-icon>
-                                    <ArrowForwardIosFilled />
-                                </n-icon>
-                            </template>
+                        </span>
+                        <v-btn @click="nextPage" :disabled="!canGoNext" variant="text" size="small"
+                            append-icon="mdi-chevron-right">
                             {{ t('nextPage') }}
-                        </n-button>
-                    </n-flex>
-                </div>
+                        </v-btn>
+                    </div>
 
-                <div v-if="!currentMail" class="no-mail">
-                    <n-empty :description="t('noMails')" />
-                </div>
-                <div v-else>
-                    <h3 v-if="currentMail.subject">{{ currentMail.subject }}</h3>
-                    <div style="margin-top: 16px;">
+                    <v-empty-state v-if="!currentMail" icon="mdi-email-outline" :title="t('noMails')" />
+                    <div v-else>
+                        <h3 v-if="currentMail.subject" class="mb-4">{{ currentMail.subject }}</h3>
                         <MailContentRenderer :mail="currentMail" :showEMailTo="false" :showReply="false"
                             :enableUserDeleteEmail="openSettings.enableUserDeleteEmail" :showSaveS3="false"
                             :onDelete="deleteMail" />
                     </div>
-                </div>
-            </n-card>
+                </v-card-text>
+            </v-card>
         </div>
-        <n-modal v-model:show="showAddressCredential" preset="dialog" :title="t('addressCredential')">
-            <span>
-                <p>{{ t("addressCredentialTip") }}</p>
-            </span>
-            <n-card embedded>
-                <b>{{ jwt }}</b>
-            </n-card>
-        </n-modal>
+
+        <v-dialog v-model="showAddressCredential" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('addressCredential') }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">{{ t("addressCredentialTip") }}</p>
+                    <v-card variant="tonal">
+                        <v-card-text>
+                            <strong>{{ jwt }}</strong>
+                        </v-card-text>
+                    </v-card>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showAddressCredential = false">{{ t('close') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
 
 <style scoped>
-.center {
+.simple-index-container {
     max-width: 800px;
     margin: 0 auto;
-}
-
-.n-card {
-    margin-top: 20px;
-    width: 100%;
 }
 </style>

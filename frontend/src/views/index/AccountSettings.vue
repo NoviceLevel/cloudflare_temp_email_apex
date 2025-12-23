@@ -5,14 +5,17 @@ import { useRouter } from 'vue-router'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
-import { hashPassword } from '../../utils'
-import { getRouterPathWithLang } from '../../utils'
+import { hashPassword, getRouterPathWithLang } from '../../utils'
 
 const {
     jwt, settings, showAddressCredential, loading, openSettings
 } = useGlobalState()
 const router = useRouter()
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const showLogout = ref(false)
 const showDeleteAccount = ref(false)
@@ -21,6 +24,7 @@ const showClearSentItems = ref(false)
 const showChangePassword = ref(false)
 const newPassword = ref('')
 const confirmPassword = ref('')
+
 const { locale, t } = useI18n({
     messages: {
         en: {
@@ -28,7 +32,6 @@ const { locale, t } = useI18n({
             deleteAccount: "Delete Account",
             showAddressCredential: 'Show Address Credential',
             logoutConfirm: 'Are you sure to logout?',
-            deleteAccount: "Delete Account",
             deleteAccountConfirm: "Are you sure to delete your account and all emails for this account?",
             clearInbox: "Clear Inbox",
             clearSentItems: "Clear Sent Items",
@@ -40,13 +43,13 @@ const { locale, t } = useI18n({
             confirmPassword: "Confirm Password",
             passwordMismatch: "Passwords do not match",
             passwordChanged: "Password changed successfully",
+            cancel: "Cancel",
         },
         zh: {
             logout: '退出登录',
             deleteAccount: "删除账户",
             showAddressCredential: '查看邮箱地址凭证',
             logoutConfirm: '确定要退出登录吗？',
-            deleteAccount: "删除账户",
             deleteAccountConfirm: "确定要删除你的账户和其中的所有邮件吗?",
             clearInbox: "清空收件箱",
             clearSentItems: "清空发件箱",
@@ -58,6 +61,7 @@ const { locale, t } = useI18n({
             confirmPassword: "确认密码",
             passwordMismatch: "密码不匹配",
             passwordChanged: "密码修改成功",
+            cancel: "取消",
         }
     }
 });
@@ -70,25 +74,21 @@ const logout = async () => {
 
 const deleteAccount = async () => {
     try {
-        await api.fetch(`/api/delete_address`, {
-            method: 'DELETE'
-        });
+        await api.fetch(`/api/delete_address`, { method: 'DELETE' });
         jwt.value = '';
         await router.push(getRouterPathWithLang("/", locale.value))
         location.reload()
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 };
 
 const clearInbox = async () => {
     try {
-        await api.fetch(`/api/clear_inbox`, {
-            method: 'DELETE'
-        });
-        message.success(t("success"));
+        await api.fetch(`/api/clear_inbox`, { method: 'DELETE' });
+        showMessage(t("success"));
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     } finally {
         showClearInbox.value = false;
     }
@@ -96,12 +96,10 @@ const clearInbox = async () => {
 
 const clearSentItems = async () => {
     try {
-        await api.fetch(`/api/clear_sent_items`, {
-            method: 'DELETE'
-        });
-        message.success(t("success"));
+        await api.fetch(`/api/clear_sent_items`, { method: 'DELETE' });
+        showMessage(t("success"));
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     } finally {
         showClearSentItems.value = false;
     }
@@ -109,7 +107,7 @@ const clearSentItems = async () => {
 
 const changePassword = async () => {
     if (newPassword.value !== confirmPassword.value) {
-        message.error(t("passwordMismatch"));
+        showMessage(t("passwordMismatch"), 'error');
         return;
     }
     try {
@@ -119,105 +117,112 @@ const changePassword = async () => {
                 new_password: await hashPassword(newPassword.value)
             })
         });
-        message.success(t("passwordChanged"));
+        showMessage(t("passwordChanged"));
         newPassword.value = '';
         confirmPassword.value = '';
         showChangePassword.value = false;
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 };
 </script>
 
 <template>
-    <div class="center" v-if="settings.address">
-        <n-card :bordered="false" embedded>
-            <n-button @click="showAddressCredential = true" type="primary" secondary block strong>
-                {{ t('showAddressCredential') }}
-            </n-button>
-            <n-button v-if="openSettings?.enableAddressPassword" @click="showChangePassword = true" type="info" secondary block strong>
-                {{ t('changePassword') }}
-            </n-button>
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showClearInbox = true" type="warning" secondary
-                block strong>
-                {{ t('clearInbox') }}
-            </n-button>
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showClearSentItems = true" type="warning"
-                secondary block strong>
-                {{ t('clearSentItems') }}
-            </n-button>
-            <n-button @click="showLogout = true" secondary block strong>
-                {{ t('logout') }}
-            </n-button>
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showDeleteAccount = true" type="error" secondary
-                block strong>
-                {{ t('deleteAccount') }}
-            </n-button>
-        </n-card>
-        <n-modal v-model:show="showLogout" preset="dialog" :title="t('logout')">
-            <p>{{ t('logoutConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="logout" size="small" tertiary type="warning">
-                    {{ t('logout') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showDeleteAccount" preset="dialog" :title="t('deleteAccount')">
-            <p>{{ t('deleteAccountConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="deleteAccount" size="small" tertiary type="error">
-                    {{ t('deleteAccount') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showClearInbox" preset="dialog" :title="t('clearInbox')">
-            <p>{{ t('clearInboxConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearInbox" size="small" tertiary type="warning">
-                    {{ t('clearInbox') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showClearSentItems" preset="dialog" :title="t('clearSentItems')">
-            <p>{{ t('clearSentItemsConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearSentItems" size="small" tertiary type="warning">
-                    {{ t('clearSentItems') }}
-                </n-button>
-            </template>
-        </n-modal>
-        
-        <n-modal v-model:show="showChangePassword" preset="dialog" :title="t('changePassword')">
-            <n-form :model="{ newPassword, confirmPassword }">
-                <n-form-item :label="t('newPassword')">
-                    <n-input v-model:value="newPassword" type="password" placeholder="" show-password-on="click" />
-                </n-form-item>
-                <n-form-item :label="t('confirmPassword')">
-                    <n-input v-model:value="confirmPassword" type="password" placeholder="" show-password-on="click" />
-                </n-form-item>
-            </n-form>
-            <template #action>
-                <n-button :loading="loading" @click="changePassword" size="small" tertiary type="info">
+    <div class="d-flex justify-center" v-if="settings.address">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-text>
+                <v-btn @click="showAddressCredential = true" color="primary" variant="outlined" block class="mb-2">
+                    {{ t('showAddressCredential') }}
+                </v-btn>
+                <v-btn v-if="openSettings?.enableAddressPassword" @click="showChangePassword = true" color="info"
+                    variant="outlined" block class="mb-2">
                     {{ t('changePassword') }}
-                </n-button>
-            </template>
-        </n-modal>
+                </v-btn>
+                <v-btn v-if="openSettings.enableUserDeleteEmail" @click="showClearInbox = true" color="warning"
+                    variant="outlined" block class="mb-2">
+                    {{ t('clearInbox') }}
+                </v-btn>
+                <v-btn v-if="openSettings.enableUserDeleteEmail" @click="showClearSentItems = true" color="warning"
+                    variant="outlined" block class="mb-2">
+                    {{ t('clearSentItems') }}
+                </v-btn>
+                <v-btn @click="showLogout = true" variant="outlined" block class="mb-2">
+                    {{ t('logout') }}
+                </v-btn>
+                <v-btn v-if="openSettings.enableUserDeleteEmail" @click="showDeleteAccount = true" color="error"
+                    variant="outlined" block>
+                    {{ t('deleteAccount') }}
+                </v-btn>
+            </v-card-text>
+        </v-card>
+
+        <v-dialog v-model="showLogout" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('logout') }}</v-card-title>
+                <v-card-text>{{ t('logoutConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showLogout = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="logout" color="warning">{{ t('logout') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showDeleteAccount" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('deleteAccount') }}</v-card-title>
+                <v-card-text>{{ t('deleteAccountConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showDeleteAccount = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="deleteAccount" color="error">{{ t('deleteAccount') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showClearInbox" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('clearInbox') }}</v-card-title>
+                <v-card-text>{{ t('clearInboxConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showClearInbox = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="clearInbox" color="warning">{{ t('clearInbox') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showClearSentItems" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('clearSentItems') }}</v-card-title>
+                <v-card-text>{{ t('clearSentItemsConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showClearSentItems = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="clearSentItems" color="warning">{{ t('clearSentItems') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showChangePassword" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('changePassword') }}</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="newPassword" :label="t('newPassword')" type="password" variant="outlined"
+                        density="compact" class="mb-3" />
+                    <v-text-field v-model="confirmPassword" :label="t('confirmPassword')" type="password"
+                        variant="outlined" density="compact" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showChangePassword = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="changePassword" color="info">{{ t('changePassword') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    justify-content: center;
-}
-
-
-.n-card {
-    max-width: 800px;
-    text-align: left;
-}
-
-.n-button {
-    margin-top: 10px;
-}
-</style>

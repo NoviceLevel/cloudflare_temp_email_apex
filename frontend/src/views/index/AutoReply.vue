@@ -5,7 +5,11 @@ import { onMounted, ref } from 'vue'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const message = useMessage()
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
+
 const sourcePrefix = ref("")
 const enableAutoReply = ref(false)
 const autoReplyMessage = ref("")
@@ -13,7 +17,6 @@ const subject = ref("")
 const name = ref("")
 
 const { settings } = useGlobalState()
-
 
 const { t } = useI18n({
     locale: 'zh',
@@ -50,7 +53,7 @@ const fetchData = async () => {
         autoReplyMessage.value = res.message || ""
         subject.value = res.subject || ""
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -68,9 +71,9 @@ const saveData = async () => {
                 }
             })
         })
-        message.success(t("success"))
+        showMessage(t("success"))
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -80,57 +83,28 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded v-if="settings.address" :title='t("settings")'>
-            <div class="right">
-                <n-button type="primary" @click="saveData">{{ t('save') }}</n-button>
-            </div>
-            <div class="left">
-                <n-form-item :label="t('enableAutoReply')" label-placement="left">
-                    <n-switch v-model:value="enableAutoReply" />
-                </n-form-item>
-                <n-form-item :label="t('name')" label-placement="left">
-                    <n-input :disabled="!enableAutoReply" v-model:value="name" />
-                </n-form-item>
-                <n-form-item :label="t('sourcePrefix')" label-placement="left">
-                    <n-input :disabled="!enableAutoReply" v-model:value="sourcePrefix" />
-                </n-form-item>
-                <n-form-item :label="t('subject')" label-placement="left">
-                    <n-input :disabled="!enableAutoReply" v-model:value="subject" />
-                </n-form-item>
-                <n-form-item :label="t('autoReply')" label-placement="left">
-                    <n-input :disabled="!enableAutoReply" type="textarea" v-model:value="autoReplyMessage" />
-                </n-form-item>
-            </div>
-        </n-card>
+    <div class="d-flex justify-center">
+        <v-card v-if="settings.address" variant="flat" max-width="800" width="100%">
+            <v-card-title class="d-flex justify-space-between align-center">
+                {{ t('settings') }}
+                <v-btn color="primary" @click="saveData">{{ t('save') }}</v-btn>
+            </v-card-title>
+            <v-card-text>
+                <v-switch v-model="enableAutoReply" :label="t('enableAutoReply')" color="primary" hide-details
+                    class="mb-4" />
+                <v-text-field v-model="name" :label="t('name')" :disabled="!enableAutoReply" variant="outlined"
+                    density="compact" class="mb-3" />
+                <v-text-field v-model="sourcePrefix" :label="t('sourcePrefix')" :disabled="!enableAutoReply"
+                    variant="outlined" density="compact" class="mb-3" />
+                <v-text-field v-model="subject" :label="t('subject')" :disabled="!enableAutoReply" variant="outlined"
+                    density="compact" class="mb-3" />
+                <v-textarea v-model="autoReplyMessage" :label="t('autoReply')" :disabled="!enableAutoReply"
+                    variant="outlined" rows="4" />
+            </v-card-text>
+        </v-card>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-card {
-    max-width: 800px;
-}
-
-.n-button {
-    text-align: left;
-}
-
-.center {
-    display: flex;
-    text-align: center;
-    place-items: center;
-    justify-content: center;
-}
-
-.left {
-    text-align: left;
-    place-items: left;
-    justify-content: left;
-}
-
-.right {
-    text-align: right;
-    place-items: right;
-    justify-content: right;
-}
-</style>

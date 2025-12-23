@@ -1,11 +1,13 @@
 <script setup>
-import { ref, h, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'
 
 import { api } from '../../api'
-import { NPopconfirm } from 'naive-ui';
 
-const message = useMessage()
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -15,6 +17,8 @@ const { t } = useI18n({
             delete: 'Delete',
             deleteConfirm: 'Are you sure to delete this attachment?',
             deleteSuccess: 'Deleted successfully',
+            cancel: 'Cancel',
+            key: 'Key',
         },
         zh: {
             download: '下载',
@@ -22,90 +26,62 @@ const { t } = useI18n({
             delete: '删除',
             deleteConfirm: '确定要删除此附件吗？',
             deleteSuccess: '删除成功',
+            cancel: '取消',
+            key: '键',
         }
     }
 });
+
 const data = ref([])
 const showDownload = ref(false)
+const showDeleteConfirm = ref(false)
 const curRow = ref({})
 const curDownloadUrl = ref('')
 
 const fetchData = async () => {
     try {
-        const { results } = await api.fetch(
-            `/api/attachment/list`
-        );
+        const { results } = await api.fetch(`/api/attachment/list`);
         data.value = results;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
-const columns = [
-    {
-        title: "key",
-        key: "key"
-    },
-    {
-        title: t('action'),
-        key: 'actions',
-        render(row) {
-            return h('div', [
-                h(NButton,
-                    {
-                        type: 'success',
-                        tertiary: true,
-                        onClick: async () => {
-                            try {
-                                const { url } = await api.fetch(`/api/attachment/get_url`, {
-                                    method: 'POST',
-                                    body: JSON.stringify({ key: row.key })
-                                });
-                                curDownloadUrl.value = url;
-                                curRow.value = row;
-                                showDownload.value = true;
-                            }
-                            catch (error) {
-                                console.error(error);
-                                message.error(error.message || "error");
-                            }
-                        }
-                    },
-                    { default: () => t('download') }
-                ),
-                h(NPopconfirm,
-                    {
-                        onPositiveClick: async () => {
-                            try {
-                                await api.fetch(`/api/attachment/delete`, {
-                                    method: 'POST',
-                                    body: JSON.stringify({ key: row.key })
-                                });
-                                message.success(t('deleteSuccess'));
-                                await fetchData();
-                            }
-                            catch (error) {
-                                console.error(error);
-                                message.error(error.message || "error");
-                            }
-                        },
-                    },
-                    {
-                        trigger: () => h(NButton,
-                            {
-                                tertiary: true,
-                                type: "error",
-                            },
-                            { default: () => t('delete') }
-                        ),
-                        default: () => t('deleteConfirm')
-                    }
-                )
-            ])
-        }
+const downloadAttachment = async (row) => {
+    try {
+        const { url } = await api.fetch(`/api/attachment/get_url`, {
+            method: 'POST',
+            body: JSON.stringify({ key: row.key })
+        });
+        curDownloadUrl.value = url;
+        curRow.value = row;
+        showDownload.value = true;
+    } catch (error) {
+        console.error(error);
+        showMessage(error.message || "error", 'error');
     }
-]
+}
+
+const confirmDelete = (row) => {
+    curRow.value = row;
+    showDeleteConfirm.value = true;
+}
+
+const deleteAttachment = async () => {
+    try {
+        await api.fetch(`/api/attachment/delete`, {
+            method: 'POST',
+            body: JSON.stringify({ key: curRow.value.key })
+        });
+        showMessage(t('deleteSuccess'));
+        showDeleteConfirm.value = false;
+        await fetchData();
+    } catch (error) {
+        console.error(error);
+        showMessage(error.message || "error", 'error');
+    }
+}
 
 onMounted(async () => {
     await fetchData()
@@ -114,13 +90,55 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-modal v-model:show="showDownload" preset="dialog" :title="t('download')">
-            <n-tag type="info">{{ curRow.key }}</n-tag>
-            <n-button tag="a" target="_blank" tertiary type="info" size="small" :download="curRow.key.replace('/', '_')"
-                :href="curDownloadUrl">
-                {{ t('download') }}
-            </n-button>
-        </n-modal>
-        <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+        <v-table>
+            <thead>
+                <tr>
+                    <th>{{ t('key') }}</th>
+                    <th>{{ t('action') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="row in data" :key="row.key">
+                    <td>{{ row.key }}</td>
+                    <td>
+                        <v-btn size="small" color="success" variant="text" @click="downloadAttachment(row)">
+                            {{ t('download') }}
+                        </v-btn>
+                        <v-btn size="small" color="error" variant="text" @click="confirmDelete(row)">
+                            {{ t('delete') }}
+                        </v-btn>
+                    </td>
+                </tr>
+            </tbody>
+        </v-table>
+
+        <v-dialog v-model="showDownload" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('download') }}</v-card-title>
+                <v-card-text>
+                    <v-chip color="info" class="mb-3">{{ curRow.key }}</v-chip>
+                    <br />
+                    <v-btn :href="curDownloadUrl" target="_blank" :download="curRow.key?.replace('/', '_')"
+                        color="info" variant="tonal">
+                        {{ t('download') }}
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showDeleteConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('deleteConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showDeleteConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" @click="deleteAttachment">{{ t('delete') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
