@@ -133,7 +133,7 @@ onMounted(async () => {
             <TelegramAddress />
         </div>
         <div v-else class="d-flex justify-center my-4">
-            <v-card flat max-width="600" class="pa-4">
+            <v-card flat max-width="600" width="100%" class="pa-4">
                 <v-alert v-if="jwt" type="warning" variant="tonal" closable class="mb-4">
                     {{ t('fetchAddressError') }}
                 </v-alert>
