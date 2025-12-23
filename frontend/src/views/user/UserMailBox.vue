@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../../api'
 import MailBox from '../../components/MailBox.vue';
 
-
 const { t } = useI18n({
     messages: {
         en: {
@@ -39,18 +38,13 @@ const fetchMailData = async (limit, offset) => {
 
 const fetchAddresData = async () => {
     try {
-        const { results } = await api.fetch(
-            `/user_api/bind_address`
-        );
-        addressFilterOptions.value = results.map((item) => {
-            return {
-                label: item.name,
-                value: item.name
-            }
-        });
+        const { results } = await api.fetch(`/user_api/bind_address`);
+        addressFilterOptions.value = results.map((item) => ({
+            title: item.name,
+            value: item.name
+        }));
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
     }
 }
 
@@ -58,7 +52,7 @@ const deleteMail = async (curMailId) => {
     await api.fetch(`/user_api/mails/${curMailId}`, { method: 'DELETE' });
 };
 
-watch(addressFilter, async (newValue) => {
+watch(addressFilter, async () => {
     queryMail();
 });
 
@@ -68,15 +62,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <div style="margin-top: 10px;">
-        <n-input-group>
-            <n-select v-model:value="addressFilter" :options="addressFilterOptions" clearable
-                :placeholder="t('addressQueryTip')" />
-            <n-button @click="queryMail" type="primary" tertiary>
+    <div class="mt-3">
+        <div class="d-flex ga-2 mb-3">
+            <v-select v-model="addressFilter" :items="addressFilterOptions" clearable :label="t('addressQueryTip')"
+                variant="outlined" density="compact" style="max-width: 300px;" hide-details />
+            <v-btn @click="queryMail" color="primary" variant="outlined">
                 {{ t('query') }}
-            </n-button>
-        </n-input-group>
-        <div style="margin-top: 10px;"></div>
+            </v-btn>
+        </div>
         <MailBox :key="mailBoxKey" :enableUserDeleteEmail="true" :fetchMailData="fetchMailData"
             :deleteMail="deleteMail" :showFilterInput="true" />
     </div>

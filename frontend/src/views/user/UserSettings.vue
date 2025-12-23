@@ -2,21 +2,26 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { startRegistration } from '@simplewebauthn/browser';
-import { NButton, NPopconfirm } from 'naive-ui'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const { userJwt, userSettings, } = useGlobalState()
-const message = useMessage()
+const { userJwt, userSettings, loading } = useGlobalState()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const showLogout = ref(false)
 const showCreatePasskey = ref(false)
 const passkeyName = ref('')
 const showPasskeyList = ref(false)
 const showRenamePasskey = ref(false)
+const showDeleteConfirm = ref(false)
 const currentPasskeyId = ref(null)
 const currentPasskeyName = ref('')
+const passkeyData = ref([])
 
 const { t } = useI18n({
     messages: {
@@ -34,8 +39,8 @@ const { t } = useI18n({
             created_at: 'Created At',
             updated_at: 'Updated At',
             actions: 'Actions',
-            renamePasskey: 'Rename Passkey',
             renamePasskeyNamePlaceholder: 'Please enter the new passkey name',
+            cancel: 'Cancel',
         },
         zh: {
             logout: '退出登录',
@@ -51,12 +56,11 @@ const { t } = useI18n({
             created_at: '创建时间',
             updated_at: '更新时间',
             actions: '操作',
-            renamePasskey: '重命名 Passkey',
             renamePasskeyNamePlaceholder: '请输入新的 Passkey 名称',
+            cancel: '取消',
         }
     }
 });
-
 
 const logout = async () => {
     userJwt.value = '';
@@ -73,7 +77,6 @@ const createPasskey = async () => {
         })
         const credential = await startRegistration(options)
 
-        // Send the result to the server and return the promise.
         await api.fetch(`/user_api/passkey/register_response`, {
             method: 'POST',
             body: JSON.stringify({
@@ -85,82 +88,15 @@ const createPasskey = async () => {
                 credential
             })
         })
-        message.success(t('passkeyCreated'));
+        showMessage(t('passkeyCreated'));
     } catch (e) {
         console.error(e)
-        message.error(e.message)
+        showMessage(e.message, 'error')
     } finally {
         passkeyName.value = ''
         showCreatePasskey.value = false
     }
 }
-
-const passkeyColumns = [
-    {
-        title: "Passkey ID",
-        key: "passkey_id"
-    },
-    {
-        title: t('passkey_name'),
-        key: "passkey_name"
-    },
-    {
-        title: t('created_at'),
-        key: "created_at"
-    },
-    {
-        title: t('updated_at'),
-        key: "updated_at"
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render(row) {
-            return h('div', [
-                [
-                    h(NButton,
-                        {
-                            tertiary: true,
-                            type: "primary",
-                            onClick: () => {
-                                showRenamePasskey.value = true;
-                                currentPasskeyId.value = row.passkey_id;
-                            }
-                        },
-                        { default: () => t('renamePasskey') }
-                    ),
-                    h(NPopconfirm,
-                        {
-                            onPositiveClick: async () => {
-                                try {
-                                    await api.fetch(`/user_api/passkey/${row.passkey_id}`, {
-                                        method: 'DELETE'
-                                    })
-                                    await fetchPasskeyList()
-                                } catch (e) {
-                                    console.error(e)
-                                    message.error(e.message)
-                                }
-                            }
-                        },
-                        {
-                            trigger: () => h(NButton,
-                                {
-                                    tertiary: true,
-                                    type: "error",
-                                },
-                                { default: () => t('deletePasskey') }
-                            ),
-                            default: () => `${t('deletePasskey')}?`
-                        }
-                    ),
-                ]
-            ])
-        }
-    }
-]
-
-const passkeyData = ref([])
 
 const fetchPasskeyList = async () => {
     try {
@@ -168,7 +104,7 @@ const fetchPasskeyList = async () => {
         passkeyData.value = data
     } catch (e) {
         console.error(e)
-        message.error(e.message)
+        showMessage(e.message, 'error')
     }
 }
 
@@ -184,76 +120,146 @@ const renamePasskey = async () => {
         await fetchPasskeyList()
     } catch (e) {
         console.error(e)
-        message.error(e.message)
+        showMessage(e.message, 'error')
     } finally {
         currentPasskeyName.value = ''
         showRenamePasskey.value = false
     }
 }
+
+const deletePasskey = async () => {
+    try {
+        await api.fetch(`/user_api/passkey/${currentPasskeyId.value}`, {
+            method: 'DELETE'
+        })
+        await fetchPasskeyList()
+        showDeleteConfirm.value = false
+    } catch (e) {
+        console.error(e)
+        showMessage(e.message, 'error')
+    }
+}
+
+const openRename = (row) => {
+    currentPasskeyId.value = row.passkey_id
+    showRenamePasskey.value = true
+}
+
+const openDelete = (row) => {
+    currentPasskeyId.value = row.passkey_id
+    showDeleteConfirm.value = true
+}
 </script>
 
 <template>
-    <div class="center" v-if="userSettings.user_email">
-        <n-card :bordered="false" embedded>
-            <n-button @click="showPasskeyList = true; fetchPasskeyList();" secondary block strong>
-                {{ t('showPasskeyList') }}
-            </n-button>
-            <n-button @click="showCreatePasskey = true" type="primary" secondary block strong>
-                {{ t('createPasskey') }}
-            </n-button>
-            <n-alert :show-icon="false" :bordered="false">
-                <span>
-                    {{ t('passordTip') }}
-                </span>
-            </n-alert>
-            <n-button @click="showLogout = true" secondary block strong>
-                {{ t('logout') }}
-            </n-button>
-        </n-card>
-        <n-modal v-model:show="showCreatePasskey" preset="dialog" :title="t('createPasskey')">
-            <n-input v-model:value="passkeyName" :placeholder="t('passkeyNamePlaceholder')" />
-            <template #action>
-                <n-button :loading="loading" @click="createPasskey" size="small" tertiary type="primary">
+    <div class="d-flex justify-center" v-if="userSettings.user_email">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-text>
+                <v-btn @click="showPasskeyList = true; fetchPasskeyList();" variant="outlined" block class="mb-2">
+                    {{ t('showPasskeyList') }}
+                </v-btn>
+                <v-btn @click="showCreatePasskey = true" color="primary" variant="outlined" block class="mb-2">
                     {{ t('createPasskey') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showRenamePasskey" preset="dialog" :title="t('renamePasskey')">
-            <n-input v-model:value="currentPasskeyName" :placeholder="t('renamePasskeyNamePlaceholder')" />
-            <template #action>
-                <n-button :loading="loading" @click="renamePasskey" size="small" tertiary type="primary">
-                    {{ t('renamePasskey') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-modal v-model:show="showPasskeyList" preset="card" :title="t('showPasskeyList')">
-            <n-data-table :columns="passkeyColumns" :data="passkeyData" :bordered="false" embedded />
-        </n-modal>
-        <n-modal v-model:show="showLogout" preset="dialog" :title="t('logout')">
-            <p>{{ t('logoutConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="logout" size="small" tertiary type="warning">
+                </v-btn>
+                <v-alert type="info" variant="tonal" class="mb-2">
+                    {{ t('passordTip') }}
+                </v-alert>
+                <v-btn @click="showLogout = true" variant="outlined" block>
                     {{ t('logout') }}
-                </n-button>
-            </template>
-        </n-modal>
+                </v-btn>
+            </v-card-text>
+        </v-card>
+
+        <v-dialog v-model="showCreatePasskey" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('createPasskey') }}</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="passkeyName" :placeholder="t('passkeyNamePlaceholder')" variant="outlined"
+                        density="compact" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showCreatePasskey = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="createPasskey" color="primary">{{ t('createPasskey') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showRenamePasskey" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('renamePasskey') }}</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="currentPasskeyName" :placeholder="t('renamePasskeyNamePlaceholder')"
+                        variant="outlined" density="compact" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showRenamePasskey = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="renamePasskey" color="primary">{{ t('renamePasskey') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showPasskeyList" max-width="900">
+            <v-card>
+                <v-card-title>{{ t('showPasskeyList') }}</v-card-title>
+                <v-card-text>
+                    <v-table>
+                        <thead>
+                            <tr>
+                                <th>Passkey ID</th>
+                                <th>{{ t('passkey_name') }}</th>
+                                <th>{{ t('created_at') }}</th>
+                                <th>{{ t('updated_at') }}</th>
+                                <th>{{ t('actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in passkeyData" :key="row.passkey_id">
+                                <td>{{ row.passkey_id }}</td>
+                                <td>{{ row.passkey_name }}</td>
+                                <td>{{ row.created_at }}</td>
+                                <td>{{ row.updated_at }}</td>
+                                <td>
+                                    <v-btn size="small" color="primary" variant="text" @click="openRename(row)">
+                                        {{ t('renamePasskey') }}
+                                    </v-btn>
+                                    <v-btn size="small" color="error" variant="text" @click="openDelete(row)">
+                                        {{ t('deletePasskey') }}
+                                    </v-btn>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </v-table>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showDeleteConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('deletePasskey') }}?</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showDeleteConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" @click="deletePasskey">{{ t('deletePasskey') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showLogout" max-width="400">
+            <v-card>
+                <v-card-title>{{ t('logout') }}</v-card-title>
+                <v-card-text>{{ t('logoutConfirm') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showLogout = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="logout" color="warning">{{ t('logout') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    justify-content: center;
-}
-
-
-.n-card {
-    max-width: 800px;
-    text-align: left;
-}
-
-.n-button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-</style>

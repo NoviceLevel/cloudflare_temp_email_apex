@@ -10,10 +10,15 @@ const {
     userJwt, userOauth2SessionState, userOauth2SessionClientID
 } = useGlobalState()
 
-const message = useMessage();
+const snackbar = ref({ show: false, text: '', color: 'error' })
+const showMessage = (text, color = 'error') => {
+    snackbar.value = { show: true, text, color }
+}
+
 const route = useRoute()
 const router = useRouter()
 const errorInfo = ref('')
+
 const { t } = useI18n({
     messages: {
         en: {
@@ -31,13 +36,13 @@ onMounted(async () => {
     const state = route.query.state;
     if (state != userOauth2SessionState.value) {
         console.error('state not match');
-        message.error(t('stateNotMatch'));
+        showMessage(t('stateNotMatch'));
         return;
     }
     const code = route.query.code;
     if (!code) {
         console.error('code not found');
-        message.error('code not found');
+        showMessage('code not found');
         return;
     }
     try {
@@ -52,14 +57,21 @@ onMounted(async () => {
         router.push('/user');
     } catch (error) {
         console.error(error);
-        message.error(error.message || 'error');
+        showMessage(error.message || 'error');
     }
 });
 </script>
 
 <template>
-    <n-card :bordered="false" embedded>
-        <n-result status="info" :title="t('logging')" :description="errorInfo">
-        </n-result>
-    </n-card>
+    <v-card variant="flat">
+        <v-card-text class="text-center">
+            <v-progress-circular indeterminate color="primary" class="mb-4" />
+            <div class="text-h6">{{ t('logging') }}</div>
+            <div v-if="errorInfo" class="text-error mt-2">{{ errorInfo }}</div>
+        </v-card-text>
+    </v-card>
+
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+        {{ snackbar.text }}
+    </v-snackbar>
 </template>
