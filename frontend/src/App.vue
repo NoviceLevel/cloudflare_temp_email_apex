@@ -87,13 +87,13 @@ onMounted(async () => {
     
     <v-main>
       <v-container fluid>
-        <v-row>
+        <v-row justify="center">
           <v-col v-if="showSideMargin && showAd" cols="1">
             <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
               data-ad-format="auto" data-full-width-responsive="true"></ins>
           </v-col>
           
-          <v-col :cols="showSideMargin ? 10 : 12">
+          <v-col :cols="showSideMargin ? 10 : 12" :lg="showSideMargin ? 10 : 8" :xl="showSideMargin ? 10 : 6">
             <Header />
             <router-view></router-view>
             <Footer />
