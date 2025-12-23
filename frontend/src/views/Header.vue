@@ -183,7 +183,7 @@ onMounted(async () => {
                         {{ locale == 'zh' ? 'English' : '中文' }}
                     </v-btn>
                     <v-btn v-if="openSettings?.showGithub" variant="text" 
-                        href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank">
+                        href="https://github.com/NoviceLevel/cloudflare_temp_email_apex" target="_blank">
                         <v-icon start>mdi-github</v-icon>
                         {{ version || 'Github' }}
                     </v-btn>
@@ -206,7 +206,7 @@ onMounted(async () => {
                     :title="isDark ? t('light') : t('dark')" @click="toggleTheme"></v-list-item>
                 <v-list-item prepend-icon="mdi-translate" :title="locale == 'zh' ? 'English' : '中文'" @click="toggleLang"></v-list-item>
                 <v-list-item v-if="openSettings?.showGithub" prepend-icon="mdi-github" :title="version || 'Github'"
-                    href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank"></v-list-item>
+                    href="https://github.com/NoviceLevel/cloudflare_temp_email_apex" target="_blank"></v-list-item>
             </v-list>
         </v-navigation-drawer>
 

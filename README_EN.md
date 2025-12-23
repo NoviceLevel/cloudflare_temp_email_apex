@@ -1,24 +1,26 @@
 <!-- markdownlint-disable-file MD033 MD045 -->
 # Cloudflare Temp Email - Free Temporary Email Service
 
+> This project is based on [dreamhunter2333/cloudflare_temp_email](https://github.com/dreamhunter2333/cloudflare_temp_email), with UI framework migrated from Naive UI to Vuetify 3 (Material Design).
+
 <p align="center">
   <a href="https://temp-mail-docs.awsl.uk" target="_blank">
     <img alt="docs" src="https://img.shields.io/badge/docs-grey?logo=vitepress">
   </a>
-  <a href="https://github.com/dreamhunter2333/cloudflare_temp_email/releases/latest" target="_blank">
-    <img src="https://img.shields.io/github/v/release/dreamhunter2333/cloudflare_temp_email">
+  <a href="https://github.com/NoviceLevel/cloudflare_temp_email_apex/releases/latest" target="_blank">
+    <img src="https://img.shields.io/github/v/release/NoviceLevel/cloudflare_temp_email_apex">
   </a>
-  <a href="https://github.com/dreamhunter2333/cloudflare_temp_email/blob/main/LICENSE" target="_blank">
-    <img alt="MIT License" src="https://img.shields.io/github/license/dreamhunter2333/cloudflare_temp_email">
+  <a href="https://github.com/NoviceLevel/cloudflare_temp_email_apex/blob/main/LICENSE" target="_blank">
+    <img alt="MIT License" src="https://img.shields.io/github/license/NoviceLevel/cloudflare_temp_email_apex">
   </a>
-  <a href="https://github.com/dreamhunter2333/cloudflare_temp_email/graphs/contributors" target="_blank">
-   <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/dreamhunter2333/cloudflare_temp_email">
-  </a>
-  <a href="">
-    <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/dreamhunter2333/cloudflare_temp_email">
+  <a href="https://github.com/NoviceLevel/cloudflare_temp_email_apex/graphs/contributors" target="_blank">
+   <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/NoviceLevel/cloudflare_temp_email_apex">
   </a>
   <a href="">
-    <img src="https://img.shields.io/github/last-commit/dreamhunter2333/cloudflare_temp_email">
+    <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/NoviceLevel/cloudflare_temp_email_apex">
+  </a>
+  <a href="">
+    <img src="https://img.shields.io/github/last-commit/NoviceLevel/cloudflare_temp_email_apex">
   </a>
 </p>
 
@@ -72,9 +74,9 @@ Try it now → [https://mail.awsl.uk/](https://mail.awsl.uk/)
 <summary>⭐ Star History (Click to expand/collapse)</summary>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date&theme=dark" />
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date" />
-  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date&theme=dark" />
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date" />
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date" />
 </picture>
 
 </details>
@@ -166,7 +168,8 @@ Try it now → [https://mail.awsl.uk/](https://mail.awsl.uk/)
 
 ### 🛠️ Tech Stack
 
-- **Frontend**: Vue 3 + Vite + TypeScript
+- **Frontend**: Vue 3 + Vite + Vuetify 3 + TypeScript
+- **UI Framework**: Vuetify 3 (Material Design)
 - **Backend**: TypeScript + Cloudflare Workers
 - **Email Parsing**: Rust WASM (mail-parser-wasm)
 - **Database**: Cloudflare D1 (SQLite)
@@ -176,7 +179,7 @@ Try it now → [https://mail.awsl.uk/](https://mail.awsl.uk/)
 ### 📦 Main Components
 
 - **Worker**: Core backend service
-- **Frontend**: Vue 3 user interface
+- **Frontend**: Vue 3 + Vuetify 3 user interface
 - **Mail Parser WASM**: Rust email parsing module
 - **SMTP Proxy Server**: Python email proxy service
 - **Pages Functions**: Cloudflare Pages middleware
