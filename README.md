@@ -166,7 +166,8 @@
 
 ### 🛠️ 技术栈
 
-- **前端**: Vue 3 + Vite + TypeScript
+- **前端**: Vue 3 + Vite + Vuetify 3 + TypeScript
+- **UI 框架**: Vuetify 3 (Material Design)
 - **后端**: TypeScript + Cloudflare Workers
 - **邮件解析**: Rust WASM (mail-parser-wasm)
 - **数据库**: Cloudflare D1 (SQLite)
@@ -176,7 +177,7 @@
 ### 📦 主要组件
 
 - **Worker**: 核心后端服务
-- **Frontend**: Vue 3 用户界面
+- **Frontend**: Vue 3 + Vuetify 3 用户界面
 - **Mail Parser WASM**: Rust 邮件解析模块
 - **SMTP Proxy Server**: Python 邮件代理服务
 - **Pages Functions**: Cloudflare Pages 中间件
