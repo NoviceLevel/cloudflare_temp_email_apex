@@ -35,20 +35,14 @@ const deleteSenboxMail = async (curMailId) => {
 
 <template>
     <div>
-        <n-input-group>
-            <n-input v-model:value="adminSendBoxTabAddress" :placeholder="t('queryTip')" @keydown.enter="fetchData" />
-            <n-button @click="fetchData" type="primary" tertiary>
+        <div class="d-flex ga-2 mb-3">
+            <v-text-field v-model="adminSendBoxTabAddress" :placeholder="t('queryTip')" variant="outlined"
+                density="compact" hide-details @keydown.enter="fetchData" style="max-width: 400px;" />
+            <v-btn @click="fetchData" color="primary" variant="outlined">
                 {{ t('query') }}
-            </n-button>
-        </n-input-group>
-        <SendBox style="margin-top: 10px;" :enableUserDeleteEmail="true" :deleteMail="deleteSenboxMail"
-            :fetchMailData="fetchData" :showEMailFrom="true" />
+            </v-btn>
+        </div>
+        <SendBox :enableUserDeleteEmail="true" :deleteMail="deleteSenboxMail" :fetchMailData="fetchData"
+            :showEMailFrom="true" />
     </div>
 </template>
-
-<style scoped>
-.n-pagination {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-</style>

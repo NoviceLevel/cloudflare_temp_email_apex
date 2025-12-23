@@ -3,11 +3,12 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 // @ts-ignore
-import { useGlobalState } from '../../store'
-// @ts-ignore
 import { api } from '../../api'
-// @ts-ignore
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text: string, color: string = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -31,16 +32,11 @@ const { t } = useI18n({
 });
 
 class WebhookSettings {
-    enableAllowList: boolean;
-    allowList: string[];
-
-    constructor(enableAllowList: boolean, allowList: string[]) {
-        this.enableAllowList = enableAllowList;
-        this.allowList = allowList;
-    }
+    enableAllowList: boolean = false;
+    allowList: string[] = [];
 }
 
-const webhookSettings = ref(new WebhookSettings(false, []))
+const webhookSettings = ref(new WebhookSettings())
 const webhookEnabled = ref(false)
 const errorInfo = ref('')
 
@@ -60,9 +56,9 @@ const saveSettings = async () => {
             method: 'POST',
             body: JSON.stringify(webhookSettings.value),
         })
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
@@ -72,36 +68,22 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card v-if="webhookEnabled" :bordered="false" embedded style="max-width: 800px; overflow: auto;">
-            <n-flex justify="end">
-                <n-button @click="saveSettings" type="primary">
-                    {{ t('save') }}
-                </n-button>
-            </n-flex>
-            <n-form-item-row :label="t('enableAllowList')">
-                <n-switch v-model:value="webhookSettings.enableAllowList" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('webhookAllowList')">
-                <n-select v-model:value="webhookSettings.allowList" filterable multiple tag
-                    :placeholder="t('webhookAllowList')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-        </n-card>
-        <n-result v-else status="404" :title="t('notEnabled')" :description="errorInfo" />
+    <div class="d-flex justify-center">
+        <v-card v-if="webhookEnabled" variant="flat" max-width="800" width="100%">
+            <v-card-actions class="justify-end">
+                <v-btn @click="saveSettings" color="primary">{{ t('save') }}</v-btn>
+            </v-card-actions>
+            <v-card-text>
+                <v-switch v-model="webhookSettings.enableAllowList" :label="t('enableAllowList')" color="primary"
+                    hide-details class="mb-4" />
+                <v-combobox v-model="webhookSettings.allowList" :label="t('webhookAllowList')" multiple chips
+                    closable-chips variant="outlined" density="compact" />
+            </v-card-text>
+        </v-card>
+        <v-empty-state v-else icon="mdi-alert-circle-outline" :title="t('notEnabled')" :description="errorInfo" />
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-}
-</style>

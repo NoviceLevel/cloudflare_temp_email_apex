@@ -1,12 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'
-import { CleaningServicesFilled } from '@vicons/material'
 
 import { api } from '../../api'
-import { init } from 'vooks/lib/on-fonts-ready';
+import { useGlobalState } from '../../store'
 
-const message = useMessage()
+const { loading } = useGlobalState()
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
+
 const dbVersionData = ref({
     need_initialization: false,
     need_migration: false,
@@ -44,31 +48,27 @@ const fetchData = async () => {
         const res = await api.fetch('/admin/db_version');
         if (res) Object.assign(dbVersionData.value, res);
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
 const initialization = async () => {
     try {
-        await api.fetch('/admin/db_initialize', {
-            method: 'POST'
-        });
+        await api.fetch('/admin/db_initialize', { method: 'POST' });
         await fetchData();
-        message.success(t('initializationSuccess'));
+        showMessage(t('initializationSuccess'));
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
 const migration = async () => {
     try {
-        await api.fetch('/admin/db_migration', {
-            method: 'POST'
-        });
+        await api.fetch('/admin/db_migration', { method: 'POST' });
         await fetchData();
-        message.success(t('migrationSuccess'));
+        showMessage(t('migrationSuccess'));
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -77,50 +77,32 @@ onMounted(async () => {
 })
 </script>
 
-
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded>
-            <n-alert v-if="dbVersionData.need_initialization" type="warning" :show-icon="false" :bordered="false">
-                <span>{{ t('need_initialization_tip') }}</span>
-                <n-button @click="initialization" type="primary" secondary block :loading="loading">
-                    {{ t('init') }}
-                </n-button>
-            </n-alert>
-            <n-alert v-if="dbVersionData.need_migration" type="warning" :show-icon="false" :bordered="false">
-                <span>{{ t('need_migration_tip') }}</span>
-                <n-button @click="migration" type="primary" secondary block :loading="loading">
-                    {{ t('migration') }}
-                </n-button>
-            </n-alert>
-            <n-alert type="info" :show-icon="false" :bordered="false">
-                <span>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-text>
+                <v-alert v-if="dbVersionData.need_initialization" type="warning" variant="tonal" class="mb-3">
+                    {{ t('need_initialization_tip') }}
+                    <v-btn @click="initialization" color="primary" variant="outlined" block :loading="loading"
+                        class="mt-3">
+                        {{ t('init') }}
+                    </v-btn>
+                </v-alert>
+                <v-alert v-if="dbVersionData.need_migration" type="warning" variant="tonal" class="mb-3">
+                    {{ t('need_migration_tip') }}
+                    <v-btn @click="migration" color="primary" variant="outlined" block :loading="loading" class="mt-3">
+                        {{ t('migration') }}
+                    </v-btn>
+                </v-alert>
+                <v-alert type="info" variant="tonal">
                     {{ t('current_db_version') }}: {{ dbVersionData.current_db_version || "unknown" }},
                     {{ t('code_db_version') }}: {{ dbVersionData.code_db_version }}
-                </span>
-            </n-alert>
+                </v-alert>
+            </v-card-text>
+        </v-card>
 
-        </n-card>
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-card {
-    max-width: 800px;
-}
-
-.n-alert {
-    margin-bottom: 10px;
-}
-
-.center {
-    display: flex;
-    text-align: center;
-    place-items: center;
-    justify-content: center;
-}
-
-.n-button {
-    margin-top: 10px;
-}
-</style>

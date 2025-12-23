@@ -5,10 +5,12 @@ import { useI18n } from 'vue-i18n'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const {
-    loading, openSettings,
-} = useGlobalState()
-const message = useMessage()
+const { loading, openSettings } = useGlobalState()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -40,14 +42,15 @@ const { t } = useI18n({
 const enablePrefix = ref(true)
 const emailName = ref("")
 const emailDomain = ref("")
-const showReultModal = ref(false)
+const showResultModal = ref(false)
 const result = ref("")
 const addressPassword = ref("")
 const createdAddress = ref("")
+const showAutoLoginLink = ref(false)
 
 const newEmail = async () => {
     if (!emailName.value || !emailDomain.value) {
-        message.error(t('fillInAllFields'))
+        showMessage(t('fillInAllFields'), 'error')
         return
     }
     try {
@@ -62,10 +65,10 @@ const newEmail = async () => {
         result.value = res["jwt"];
         addressPassword.value = res["password"] || '';
         createdAddress.value = res["address"] || '';
-        message.success(t('successTip'))
-        showReultModal.value = true
+        showMessage(t('successTip'))
+        showResultModal.value = true
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -73,65 +76,65 @@ const getUrlWithJwt = () => {
     return `${window.location.origin}/?jwt=${result.value}`
 }
 
+const domainOptions = ref([])
+
 onMounted(async () => {
     if (openSettings.prefix) {
         enablePrefix.value = true
     }
+    domainOptions.value = openSettings.value.domains || []
     emailDomain.value = openSettings.value.domains?.[0]?.value || ""
 })
 </script>
 
 <template>
-    <div class="center">
-        <n-modal v-model:show="showReultModal" preset="dialog" :title="t('addressCredential')">
-            <span>
-                <p>{{ t("addressCredentialTip") }}</p>
-            </span>
-            <n-card embedded>
-                <b>{{ result }}</b>
-            </n-card>
-            <n-card embedded v-if="addressPassword">
-                <p><b>{{ createdAddress }}</b></p>
-                <p>{{ t('addressPassword') }}: <b>{{ addressPassword }}</b></p>
-            </n-card>
-            <n-card embedded>
-                <n-collapse>
-                    <n-collapse-item :title='t("linkWithAddressCredential")'>
-                        <n-card embedded>
-                            <b>{{ getUrlWithJwt() }}</b>
-                        </n-card>
-                    </n-collapse-item>
-                </n-collapse>
-            </n-card>
-        </n-modal>
-        <n-card :bordered="false" embedded style="max-width: 600px;">
-            <n-form-item-row v-if="openSettings.prefix" :label="t('enablePrefix')">
-                <n-switch v-model:value="enablePrefix" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('address')">
-                <n-input-group>
-                    <n-input-group-label v-if="enablePrefix && openSettings.prefix">
-                        {{ openSettings.prefix }}
-                    </n-input-group-label>
-                    <n-input v-model:value="emailName" />
-                    <n-input-group-label>@</n-input-group-label>
-                    <n-select v-model:value="emailDomain" :consistent-menu-width="false"
-                        :options="openSettings.domains" />
-                </n-input-group>
-            </n-form-item-row>
-            <n-button @click="newEmail" type="primary" block :loading="loading">
-                {{ t('creatNewEmail') }}
-            </n-button>
-        </n-card>
+    <div class="d-flex justify-center my-5">
+        <v-card variant="flat" max-width="600" width="100%">
+            <v-card-text>
+                <v-switch v-if="openSettings.prefix" v-model="enablePrefix" :label="t('enablePrefix')" color="primary"
+                    hide-details class="mb-4" />
+                <div class="d-flex align-center ga-2 mb-4">
+                    <span v-if="enablePrefix && openSettings.prefix" class="text-body-1">{{ openSettings.prefix }}</span>
+                    <v-text-field v-model="emailName" variant="outlined" density="compact" hide-details />
+                    <span>@</span>
+                    <v-select v-model="emailDomain" :items="domainOptions" variant="outlined" density="compact"
+                        hide-details style="max-width: 200px;" />
+                </div>
+                <v-btn @click="newEmail" color="primary" block :loading="loading">
+                    {{ t('creatNewEmail') }}
+                </v-btn>
+            </v-card-text>
+        </v-card>
+
+        <v-dialog v-model="showResultModal" max-width="600">
+            <v-card>
+                <v-card-title>{{ t('addressCredential') }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">{{ t("addressCredentialTip") }}</p>
+                    <v-card variant="tonal" class="mb-3">
+                        <v-card-text>
+                            <strong style="word-break: break-all;">{{ result }}</strong>
+                        </v-card-text>
+                    </v-card>
+                    <v-card v-if="addressPassword" variant="tonal" class="mb-3">
+                        <v-card-text>
+                            <p><strong>{{ createdAddress }}</strong></p>
+                            <p>{{ t('addressPassword') }}: <strong>{{ addressPassword }}</strong></p>
+                        </v-card-text>
+                    </v-card>
+                    <v-expansion-panels>
+                        <v-expansion-panel :title="t('linkWithAddressCredential')">
+                            <v-expansion-panel-text>
+                                <strong style="word-break: break-all;">{{ getUrlWithJwt() }}</strong>
+                            </v-expansion-panel-text>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-    margin: 20px;
-}
-</style>

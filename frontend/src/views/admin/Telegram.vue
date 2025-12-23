@@ -3,11 +3,12 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 // @ts-ignore
-import { useGlobalState } from '../../store'
-// @ts-ignore
 import { api } from '../../api'
-// @ts-ignore
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text: string, color: string = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -42,9 +43,7 @@ const { t } = useI18n({
     }
 });
 
-const status = ref({
-    fetched: false,
-})
+const status = ref<any>({ fetched: false })
 
 const fetchStatus = async () => {
     try {
@@ -52,48 +51,35 @@ const fetchStatus = async () => {
         Object.assign(status.value, res)
         status.value.fetched = true
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
 const init = async () => {
     try {
-        await api.fetch(`/admin/telegram/init`, {
-            method: 'POST',
-        })
-        message.success(t('successTip'))
+        await api.fetch(`/admin/telegram/init`, { method: 'POST' })
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
 class TelegramSettings {
-    enableAllowList: boolean;
-    allowList: string[];
-    miniAppUrl: string;
-    enableGlobalMailPush: boolean;
-    globalMailPushList: string[];
-
-    constructor(
-        enableAllowList: boolean, allowList: string[], miniAppUrl: string,
-        enableGlobalMailPush: boolean, globalMailPushList: string[]
-    ) {
-        this.enableAllowList = enableAllowList;
-        this.allowList = allowList;
-        this.miniAppUrl = miniAppUrl;
-        this.enableGlobalMailPush = enableGlobalMailPush;
-        this.globalMailPushList = globalMailPushList;
-    }
+    enableAllowList: boolean = false;
+    allowList: string[] = [];
+    miniAppUrl: string = '';
+    enableGlobalMailPush: boolean = false;
+    globalMailPushList: string[] = [];
 }
 
-const settings = ref(new TelegramSettings(false, [], '', false, []))
+const settings = ref(new TelegramSettings())
 
 const getSettings = async () => {
     try {
         const res = await api.fetch(`/admin/telegram/settings`)
         Object.assign(settings.value, res)
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
@@ -103,9 +89,9 @@ const saveSettings = async () => {
             method: 'POST',
             body: JSON.stringify(settings.value),
         })
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showMessage((error as Error).message || "error", 'error');
     }
 }
 
@@ -115,71 +101,41 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded style="max-width: 800px; overflow: auto;">
-            <n-flex justify="end">
-                <n-button @click="fetchStatus" secondary>
-                    {{ t('status') }}
-                </n-button>
-                <n-button @click="init" type="primary">
-                    {{ t('init') }}
-                </n-button>
-                <n-button @click="saveSettings" type="primary">
-                    {{ t('save') }}
-                </n-button>
-            </n-flex>
-            <n-card :bordered="false" embedded>
-                <n-form-item-row :label="t('enableTelegramAllowList')">
-                    <n-input-group>
-                        <n-checkbox v-model:checked="settings.enableAllowList" style="width: 20%;">
-                            {{ t('enable') }}
-                        </n-checkbox>
-                        <n-select v-model:value="settings.allowList" filterable multiple tag style="width: 80%;"
-                            :placeholder="t('telegramAllowList')">
-                            <template #empty>
-                                <n-text depth="3">
-                                    {{ t('manualInputPrompt') }}
-                                </n-text>
-                            </template>
-                        </n-select>
-                    </n-input-group>
-                </n-form-item-row>
-                <br />
-                <n-form-item-row :label="t('enableGlobalMailPush')">
-                    <n-input-group>
-                        <n-checkbox v-model:checked="settings.enableGlobalMailPush" style="width: 20%;">
-                            {{ t('enable') }}
-                        </n-checkbox>
-                        <n-select v-model:value="settings.globalMailPushList" filterable multiple tag
-                            style="width: 80%;" :placeholder="t('globalMailPushList')">
-                            <template #empty>
-                                <n-text depth="3">
-                                    {{ t('manualInputPrompt') }}
-                                </n-text>
-                            </template>
-                        </n-select>
-                    </n-input-group>
-                    <template #feedback>
-                        <n-text depth="3">
-                            {{ t('globalMailPushListTip') }}
-                        </n-text>
-                    </template>
-                </n-form-item-row>
-                <br />
-                <n-form-item-row :label="t('miniAppUrl')">
-                    <n-input v-model:value="settings.miniAppUrl"></n-input>
-                </n-form-item-row>
-            </n-card>
-            <pre v-if="status.fetched">{{ JSON.stringify(status, null, 2) }}</pre>
-        </n-card>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="800" width="100%">
+            <v-card-actions class="justify-end">
+                <v-btn @click="fetchStatus" variant="outlined">{{ t('status') }}</v-btn>
+                <v-btn @click="init" color="primary" variant="outlined">{{ t('init') }}</v-btn>
+                <v-btn @click="saveSettings" color="primary">{{ t('save') }}</v-btn>
+            </v-card-actions>
+            <v-card-text>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('enableTelegramAllowList') }}</div>
+                    <div class="d-flex align-center ga-2">
+                        <v-checkbox v-model="settings.enableAllowList" :label="t('enable')" hide-details
+                            style="flex: 0 0 auto;" />
+                        <v-combobox v-model="settings.allowList" :placeholder="t('telegramAllowList')" multiple chips
+                            closable-chips variant="outlined" density="compact" hide-details />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="text-subtitle-2 mb-2">{{ t('enableGlobalMailPush') }}</div>
+                    <div class="d-flex align-center ga-2">
+                        <v-checkbox v-model="settings.enableGlobalMailPush" :label="t('enable')" hide-details
+                            style="flex: 0 0 auto;" />
+                        <v-combobox v-model="settings.globalMailPushList" :placeholder="t('globalMailPushList')"
+                            multiple chips closable-chips variant="outlined" density="compact" hide-details />
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-1">{{ t('globalMailPushListTip') }}</div>
+                </div>
+                <v-text-field v-model="settings.miniAppUrl" :label="t('miniAppUrl')" variant="outlined"
+                    density="compact" />
+                <pre v-if="status.fetched" class="mt-4">{{ JSON.stringify(status, null, 2) }}</pre>
+            </v-card-text>
+        </v-card>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-}
-</style>

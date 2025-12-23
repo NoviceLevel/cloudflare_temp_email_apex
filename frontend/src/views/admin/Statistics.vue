@@ -1,12 +1,10 @@
 <script setup>
-import { ref, h, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'
-import { User, UserCheck, MailBulk } from '@vicons/fa'
-import { SendOutlined } from '@vicons/material'
 
 import { api } from '../../api'
 
-const message = useMessage()
+const snackbar = ref({ show: false, text: '', color: 'error' })
 
 const { t } = useI18n({
     messages: {
@@ -53,7 +51,7 @@ const fetchStatistics = async () => {
         statistics.value.activeAddressCount30days = activeAddressCount30days || 0;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        snackbar.value = { show: true, text: error.message || "error", color: 'error' }
     }
 }
 
@@ -64,62 +62,63 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-card :bordered="false" embedded>
-            <n-row>
+        <v-card variant="flat" class="mb-4">
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="primary" class="mb-2">mdi-account</v-icon>
+                            <div class="text-h4">{{ statistics.addressCount }}</div>
+                            <div class="text-caption">{{ t('addressCount') }}</div>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="success" class="mb-2">mdi-account-check</v-icon>
+                            <div class="text-h4">{{ statistics.activeAddressCount7days }}</div>
+                            <div class="text-caption">{{ t('activeAddressCount7days') }}</div>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="success" class="mb-2">mdi-account-check</v-icon>
+                            <div class="text-h4">{{ statistics.activeAddressCount30days }}</div>
+                            <div class="text-caption">{{ t('activeAddressCount30days') }}</div>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card variant="flat">
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="primary" class="mb-2">mdi-account-group</v-icon>
+                            <div class="text-h4">{{ statistics.userCount }}</div>
+                            <div class="text-caption">{{ t('userCount') }}</div>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="info" class="mb-2">mdi-email-multiple</v-icon>
+                            <div class="text-h4">{{ statistics.mailCount }}</div>
+                            <div class="text-caption">{{ t('mailCount') }}</div>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" md="4">
+                        <div class="text-center">
+                            <v-icon size="32" color="warning" class="mb-2">mdi-send</v-icon>
+                            <div class="text-h4">{{ statistics.sendMailCount }}</div>
+                            <div class="text-caption">{{ t('sendMailCount') }}</div>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
 
-                <n-col :span="8">
-                    <n-statistic :label="t('addressCount')" :value="statistics.addressCount">
-                        <template #prefix>
-                            <n-icon :component="User" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-                <n-col :span="8">
-                    <n-statistic :label="t('activeAddressCount7days')" :value="statistics.activeAddressCount7days">
-                        <template #prefix>
-                            <n-icon :component="UserCheck" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-                <n-col :span="8">
-                    <n-statistic :label="t('activeAddressCount30days')" :value="statistics.activeAddressCount30days">
-                        <template #prefix>
-                            <n-icon :component="UserCheck" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-            </n-row>
-        </n-card>
-        <n-card :bordered="false" embedded>
-            <n-row>
-                <n-col :span="8">
-                    <n-statistic :label="t('userCount')" :value="statistics.userCount">
-                        <template #prefix>
-                            <n-icon :component="User" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-                <n-col :span="8">
-                    <n-statistic :label="t('mailCount')" :value="statistics.mailCount">
-                        <template #prefix>
-                            <n-icon :component="MailBulk" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-                <n-col :span="8">
-                    <n-statistic :label="t('sendMailCount')" :value="statistics.sendMailCount">
-                        <template #prefix>
-                            <n-icon :component="SendOutlined" />
-                        </template>
-                    </n-statistic>
-                </n-col>
-            </n-row>
-        </n-card>
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-card {
-    margin-bottom: 20px;
-}
-</style>

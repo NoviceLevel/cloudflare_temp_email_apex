@@ -16,7 +16,7 @@ const deleteMail = async (curMailId) => {
 </script>
 
 <template>
-    <div style="margin-top: 10px;">
+    <div class="mt-3">
         <MailBox :enableUserDeleteEmail="true" :fetchMailData="fetchMailUnknowData" :deleteMail="deleteMail" />
     </div>
 </template>

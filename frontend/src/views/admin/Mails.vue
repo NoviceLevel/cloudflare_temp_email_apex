@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n'
 
 import { useGlobalState } from '../../store'
@@ -43,15 +43,14 @@ const deleteMail = async (curMailId) => {
 </script>
 
 <template>
-    <div style="margin-top: 10px;">
-        <n-input-group>
-            <n-input v-model:value="adminMailTabAddress" :placeholder="t('addressQueryTip')"
-                @keydown.enter="queryMail" clearable />
-            <n-button @click="queryMail" type="primary" tertiary>
+    <div class="mt-3">
+        <div class="d-flex ga-2 mb-3">
+            <v-text-field v-model="adminMailTabAddress" :placeholder="t('addressQueryTip')" variant="outlined"
+                density="compact" hide-details clearable @keydown.enter="queryMail" style="max-width: 400px;" />
+            <v-btn @click="queryMail" color="primary" variant="outlined">
                 {{ t('query') }}
-            </n-button>
-        </n-input-group>
-        <div style="margin-top: 10px;"></div>
+            </v-btn>
+        </div>
         <MailBox :key="mailBoxKey" :enableUserDeleteEmail="true" :fetchMailData="fetchMailData"
             :deleteMail="deleteMail" :showFilterInput="true" />
     </div>

@@ -6,7 +6,11 @@ import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
 const { loading } = useGlobalState()
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -42,10 +46,6 @@ const commonMail = [
     "icloud.com", "yahoo.com", "foxmail.com"
 ]
 
-const mailAllowOptions = commonMail.map((item) => {
-    return { label: item, value: item }
-})
-
 const userSettings = ref({
     enable: false,
     enableMailVerify: false,
@@ -60,7 +60,7 @@ const fetchData = async () => {
         const res = await api.fetch(`/admin/user_settings`)
         Object.assign(userSettings.value, res)
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -70,12 +70,11 @@ const save = async () => {
             method: 'POST',
             body: JSON.stringify(userSettings.value)
         })
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
-
 
 onMounted(async () => {
     await fetchData();
@@ -83,58 +82,40 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded style="max-width: 600px;">
-            <n-flex justify="end">
-                <n-button @click="save" type="primary" :loading="loading">
-                    {{ t('save') }}
-                </n-button>
-            </n-flex>
-            <n-form :model="userSettings">
-                <n-form-item-row :label="t('enableUserRegister')">
-                    <n-switch v-model:value="userSettings.enable" :round="false" />
-                </n-form-item-row>
-                <n-form-item-row :label="t('enableMailVerify')">
-                    <n-input-group>
-                        <n-checkbox v-model:checked="userSettings.enableMailVerify" style="width: 20%;">
-                            {{ t('enable') }}
-                        </n-checkbox>
-                        <n-input v-model:value="userSettings.verifyMailSender" v-if="userSettings.enableMailVerify"
-                            style="width: 80%;" :placeholder="t('verifyMailSender')" />
-                    </n-input-group>
-                </n-form-item-row>
-                <n-form-item-row :label="t('enableMailAllowList')">
-                    <n-input-group>
-                        <n-checkbox v-model:checked="userSettings.enableMailAllowList" style="width: 20%;">
-                            {{ t('enable') }}
-                        </n-checkbox>
-                        <n-select v-model:value="userSettings.mailAllowList" v-if="userSettings.enableMailAllowList"
-                            filterable multiple tag style="width: 80%;" :options="mailAllowOptions"
-                            :placeholder="t('mailAllowList')">
-                            <template #empty>
-                                <n-text depth="3">
-                                    {{ t('manualInputPrompt') }}
-                                </n-text>
-                            </template>
-                        </n-select>
-                    </n-input-group>
-                </n-form-item-row>
-                <n-form-item-row :label="t('maxAddressCount')">
-                    <n-input-group>
-                        <n-input-number v-model:value="userSettings.maxAddressCount"
-                            :placeholder="t('maxAddressCount')" />
-                    </n-input-group>
-                </n-form-item-row>
-            </n-form>
-        </n-card>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="600" width="100%">
+            <v-card-actions class="justify-end">
+                <v-btn @click="save" color="primary" :loading="loading">{{ t('save') }}</v-btn>
+            </v-card-actions>
+            <v-card-text>
+                <v-switch v-model="userSettings.enable" :label="t('enableUserRegister')" color="primary" hide-details
+                    class="mb-4" />
+                <div class="mb-4">
+                    <div class="d-flex align-center ga-2">
+                        <v-checkbox v-model="userSettings.enableMailVerify" :label="t('enable')" hide-details
+                            style="flex: 0 0 auto;" />
+                        <v-text-field v-if="userSettings.enableMailVerify" v-model="userSettings.verifyMailSender"
+                            :placeholder="t('verifyMailSender')" variant="outlined" density="compact" hide-details />
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-1">{{ t('enableMailVerify') }}</div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex align-center ga-2">
+                        <v-checkbox v-model="userSettings.enableMailAllowList" :label="t('enable')" hide-details
+                            style="flex: 0 0 auto;" />
+                        <v-combobox v-if="userSettings.enableMailAllowList" v-model="userSettings.mailAllowList"
+                            :placeholder="t('mailAllowList')" multiple chips closable-chips variant="outlined"
+                            density="compact" hide-details />
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-1">{{ t('enableMailAllowList') }}</div>
+                </div>
+                <v-text-field v-model.number="userSettings.maxAddressCount" :label="t('maxAddressCount')" type="number"
+                    variant="outlined" density="compact" />
+            </v-card-text>
+        </v-card>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-}
-</style>

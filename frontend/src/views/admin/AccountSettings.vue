@@ -1,23 +1,24 @@
 <script setup>
-import { onMounted, ref, h } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n'
-import { NButton, NPopconfirm, NInput, NSelect } from 'naive-ui'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
 const { loading, openSettings } = useGlobalState()
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
         en: {
             tip: 'You can manually input the following multiple select input and enter',
-            manualInputPrompt: 'Type and press Enter to add',
             save: 'Save',
             successTip: 'Save Success',
             address_block_list: 'Address Block Keywords for Users(Admin can skip)',
-            address_block_list_placeholder: 'Please enter the keywords you want to block',
             send_address_block_list: 'Address Block Keywords for send email',
             noLimitSendAddressList: 'No Balance Limit Send Address List',
             verified_address_list: 'Verified Address List(Can send email by cf internal api)',
@@ -27,23 +28,17 @@ const { t } = useI18n({
             domain_list: 'Domain List',
             forward_address: 'Forward Address',
             actions: 'Actions',
-            select_domain: 'Select Domain',
-            forward_placeholder: 'forward@example.com',
             delete_rule: 'Delete',
-            delete_rule_confirm: 'Are you sure you want to delete this rule?',
-            delete_success: 'Delete Success',
             forwarding_rule_warning: 'Each rule will run, if domains is empty, all emails will be forwarded, forward address needs to be a verified address',
             add: 'Add',
-            cancel: 'Cancel',
             config: 'Config',
+            cancel: 'Cancel',
         },
         zh: {
             tip: '您可以手动输入以下多选输入框, 回车增加',
-            manualInputPrompt: '输入后按回车键添加',
             save: '保存',
             successTip: '保存成功',
             address_block_list: '邮件地址屏蔽关键词(管理员可跳过检查)',
-            address_block_list_placeholder: '请输入您想要屏蔽的关键词',
             send_address_block_list: '发送邮件地址屏蔽关键词',
             noLimitSendAddressList: '无余额限制发送地址列表',
             verified_address_list: '已验证地址列表(可通过 cf 内部 api 发送邮件)',
@@ -53,15 +48,11 @@ const { t } = useI18n({
             domain_list: '域名列表',
             forward_address: '转发地址',
             actions: '操作',
-            select_domain: '选择域名',
-            forward_placeholder: 'forward@example.com',
             delete_rule: '删除',
-            delete_rule_confirm: '确定要删除这条规则吗？',
-            delete_success: '删除成功',
             forwarding_rule_warning: '每条规则都会运行，如果 domains 为空，则转发所有邮件，转发地址需要为已验证的地址',
             add: '添加',
-            cancel: '取消',
             config: '配置',
+            cancel: '取消',
         }
     }
 });
@@ -79,82 +70,24 @@ const emailRuleSettings = ref({
 const showEmailForwardingModal = ref(false)
 const emailForwardingList = ref([])
 
-
-const emailForwardingColumns = [
-    {
-        title: t('domain_list'),
-        key: 'domains',
-        render: (row, index) => {
-            return h(NSelect, {
-                value: Array.isArray(row.domains) ? row.domains : [],
-                onUpdateValue: (val) => {
-                    emailForwardingList.value[index].domains = val
-                },
-                options: openSettings.value?.domains || [],
-                multiple: true,
-                filterable: true,
-                tag: true,
-                placeholder: t('select_domain')
-            })
-        }
-    },
-    {
-        title: t('forward_address'),
-        key: 'forward',
-        render: (row, index) => {
-            return h(NInput, {
-                value: row.forward,
-                onUpdateValue: (val) => {
-                    emailForwardingList.value[index].forward = val
-                },
-                placeholder: 'forward@example.com'
-            })
-        }
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render: (row, index) => {
-            return h('div', { style: 'display: flex; gap: 8px;' }, [
-                h(NPopconfirm, {
-                    onPositiveClick: () => {
-                        emailForwardingList.value = emailForwardingList.value.filter((_, i) => i !== index)
-                        message.success(t('delete_success'))
-                    }
-                }, {
-                    default: () => t('delete_rule_confirm'),
-                    trigger: () => h(NButton, {
-                        size: 'small',
-                        type: 'error'
-                    }, { default: () => t('delete_rule') })
-                })
-            ])
-        }
-    }
-]
-
 const openEmailForwardingModal = () => {
-    // 从 emailRuleSettings 转换出列表数据
     emailForwardingList.value = emailRuleSettings.value.emailForwardingList ?
         [...emailRuleSettings.value.emailForwardingList] : []
     showEmailForwardingModal.value = true
 }
 
 const addNewEmailForwardingItem = () => {
-    emailForwardingList.value = [
-        ...emailForwardingList.value,
-        {
-            domains: [],
-            forward: ''
-        }
-    ]
+    emailForwardingList.value.push({ domains: [], forward: '' })
+}
+
+const removeEmailForwardingItem = (index) => {
+    emailForwardingList.value.splice(index, 1)
 }
 
 const saveEmailForwardingConfig = () => {
     emailRuleSettings.value.emailForwardingList = [...emailForwardingList.value]
     showEmailForwardingModal.value = false
 }
-
 
 const fetchData = async () => {
     try {
@@ -169,7 +102,7 @@ const fetchData = async () => {
             emailForwardingList: []
         }
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
@@ -186,12 +119,11 @@ const save = async () => {
                 emailRuleSettings: emailRuleSettings.value,
             })
         })
-        message.success(t('successTip'))
+        showMessage(t('successTip'))
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
-
 
 onMounted(async () => {
     await fetchData();
@@ -199,98 +131,62 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="center">
-        <n-card :bordered="false" embedded style="max-width: 600px;">
-            <n-alert :show-icon="false" :bordered="false" type="warning" style="margin-bottom: 10px;">
-                <span>{{ t("tip") }}</span>
-            </n-alert>
-            <n-flex justify="end">
-                <n-button @click="save" type="primary" :loading="loading">
-                    {{ t('save') }}
-                </n-button>
-            </n-flex>
-            <n-form-item-row :label="t('address_block_list')">
-                <n-select v-model:value="addressBlockList" filterable multiple tag
-                    :placeholder="t('address_block_list_placeholder')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-            <n-form-item-row :label="t('send_address_block_list')">
-                <n-select v-model:value="sendAddressBlockList" filterable multiple tag
-                    :placeholder="t('address_block_list_placeholder')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-            <n-form-item-row :label="t('noLimitSendAddressList')">
-                <n-select v-model:value="noLimitSendAddressList" filterable multiple tag
-                    :placeholder="t('noLimitSendAddressList')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-            <n-form-item-row :label="t('verified_address_list')">
-                <n-select v-model:value="verifiedAddressList" filterable multiple tag
-                    :placeholder="t('verified_address_list')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-            <n-form-item-row :label="t('fromBlockList')">
-                <n-select v-model:value="fromBlockList" filterable multiple tag :placeholder="t('fromBlockList')">
-                    <template #empty>
-                        <n-text depth="3">
-                            {{ t('manualInputPrompt') }}
-                        </n-text>
-                    </template>
-                </n-select>
-            </n-form-item-row>
-            <n-form-item-row :label="t('block_receive_unknow_address_email')">
-                <n-switch v-model:value="emailRuleSettings.blockReceiveUnknowAddressEmail" :round="false" />
-            </n-form-item-row>
-            <n-form-item-row :label="t('email_forwarding_config')">
-                <n-button @click="openEmailForwardingModal">{{ t('config') }}</n-button>
-            </n-form-item-row>
-        </n-card>
+    <div class="d-flex justify-center my-5">
+        <v-card variant="flat" max-width="600" width="100%">
+            <v-card-text>
+                <v-alert type="warning" variant="tonal" class="mb-4">{{ t("tip") }}</v-alert>
+                <div class="d-flex justify-end mb-4">
+                    <v-btn @click="save" color="primary" :loading="loading">{{ t('save') }}</v-btn>
+                </div>
+                <v-combobox v-model="addressBlockList" :label="t('address_block_list')" multiple chips closable-chips
+                    variant="outlined" density="compact" class="mb-3" />
+                <v-combobox v-model="sendAddressBlockList" :label="t('send_address_block_list')" multiple chips
+                    closable-chips variant="outlined" density="compact" class="mb-3" />
+                <v-combobox v-model="noLimitSendAddressList" :label="t('noLimitSendAddressList')" multiple chips
+                    closable-chips variant="outlined" density="compact" class="mb-3" />
+                <v-combobox v-model="verifiedAddressList" :label="t('verified_address_list')" multiple chips
+                    closable-chips variant="outlined" density="compact" class="mb-3" />
+                <v-combobox v-model="fromBlockList" :label="t('fromBlockList')" multiple chips closable-chips
+                    variant="outlined" density="compact" class="mb-3" />
+                <v-switch v-model="emailRuleSettings.blockReceiveUnknowAddressEmail"
+                    :label="t('block_receive_unknow_address_email')" color="primary" hide-details class="mb-4" />
+                <div class="d-flex align-center ga-2">
+                    <span>{{ t('email_forwarding_config') }}:</span>
+                    <v-btn @click="openEmailForwardingModal" variant="outlined">{{ t('config') }}</v-btn>
+                </div>
+            </v-card-text>
+        </v-card>
+
+        <v-dialog v-model="showEmailForwardingModal" max-width="800">
+            <v-card>
+                <v-card-title>{{ t('email_forwarding_config') }}</v-card-title>
+                <v-card-text>
+                    <v-alert type="warning" variant="tonal" class="mb-4">{{ t('forwarding_rule_warning') }}</v-alert>
+                    <div class="d-flex justify-end mb-3">
+                        <v-btn @click="addNewEmailForwardingItem" variant="outlined">{{ t('add') }}</v-btn>
+                    </div>
+                    <v-card v-for="(item, index) in emailForwardingList" :key="index" variant="outlined" class="mb-3">
+                        <v-card-text>
+                            <v-select v-model="item.domains" :items="openSettings?.domains || []" :label="t('domain_list')"
+                                multiple chips closable-chips variant="outlined" density="compact" class="mb-2" />
+                            <v-text-field v-model="item.forward" :label="t('forward_address')" variant="outlined"
+                                density="compact" />
+                            <v-btn color="error" variant="text" size="small" @click="removeEmailForwardingItem(index)">
+                                {{ t('delete_rule') }}
+                            </v-btn>
+                        </v-card-text>
+                    </v-card>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showEmailForwardingModal = false">{{ t('cancel') }}</v-btn>
+                    <v-btn @click="saveEmailForwardingConfig" color="primary">{{ t('save') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
-
-    <!-- 邮件转发配置弹窗 -->
-    <n-modal v-model:show="showEmailForwardingModal" preset="card" :title="t('email_forwarding_config')"
-        style="max-width: 800px;">
-        <n-space vertical>
-            <n-alert :show-icon="false" :bordered="false" type="warning">
-                <span>{{ t('forwarding_rule_warning') }}</span>
-            </n-alert>
-            <n-space justify="end">
-                <n-button @click="addNewEmailForwardingItem">{{ t('add') }}</n-button>
-            </n-space>
-            <n-data-table :columns="emailForwardingColumns" :data="emailForwardingList" :bordered="false" striped />
-            <n-space justify="end">
-                <n-button @click="saveEmailForwardingConfig" type="primary">{{ t('save') }}</n-button>
-            </n-space>
-        </n-space>
-    </n-modal>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-    margin: 20px;
-}
-</style>
