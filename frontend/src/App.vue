@@ -85,8 +85,8 @@ onMounted(async () => {
       <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
     </v-overlay>
     
-    <v-main>
-      <v-container fluid>
+    <v-main class="d-flex flex-column" style="min-height: 100vh;">
+      <v-container fluid class="flex-grow-1">
         <v-row justify="center">
           <v-col v-if="showSideMargin && showAd" cols="1">
             <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
@@ -96,7 +96,6 @@ onMounted(async () => {
           <v-col :cols="showSideMargin ? 10 : 12" :lg="showSideMargin ? 10 : 8" :xl="showSideMargin ? 10 : 6">
             <Header />
             <router-view></router-view>
-            <Footer />
           </v-col>
           
           <v-col v-if="showSideMargin && showAd" cols="1">
@@ -105,6 +104,7 @@ onMounted(async () => {
           </v-col>
         </v-row>
       </v-container>
+      <Footer />
     </v-main>
 
     <v-snackbar-queue></v-snackbar-queue>
