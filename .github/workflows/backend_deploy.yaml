@@ -60,16 +60,11 @@ jobs:
             echo "Applied mail-parser-wasm-worker patch"
           fi
 
-          if [ "$debug_mode" = "true" ]; then
-            pnpm run deploy
-          else
-            output=$(pnpm run deploy 2>&1)
-            if [ $? -ne 0 ]; then
-                code=$?
-                echo "Command failed with exit code $code"
-                exit $code
-            fi
-          fi
+          echo "=== wrangler.toml content ==="
+          cat wrangler.toml
+          echo "=== end of wrangler.toml ==="
+          
+          pnpm run deploy
           echo "Deployed for tag ${{ github.ref_name }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
