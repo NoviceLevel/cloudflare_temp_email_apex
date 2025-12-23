@@ -287,7 +287,7 @@ onMounted(async () => {
         </v-tabs>
 
         <v-window v-model="tabValue" class="mt-4">
-            <v-window-item value="signin">
+            <v-window-item value="signin" class="tab-content">
                 <v-form>
                     <div v-if="loginMethod === 'password'">
                         <v-text-field v-model="loginAddress" :label="t('email')" variant="outlined" 
@@ -319,7 +319,7 @@ onMounted(async () => {
                 </v-form>
             </v-window-item>
 
-            <v-window-item v-if="showNewAddressTab" value="register">
+            <v-window-item v-if="showNewAddressTab" value="register" class="tab-content">
                 <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center">
                     <v-progress-circular indeterminate></v-progress-circular>
                 </v-overlay>
@@ -363,8 +363,8 @@ onMounted(async () => {
                 </v-form>
             </v-window-item>
 
-            <v-window-item value="help">
-                <v-alert type="info" variant="tonal" class="mb-4">
+            <v-window-item value="help" class="tab-content">
+                <v-alert type="info" variant="tonal" class="mt-4 mb-4">
                     {{ t('pleaseGetNewEmail') }}
                 </v-alert>
                 <AdminContact />
