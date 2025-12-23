@@ -150,7 +150,7 @@ onMounted(async () => {
     </v-dialog>
 
     <v-tabs v-if="showAdminPage" v-model="adminTab" :direction="globalTabplacement === 'left' || globalTabplacement === 'right' ? 'vertical' : 'horizontal'"
-      color="primary" class="mb-4">
+      color="primary" align-tabs="center" class="mb-4">
       <v-tab value="qucickSetup">{{ t('qucickSetup') }}</v-tab>
       <v-tab value="account">{{ t('account') }}</v-tab>
       <v-tab value="user">{{ t('user') }}</v-tab>
@@ -164,7 +164,7 @@ onMounted(async () => {
 
     <v-window v-if="showAdminPage" v-model="adminTab">
       <v-window-item value="qucickSetup">
-        <v-tabs v-model="quickSetupTab" centered color="primary" class="mb-4">
+        <v-tabs v-model="quickSetupTab" align-tabs="center" color="primary" class="mb-4">
           <v-tab value="database">{{ t('database') }}</v-tab>
           <v-tab value="account_settings">{{ t('account_settings') }}</v-tab>
           <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
@@ -179,7 +179,7 @@ onMounted(async () => {
       </v-window-item>
 
       <v-window-item value="account">
-        <v-tabs v-model="accountTab" centered color="primary" class="mb-4">
+        <v-tabs v-model="accountTab" align-tabs="center" color="primary" class="mb-4">
           <v-tab value="account">{{ t('account') }}</v-tab>
           <v-tab value="account_create">{{ t('account_create') }}</v-tab>
           <v-tab value="account_settings">{{ t('account_settings') }}</v-tab>
@@ -200,7 +200,7 @@ onMounted(async () => {
       </v-window-item>
 
       <v-window-item value="user">
-        <v-tabs v-model="userTab" centered color="primary" class="mb-4">
+        <v-tabs v-model="userTab" align-tabs="center" color="primary" class="mb-4">
           <v-tab value="user_management">{{ t('user_management') }}</v-tab>
           <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
           <v-tab value="userOauth2Settings">{{ t('userOauth2Settings') }}</v-tab>
@@ -215,7 +215,7 @@ onMounted(async () => {
       </v-window-item>
 
       <v-window-item value="mails">
-        <v-tabs v-model="mailsTab" centered color="primary" class="mb-4">
+        <v-tabs v-model="mailsTab" align-tabs="center" color="primary" class="mb-4">
           <v-tab value="mails">{{ t('mails') }}</v-tab>
           <v-tab value="unknow">{{ t('unknow') }}</v-tab>
           <v-tab value="sendBox">{{ t('sendBox') }}</v-tab>
@@ -235,7 +235,7 @@ onMounted(async () => {
       <v-window-item value="statistics"><Statistics /></v-window-item>
 
       <v-window-item value="maintenance">
-        <v-tabs v-model="maintenanceTab" centered color="primary" class="mb-4">
+        <v-tabs v-model="maintenanceTab" align-tabs="center" color="primary" class="mb-4">
           <v-tab value="database">{{ t('database') }}</v-tab>
           <v-tab value="workerconfig">{{ t('workerconfig') }}</v-tab>
           <v-tab value="maintenance">{{ t('maintenance') }}</v-tab>
