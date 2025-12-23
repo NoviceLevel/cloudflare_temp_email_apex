@@ -32,31 +32,33 @@ const { t } = useI18n({
 </script>
 
 <template>
-    <div>
-        <UserBar />
-        <template v-if="userSettings.user_email">
-            <v-tabs v-model="userTab"
-                :direction="globalTabplacement === 'left' || globalTabplacement === 'right' ? 'vertical' : 'horizontal'"
-                color="primary" class="mb-4">
-                <v-tab value="address_management">{{ t('address_management') }}</v-tab>
-                <v-tab value="user_mail_box_tab">{{ t('user_mail_box_tab') }}</v-tab>
-                <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
-                <v-tab value="bind_address">{{ t('bind_address') }}</v-tab>
-            </v-tabs>
-            <v-window v-model="userTab">
-                <v-window-item value="address_management">
-                    <AddressMangement />
-                </v-window-item>
-                <v-window-item value="user_mail_box_tab">
-                    <UserMailBox />
-                </v-window-item>
-                <v-window-item value="user_settings">
-                    <UserSettingsPage />
-                </v-window-item>
-                <v-window-item value="bind_address">
-                    <BindAddress />
-                </v-window-item>
-            </v-window>
-        </template>
+    <div class="d-flex justify-center">
+        <div style="max-width: 400px; width: 100%;">
+            <UserBar />
+            <template v-if="userSettings.user_email">
+                <v-tabs v-model="userTab"
+                    :direction="globalTabplacement === 'left' || globalTabplacement === 'right' ? 'vertical' : 'horizontal'"
+                    color="primary" class="mb-4">
+                    <v-tab value="address_management">{{ t('address_management') }}</v-tab>
+                    <v-tab value="user_mail_box_tab">{{ t('user_mail_box_tab') }}</v-tab>
+                    <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
+                    <v-tab value="bind_address">{{ t('bind_address') }}</v-tab>
+                </v-tabs>
+                <v-window v-model="userTab">
+                    <v-window-item value="address_management">
+                        <AddressMangement />
+                    </v-window-item>
+                    <v-window-item value="user_mail_box_tab">
+                        <UserMailBox />
+                    </v-window-item>
+                    <v-window-item value="user_settings">
+                        <UserSettingsPage />
+                    </v-window-item>
+                    <v-window-item value="bind_address">
+                        <BindAddress />
+                    </v-window-item>
+                </v-window>
+            </template>
+        </div>
     </div>
 </template>
