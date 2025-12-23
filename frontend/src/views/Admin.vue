@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n'
 
 import { useGlobalState } from '../store'
@@ -32,7 +32,8 @@ const {
   adminAuth, showAdminAuth, adminTab, loading,
   globalTabplacement, showAdminPage, userSettings
 } = useGlobalState()
-const message = useMessage()
+
+const snackbar = ref({ show: false, text: '', color: 'error' })
 
 const SendMail = defineAsyncComponent(() => {
   loading.value = true;
@@ -45,7 +46,7 @@ const authFunc = async () => {
     adminAuth.value = tmpAdminAuth.value;
     location.reload()
   } catch (error) {
-    message.error(error.message || "error");
+    snackbar.value = { show: true, text: error.message || "error", color: 'error' }
   }
 }
 
@@ -117,133 +118,141 @@ const { t } = useI18n({
 const showAdminPasswordModal = computed(() => !showAdminPage.value || showAdminAuth.value)
 const tmpAdminAuth = ref('')
 
+// Sub tabs
+const quickSetupTab = ref('database')
+const accountTab = ref('account')
+const userTab = ref('user_management')
+const mailsTab = ref('mails')
+const maintenanceTab = ref('database')
+
 onMounted(async () => {
-  // make sure user_id is fetched
-  if (!userSettings.value.user_id) await api.getUserSettings(message);
+  if (!userSettings.value.user_id) await api.getUserSettings(snackbar);
 })
 </script>
 
 <template>
   <div v-if="userSettings.fetched">
-    <n-modal v-model:show="showAdminPasswordModal" :closable="false" :closeOnEsc="false" :maskClosable="false"
-      preset="dialog" :title="t('accessHeader')">
-      <p>{{ t('accessTip') }}</p>
-      <n-input v-model:value="tmpAdminAuth" type="password" show-password-on="click" />
-      <template #action>
-        <n-button @click="authFunc" type="primary" :loading="loading">
-          {{ t('ok') }}
-        </n-button>
-      </template>
-    </n-modal>
-    <n-tabs v-if="showAdminPage" type="card" v-model:value="adminTab" :placement="globalTabplacement">
-      <n-tab-pane name="qucickSetup" :tab="t('qucickSetup')">
-        <n-tabs type="bar" justify-content="center" animated>
-          <n-tab-pane name="database" :tab="t('database')">
-            <DatabaseManager />
-          </n-tab-pane>
-          <n-tab-pane name="account_settings" :tab="t('account_settings')">
-            <AccountSettings />
-          </n-tab-pane>
-          <n-tab-pane name="user_settings" :tab="t('user_settings')">
-            <UserSettings />
-          </n-tab-pane>
-          <n-tab-pane name="workerconfig" :tab="t('workerconfig')">
-            <WorkerConfig />
-          </n-tab-pane>
-        </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="account" :tab="t('account')">
-        <n-tabs type="bar" justify-content="center" animated>
-          <n-tab-pane name="account" :tab="t('account')">
-            <Account />
-          </n-tab-pane>
-          <n-tab-pane name="account_create" :tab="t('account_create')">
-            <CreateAccount />
-          </n-tab-pane>
-          <n-tab-pane name="account_settings" :tab="t('account_settings')">
-            <AccountSettings />
-          </n-tab-pane>
-          <n-tab-pane name="senderAccess" :tab="t('senderAccess')">
-            <SenderAccess />
-          </n-tab-pane>
-          <n-tab-pane name="ipBlacklistSettings" :tab="t('ipBlacklistSettings')">
-            <IpBlacklistSettings />
-          </n-tab-pane>
-          <n-tab-pane name="aiExtractSettings" :tab="t('aiExtractSettings')">
-            <AiExtractSettings />
-          </n-tab-pane>
-          <n-tab-pane name="webhook" :tab="t('webhookSettings')">
-            <Webhook />
-          </n-tab-pane>
-        </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="user" :tab="t('user')">
-        <n-tabs type="bar" justify-content="center" animated>
-          <n-tab-pane name="user_management" :tab="t('user_management')">
-            <UserManagement />
-          </n-tab-pane>
-          <n-tab-pane name="user_settings" :tab="t('user_settings')">
-            <UserSettings />
-          </n-tab-pane>
-          <n-tab-pane name="userOauth2Settings" :tab="t('userOauth2Settings')">
-            <UserOauth2Settings />
-          </n-tab-pane>
-          <n-tab-pane name="roleAddressConfig" :tab="t('roleAddressConfig')">
-            <RoleAddressConfig />
-          </n-tab-pane>
-        </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="mails" :tab="t('mails')">
-        <n-tabs type="bar" justify-content="center" animated>
-          <n-tab-pane name="mails" :tab="t('mails')">
-            <Mails />
-          </n-tab-pane>
-          <n-tab-pane name="unknow" :tab="t('unknow')">
-            <MailsUnknow />
-          </n-tab-pane>
-          <n-tab-pane name="sendBox" :tab="t('sendBox')">
-            <SendBox />
-          </n-tab-pane>
-          <n-tab-pane name="sendMail" :tab="t('sendMail')">
-            <SendMail />
-          </n-tab-pane>
-          <n-tab-pane name="mailWebhook" :tab="t('mailWebhook')">
-            <MailWebhook />
-          </n-tab-pane>
-        </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="telegram" :tab="t('telegram')">
-        <Telegram />
-      </n-tab-pane>
-      <n-tab-pane name="statistics" :tab="t('statistics')">
-        <Statistics />
-      </n-tab-pane>
-      <n-tab-pane name="maintenance" :tab="t('maintenance')">
-        <n-tabs type="bar" justify-content="center" animated>
-          <n-tab-pane name="database" :tab="t('database')">
-            <DatabaseManager />
-          </n-tab-pane>
-          <n-tab-pane name="workerconfig" :tab="t('workerconfig')">
-            <WorkerConfig />
-          </n-tab-pane>
-          <n-tab-pane name="maintenance" :tab="t('maintenance')">
-            <Maintenance />
-          </n-tab-pane>
-        </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="appearance" :tab="t('appearance')">
-        <Appearance />
-      </n-tab-pane>
-      <n-tab-pane name="about" :tab="t('about')">
-        <About />
-      </n-tab-pane>
-    </n-tabs>
+    <v-dialog v-model="showAdminPasswordModal" persistent max-width="400">
+      <v-card>
+        <v-card-title>{{ t('accessHeader') }}</v-card-title>
+        <v-card-text>
+          <p class="mb-4">{{ t('accessTip') }}</p>
+          <v-text-field v-model="tmpAdminAuth" type="password" variant="outlined" density="compact"
+            :append-inner-icon="'mdi-eye'" @click:append-inner="() => { }" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="authFunc" color="primary" :loading="loading">
+            {{ t('ok') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-tabs v-if="showAdminPage" v-model="adminTab" :direction="globalTabplacement === 'left' || globalTabplacement === 'right' ? 'vertical' : 'horizontal'"
+      color="primary" class="mb-4">
+      <v-tab value="qucickSetup">{{ t('qucickSetup') }}</v-tab>
+      <v-tab value="account">{{ t('account') }}</v-tab>
+      <v-tab value="user">{{ t('user') }}</v-tab>
+      <v-tab value="mails">{{ t('mails') }}</v-tab>
+      <v-tab value="telegram">{{ t('telegram') }}</v-tab>
+      <v-tab value="statistics">{{ t('statistics') }}</v-tab>
+      <v-tab value="maintenance">{{ t('maintenance') }}</v-tab>
+      <v-tab value="appearance">{{ t('appearance') }}</v-tab>
+      <v-tab value="about">{{ t('about') }}</v-tab>
+    </v-tabs>
+
+    <v-window v-if="showAdminPage" v-model="adminTab">
+      <v-window-item value="qucickSetup">
+        <v-tabs v-model="quickSetupTab" centered color="primary" class="mb-4">
+          <v-tab value="database">{{ t('database') }}</v-tab>
+          <v-tab value="account_settings">{{ t('account_settings') }}</v-tab>
+          <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
+          <v-tab value="workerconfig">{{ t('workerconfig') }}</v-tab>
+        </v-tabs>
+        <v-window v-model="quickSetupTab">
+          <v-window-item value="database"><DatabaseManager /></v-window-item>
+          <v-window-item value="account_settings"><AccountSettings /></v-window-item>
+          <v-window-item value="user_settings"><UserSettings /></v-window-item>
+          <v-window-item value="workerconfig"><WorkerConfig /></v-window-item>
+        </v-window>
+      </v-window-item>
+
+      <v-window-item value="account">
+        <v-tabs v-model="accountTab" centered color="primary" class="mb-4">
+          <v-tab value="account">{{ t('account') }}</v-tab>
+          <v-tab value="account_create">{{ t('account_create') }}</v-tab>
+          <v-tab value="account_settings">{{ t('account_settings') }}</v-tab>
+          <v-tab value="senderAccess">{{ t('senderAccess') }}</v-tab>
+          <v-tab value="ipBlacklistSettings">{{ t('ipBlacklistSettings') }}</v-tab>
+          <v-tab value="aiExtractSettings">{{ t('aiExtractSettings') }}</v-tab>
+          <v-tab value="webhook">{{ t('webhookSettings') }}</v-tab>
+        </v-tabs>
+        <v-window v-model="accountTab">
+          <v-window-item value="account"><Account /></v-window-item>
+          <v-window-item value="account_create"><CreateAccount /></v-window-item>
+          <v-window-item value="account_settings"><AccountSettings /></v-window-item>
+          <v-window-item value="senderAccess"><SenderAccess /></v-window-item>
+          <v-window-item value="ipBlacklistSettings"><IpBlacklistSettings /></v-window-item>
+          <v-window-item value="aiExtractSettings"><AiExtractSettings /></v-window-item>
+          <v-window-item value="webhook"><Webhook /></v-window-item>
+        </v-window>
+      </v-window-item>
+
+      <v-window-item value="user">
+        <v-tabs v-model="userTab" centered color="primary" class="mb-4">
+          <v-tab value="user_management">{{ t('user_management') }}</v-tab>
+          <v-tab value="user_settings">{{ t('user_settings') }}</v-tab>
+          <v-tab value="userOauth2Settings">{{ t('userOauth2Settings') }}</v-tab>
+          <v-tab value="roleAddressConfig">{{ t('roleAddressConfig') }}</v-tab>
+        </v-tabs>
+        <v-window v-model="userTab">
+          <v-window-item value="user_management"><UserManagement /></v-window-item>
+          <v-window-item value="user_settings"><UserSettings /></v-window-item>
+          <v-window-item value="userOauth2Settings"><UserOauth2Settings /></v-window-item>
+          <v-window-item value="roleAddressConfig"><RoleAddressConfig /></v-window-item>
+        </v-window>
+      </v-window-item>
+
+      <v-window-item value="mails">
+        <v-tabs v-model="mailsTab" centered color="primary" class="mb-4">
+          <v-tab value="mails">{{ t('mails') }}</v-tab>
+          <v-tab value="unknow">{{ t('unknow') }}</v-tab>
+          <v-tab value="sendBox">{{ t('sendBox') }}</v-tab>
+          <v-tab value="sendMail">{{ t('sendMail') }}</v-tab>
+          <v-tab value="mailWebhook">{{ t('mailWebhook') }}</v-tab>
+        </v-tabs>
+        <v-window v-model="mailsTab">
+          <v-window-item value="mails"><Mails /></v-window-item>
+          <v-window-item value="unknow"><MailsUnknow /></v-window-item>
+          <v-window-item value="sendBox"><SendBox /></v-window-item>
+          <v-window-item value="sendMail"><SendMail /></v-window-item>
+          <v-window-item value="mailWebhook"><MailWebhook /></v-window-item>
+        </v-window>
+      </v-window-item>
+
+      <v-window-item value="telegram"><Telegram /></v-window-item>
+      <v-window-item value="statistics"><Statistics /></v-window-item>
+
+      <v-window-item value="maintenance">
+        <v-tabs v-model="maintenanceTab" centered color="primary" class="mb-4">
+          <v-tab value="database">{{ t('database') }}</v-tab>
+          <v-tab value="workerconfig">{{ t('workerconfig') }}</v-tab>
+          <v-tab value="maintenance">{{ t('maintenance') }}</v-tab>
+        </v-tabs>
+        <v-window v-model="maintenanceTab">
+          <v-window-item value="database"><DatabaseManager /></v-window-item>
+          <v-window-item value="workerconfig"><WorkerConfig /></v-window-item>
+          <v-window-item value="maintenance"><Maintenance /></v-window-item>
+        </v-window>
+      </v-window-item>
+
+      <v-window-item value="appearance"><Appearance /></v-window-item>
+      <v-window-item value="about"><About /></v-window-item>
+    </v-window>
+
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+      {{ snackbar.text }}
+    </v-snackbar>
   </div>
 </template>
-
-<style scoped>
-.n-pagination {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-</style>
