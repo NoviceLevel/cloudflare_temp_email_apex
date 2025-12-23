@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n'
 import { useGlobalState } from '../store'
 const { openSettings } = useGlobalState()
 
-
 const { t } = useI18n({
     messages: {
         en: {
@@ -14,25 +13,21 @@ const { t } = useI18n({
         }
     }
 });
-
 </script>
 
 <template>
     <div>
-        <n-divider class="footer-divider" />
-        <div style="text-align: center; padding: 20px">
-            <n-space justify="center">
-                <n-text depth="3">
+        <v-divider class="footer-divider"></v-divider>
+        <div class="text-center pa-5">
+            <div class="d-flex justify-center ga-2">
+                <span class="text-grey">
                     {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
-                </n-text>
-                <n-text depth="3">
-                    <div v-html="openSettings.copyright"></div>
-                </n-text>
-            </n-space>
+                </span>
+                <span class="text-grey" v-html="openSettings.copyright"></span>
+            </div>
         </div>
     </div>
 </template>
-
 
 <style scoped>
 .footer-divider {

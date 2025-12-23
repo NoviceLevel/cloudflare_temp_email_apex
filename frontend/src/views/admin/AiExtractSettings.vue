@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useMessage } from 'naive-ui'
+// @ts-ignore
+import { useGlobalState } from '../../store'
 // @ts-ignore
 import { api } from '../../api'
 
-const message = useMessage()
+const { showSnackbar } = useGlobalState()
 
 const { t } = useI18n({
     messages: {
@@ -49,7 +50,7 @@ const fetchData = async () => {
         const res = await api.fetch(`/admin/ai_extract/settings`) as AiExtractSettings
         Object.assign(settings.value, res)
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showSnackbar((error as Error).message || "error", 'error')
     }
 }
 
@@ -59,9 +60,9 @@ const saveSettings = async () => {
             method: 'POST',
             body: JSON.stringify(settings.value),
         })
-        message.success(t('successTip'))
+        showSnackbar(t('successTip'), 'success')
     } catch (error) {
-        message.error((error as Error).message || "error");
+        showSnackbar((error as Error).message || "error", 'error')
     }
 }
 
@@ -72,42 +73,28 @@ onMounted(async () => {
 
 <template>
     <div class="center">
-        <n-card :title="t('title')" :bordered="false" embedded style="max-width: 800px; overflow: auto;">
-            <n-flex justify="end">
-                <n-button @click="saveSettings" type="primary">
-                    {{ t('save') }}
-                </n-button>
-            </n-flex>
+        <v-card :title="t('title')" variant="flat" max-width="800" width="100%" style="overflow: auto;">
+            <template v-slot:append>
+                <v-btn color="primary" @click="saveSettings">{{ t('save') }}</v-btn>
+            </template>
+            <v-card-text>
+                <v-switch v-model="settings.enableAllowList" :label="t('enableAllowList')" hide-details color="primary" class="mb-4"></v-switch>
 
-            <n-form-item-row :label="t('enableAllowList')">
-                <n-switch v-model:value="settings.enableAllowList" :round="false" />
-            </n-form-item-row>
+                <v-alert v-if="!settings.enableAllowList" type="info" variant="tonal" class="mb-4">
+                    {{ t('disabledTip') }}
+                </v-alert>
 
-            <n-alert v-if="!settings.enableAllowList" type="info" style="margin-bottom: 16px;">
-                {{ t('disabledTip') }}
-            </n-alert>
+                <div v-if="settings.enableAllowList">
+                    <v-alert type="warning" variant="tonal" class="mb-4">
+                        {{ t('enableAllowListTip') }}
+                    </v-alert>
 
-            <div v-if="settings.enableAllowList">
-                <n-alert type="warning" style="margin-bottom: 16px;">
-                    {{ t('enableAllowListTip') }}
-                </n-alert>
+                    <v-combobox v-model="settings.allowList" :label="t('allowList')" :placeholder="t('allowListTip')" multiple chips closable-chips variant="outlined" density="compact" class="mb-2"></v-combobox>
 
-                <n-form-item-row :label="t('allowList')">
-                    <n-select v-model:value="settings.allowList" filterable multiple tag
-                        :placeholder="t('allowListTip')">
-                        <template #empty>
-                            <n-text depth="3">
-                                {{ t('manualInputPrompt') }}
-                            </n-text>
-                        </template>
-                    </n-select>
-                </n-form-item-row>
-
-                <n-text depth="3" style="font-size: 12px;">
-                    {{ t('allowListTip') }}
-                </n-text>
-            </div>
-        </n-card>
+                    <p class="text-caption text-grey">{{ t('allowListTip') }}</p>
+                </div>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
 
@@ -117,9 +104,5 @@ onMounted(async () => {
     text-align: left;
     place-items: center;
     justify-content: center;
-}
-
-.n-button {
-    margin-top: 10px;
 }
 </style>

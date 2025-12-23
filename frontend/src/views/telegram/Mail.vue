@@ -1,9 +1,9 @@
 <script setup>
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
-import { onMounted, watch } from 'vue';
 import { processItem } from '../../utils/email-parser'
 import { utcToLocalDate } from '../../utils';
 
@@ -11,6 +11,7 @@ const { telegramApp, loading, useUTCDate } = useGlobalState()
 const route = useRoute()
 
 const curMail = ref({});
+const showEMailTo = ref(false);
 
 watch(telegramApp, async () => {
     if (telegramApp.value.initData) {
@@ -46,25 +47,19 @@ onMounted(async () => {
 
 <template>
     <div class="center">
-        <n-card :bordered="false" embedded v-if="curMail.message" style="max-width: 800px; height: 100%;">
-            <n-tag type="info">
-                ID: {{ curMail.id }}
-            </n-tag>
-            <n-tag type="info">
-                Date: {{ utcToLocalDate(curMail.created_at, useUTCDate) }}
-            </n-tag>
-            <n-tag type="info">
-                FROM: {{ curMail.source }}
-            </n-tag>
-            <n-tag v-if="showEMailTo" type="info">
-                TO: {{ curMail.address }}
-            </n-tag>
-            <iframe :srcdoc="curMail.message" style="margin-top: 10px;width: 100%; height: 100%;">
-            </iframe>
-        </n-card>
+        <v-card v-if="curMail.message" variant="flat" max-width="800" style="height: 100%;">
+            <v-card-text>
+                <div class="d-flex flex-wrap ga-2 mb-4">
+                    <v-chip color="info" size="small">ID: {{ curMail.id }}</v-chip>
+                    <v-chip color="info" size="small">Date: {{ utcToLocalDate(curMail.created_at, useUTCDate) }}</v-chip>
+                    <v-chip color="info" size="small">FROM: {{ curMail.source }}</v-chip>
+                    <v-chip v-if="showEMailTo" color="info" size="small">TO: {{ curMail.address }}</v-chip>
+                </div>
+                <iframe :srcdoc="curMail.message" style="width: 100%; height: 100%;"></iframe>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
-
 
 <style scoped>
 .center {
