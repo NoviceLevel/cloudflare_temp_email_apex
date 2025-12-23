@@ -1,10 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ContentCopyOutlined, LinkRound, CodeRound } from '@vicons/material';
-import { useMessage } from 'naive-ui';
-
-const message = useMessage();
 
 const { t } = useI18n({
   messages: {
@@ -42,6 +38,11 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['notify']);
+
+const snackbar = ref({ show: false, text: '', color: 'success' });
+import { ref } from 'vue';
+
 const aiExtract = computed(() => {
   if (!props.metadata) return null;
   try {
@@ -67,13 +68,13 @@ const typeLabel = computed(() => {
 const typeIcon = computed(() => {
   if (!aiExtract.value) return null;
   const iconMap = {
-    auth_code: CodeRound,
-    auth_link: LinkRound,
-    service_link: LinkRound,
-    subscription_link: LinkRound,
-    other_link: LinkRound,
+    auth_code: 'mdi-code-tags',
+    auth_link: 'mdi-link',
+    service_link: 'mdi-link',
+    subscription_link: 'mdi-link',
+    other_link: 'mdi-link',
   };
-  return iconMap[aiExtract.value.type] || null;
+  return iconMap[aiExtract.value.type] || 'mdi-link';
 });
 
 const isLink = computed(() => {
@@ -82,20 +83,18 @@ const isLink = computed(() => {
 
 const displayText = computed(() => {
   if (!aiExtract.value) return '';
-  // For auth_code, always show the raw result (verification code)
   if (aiExtract.value.type === 'auth_code') {
     return aiExtract.value.result;
   }
-  // For links, prefer result_text as display label
   return aiExtract.value.result_text || aiExtract.value.result;
 });
 
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(aiExtract.value.result);
-    message.success(t('copySuccess'));
+    snackbar.value = { show: true, text: t('copySuccess'), color: 'success' };
   } catch (e) {
-    message.error(t('copyFailed'));
+    snackbar.value = { show: true, text: t('copyFailed'), color: 'error' };
   }
 };
 
@@ -108,38 +107,37 @@ const openLink = () => {
 
 <template>
   <div v-if="aiExtract && aiExtract.result" class="ai-extract-info">
-    <n-alert v-if="!compact" type="success" closable>
-      <template #icon>
-        <n-icon :component="typeIcon" />
+    <v-alert v-if="!compact" type="success" closable variant="tonal">
+      <template #prepend>
+        <v-icon :icon="typeIcon" />
       </template>
-      <template #header>
+      <template #title>
         {{ typeLabel }}
       </template>
-      <n-space align="center">
-        <n-text v-if="aiExtract.type === 'auth_code'" strong style="font-size: 18px; font-family: monospace;">
+      <div class="d-flex align-center ga-2 flex-wrap">
+        <span v-if="aiExtract.type === 'auth_code'" class="text-h6 font-weight-bold" style="font-family: monospace;">
           {{ aiExtract.result }}
-        </n-text>
-        <n-ellipsis v-else style="max-width: 400px;">
+        </span>
+        <span v-else class="text-truncate" style="max-width: 400px;">
           {{ displayText }}
-        </n-ellipsis>
-        <n-button size="small" @click="copyToClipboard" tertiary>
-          <template #icon>
-            <n-icon :component="ContentCopyOutlined" />
-          </template>
-        </n-button>
-        <n-button v-if="isLink" size="small" @click="openLink" tertiary type="primary">
+        </span>
+        <v-btn size="small" variant="text" icon @click="copyToClipboard">
+          <v-icon>mdi-content-copy</v-icon>
+        </v-btn>
+        <v-btn v-if="isLink" size="small" variant="text" color="primary" @click="openLink">
           {{ t('open') }}
-        </n-button>
-      </n-space>
-    </n-alert>
-    <n-tag v-else type="success" @click="copyToClipboard" style="cursor: pointer;" size="small">
-      <template #icon>
-        <n-icon :component="typeIcon" />
-      </template>
-      <n-ellipsis style="max-width: 150px;">
+        </v-btn>
+      </div>
+    </v-alert>
+    <v-chip v-else color="success" size="small" @click="copyToClipboard" style="cursor: pointer;">
+      <v-icon start :icon="typeIcon" size="small" />
+      <span class="text-truncate" style="max-width: 150px;">
         {{ typeLabel }}: {{ displayText }}
-      </n-ellipsis>
-    </n-tag>
+      </span>
+    </v-chip>
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+      {{ snackbar.text }}
+    </v-snackbar>
   </div>
 </template>
 

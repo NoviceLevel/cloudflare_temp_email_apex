@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { NewLabelOutlined, EmailOutlined } from '@vicons/material'
 
 import AdminContact from '../common/AdminContact.vue'
 import Turnstile from '../../components/Turnstile.vue'
@@ -33,9 +32,27 @@ const props = defineProps({
     },
 })
 
-const message = useMessage()
-const notification = useNotification()
 const router = useRouter()
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('info')
+
+const showMessage = (text, color = 'info') => {
+    snackbarText.value = text
+    snackbarColor.value = color
+    snackbar.value = true
+}
+
+const message = {
+    error: (text) => showMessage(text, 'error'),
+    info: (text) => showMessage(text, 'info'),
+    success: (text) => showMessage(text, 'success'),
+}
+
+const notification = {
+    info: () => {}
+}
 
 const {
     jwt, loading, openSettings,
@@ -47,11 +64,10 @@ const credential = ref('')
 const emailName = ref("")
 const emailDomain = ref("")
 const cfToken = ref("")
-const loginMethod = ref('credential') // 'credential' or 'password'
+const loginMethod = ref('credential')
 const loginAddress = ref('')
 const loginPassword = ref('')
 
-// 根据 openSettings 初始化登录方式
 const initLoginMethod = () => {
     if (openSettings.value?.enableAddressPassword) {
         loginMethod.value = 'password';
@@ -62,7 +78,6 @@ const initLoginMethod = () => {
 
 const login = async () => {
     if (loginMethod.value === 'password') {
-        // Password login
         if (!loginAddress.value || !loginPassword.value) {
             message.error(t('emailPasswordRequired'));
             return;
@@ -185,7 +200,6 @@ const generateName = async () => {
             .replace(/\.{2,}/g, '.')
             .replace(addressRegex.value, '')
             .toLowerCase();
-        // support maxAddressLen
         if (emailName.value.length > openSettings.value.maxAddressLen) {
             emailName.value = emailName.value.slice(0, openSettings.value.maxAddressLen);
         }
@@ -198,7 +212,6 @@ const generateName = async () => {
 
 const newEmail = async () => {
     try {
-        // If custom names are disabled, send empty name to trigger backend auto-generation
         const nameToSend = openSettings.value.disableCustomAddressName ? "" : emailName.value;
         const res = await props.newAddressPath(
             nameToSend,
@@ -221,16 +234,13 @@ const newEmail = async () => {
 };
 
 const addressPrefix = computed(() => {
-    // if user has role, return role prefix
     if (userSettings.value?.user_role) {
         return userSettings.value.user_role.prefix || "";
     }
-    // if user has no role, return default prefix
     return openSettings.value.prefix;
 });
 
 const domainsOptions = computed(() => {
-    // if user has role, return role domains
     if (userSettings.value.user_role) {
         const allDomains = userSettings.value.user_role.domains;
         if (!allDomains) return openSettings.value.domains;
@@ -238,11 +248,9 @@ const domainsOptions = computed(() => {
             return allDomains.includes(domain.value);
         });
     }
-    // if user has no role, return default domains
     if (!openSettings.value.defaultDomains) {
         return openSettings.value.domains;
     }
-    // if user has no role and no default domains, return all domains
     return openSettings.value.domains.filter((domain) => {
         return openSettings.value.defaultDomains.includes(domain.value);
     });
@@ -268,112 +276,103 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
-            <span>{{ t('bindUserInfo') }}</span>
-        </n-alert>
-        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" size="large" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="loginAndBindTag">
-                <n-form>
+        <v-alert v-if="userSettings.user_email" type="info" variant="tonal" closable class="mb-4">
+            {{ t('bindUserInfo') }}
+        </v-alert>
+
+        <v-tabs v-if="openSettings.fetched" v-model="tabValue" grow>
+            <v-tab value="signin">{{ loginAndBindTag }}</v-tab>
+            <v-tab v-if="showNewAddressTab" value="register">{{ t('getNewEmail') }}</v-tab>
+            <v-tab value="help">{{ t('help') }}</v-tab>
+        </v-tabs>
+
+        <v-window v-model="tabValue" class="mt-4">
+            <v-window-item value="signin">
+                <v-form>
                     <div v-if="loginMethod === 'password'">
-                        <n-form-item-row :label="t('email')" required>
-                            <n-input v-model:value="loginAddress" />
-                        </n-form-item-row>
-                        <n-form-item-row :label="t('password')" required>
-                            <n-input v-model:value="loginPassword" type="password" show-password-on="click" />
-                        </n-form-item-row>
+                        <v-text-field v-model="loginAddress" :label="t('email')" variant="outlined" 
+                            density="compact" class="mb-2"></v-text-field>
+                        <v-text-field v-model="loginPassword" :label="t('password')" type="password"
+                            variant="outlined" density="compact" 
+                            :append-inner-icon="'mdi-eye'" class="mb-2"></v-text-field>
                     </div>
-
                     <div v-else>
-                        <n-form-item-row :label="t('credential')" required>
-                            <n-input v-model:value="credential" type="textarea" :autosize="{ minRows: 3 }" />
-                        </n-form-item-row>
+                        <v-textarea v-model="credential" :label="t('credential')" variant="outlined"
+                            rows="3" class="mb-2"></v-textarea>
                     </div>
 
-                    <div class="switch-login-button">
-                        <n-button v-if="openSettings?.enableAddressPassword"
-                            @click="loginMethod === 'password' ? loginMethod = 'credential' : loginMethod = 'password'"
-                            type="info" quaternary size="tiny">
+                    <div class="text-center mb-2">
+                        <v-btn v-if="openSettings?.enableAddressPassword" variant="text" size="small" color="info"
+                            @click="loginMethod === 'password' ? loginMethod = 'credential' : loginMethod = 'password'">
                             {{ loginMethod === 'password' ? t('credentialLogin') : t('passwordLogin') }}
-                        </n-button>
+                        </v-btn>
                     </div>
 
-                    <n-button @click="login" :loading="loading" type="primary" block secondary strong>
-                        <template #icon>
-                            <n-icon :component="EmailOutlined" />
-                        </template>
+                    <v-btn @click="login" :loading="loading" color="primary" variant="outlined" block class="mb-2">
+                        <v-icon start>mdi-email</v-icon>
                         {{ loginAndBindTag }}
-                    </n-button>
-                    <n-button v-if="showNewAddressTab" @click="tabValue = 'register'" block secondary strong>
-                        <template #icon>
-                            <n-icon :component="NewLabelOutlined" />
-                        </template>
+                    </v-btn>
+                    <v-btn v-if="showNewAddressTab" @click="tabValue = 'register'" variant="outlined" block>
+                        <v-icon start>mdi-plus</v-icon>
                         {{ t('getNewEmail') }}
-                    </n-button>
-                </n-form>
-            </n-tab-pane>
-            <n-tab-pane v-if="showNewAddressTab" name="register" :tab="t('getNewEmail')">
-                <n-spin :show="generateNameLoading">
-                    <n-form>
-                        <span>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip1") +
-                                addressRegex.source }}</p>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip2") }}</p>
-                            <p>{{ t("getNewEmailTip3") }}</p>
-                        </span>
-                        <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName"
-                            style="margin-bottom: 10px;">
-                            {{ t('generateName') }}
-                        </n-button>
-                        <n-input-group>
-                            <n-input-group-label v-if="addressPrefix">
-                                {{ addressPrefix }}
-                            </n-input-group-label>
-                            <n-input v-if="!openSettings.disableCustomAddressName" v-model:value="emailName" show-count
-                                :minlength="openSettings.minAddressLen" :maxlength="openSettings.maxAddressLen" />
-                            <n-input v-else :value="t('autoGeneratedName')" disabled />
-                            <n-input-group-label>@</n-input-group-label>
-                            <n-select v-model:value="emailDomain" :consistent-menu-width="false"
-                                :options="domainsOptions" />
-                        </n-input-group>
-                        <Turnstile v-model:value="cfToken" />
-                        <n-button type="primary" block secondary strong @click="newEmail" :loading="loading">
-                            <template #icon>
-                                <n-icon :component="NewLabelOutlined" />
-                            </template>
-                            {{ t('getNewEmail') }}
-                        </n-button>
-                    </n-form>
-                </n-spin>
-            </n-tab-pane>
-            <n-tab-pane name="help" :tab="t('help')">
-                <n-alert :show-icon="false" :bordered="false">
-                    <span>{{ t('pleaseGetNewEmail') }}</span>
-                </n-alert>
+                    </v-btn>
+                </v-form>
+            </v-window-item>
+
+            <v-window-item v-if="showNewAddressTab" value="register">
+                <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center">
+                    <v-progress-circular indeterminate></v-progress-circular>
+                </v-overlay>
+                <v-form>
+                    <p v-if="!openSettings.disableCustomAddressName" class="mb-2">
+                        {{ t("getNewEmailTip1") + addressRegex.source }}
+                    </p>
+                    <p v-if="!openSettings.disableCustomAddressName" class="mb-2">{{ t("getNewEmailTip2") }}</p>
+                    <p class="mb-4">{{ t("getNewEmailTip3") }}</p>
+
+                    <v-btn v-if="!openSettings.disableCustomAddressName" @click="generateName" class="mb-4">
+                        {{ t('generateName') }}
+                    </v-btn>
+
+                    <v-row dense>
+                        <v-col v-if="addressPrefix" cols="auto">
+                            <v-chip>{{ addressPrefix }}</v-chip>
+                        </v-col>
+                        <v-col>
+                            <v-text-field v-if="!openSettings.disableCustomAddressName" v-model="emailName"
+                                variant="outlined" density="compact" counter
+                                :maxlength="openSettings.maxAddressLen"></v-text-field>
+                            <v-text-field v-else :model-value="t('autoGeneratedName')" disabled
+                                variant="outlined" density="compact"></v-text-field>
+                        </v-col>
+                        <v-col cols="auto">
+                            <v-chip>@</v-chip>
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="emailDomain" :items="domainsOptions" item-title="label"
+                                item-value="value" variant="outlined" density="compact"></v-select>
+                        </v-col>
+                    </v-row>
+
+                    <Turnstile v-model:value="cfToken" />
+
+                    <v-btn color="primary" variant="outlined" block @click="newEmail" :loading="loading" class="mt-4">
+                        <v-icon start>mdi-plus</v-icon>
+                        {{ t('getNewEmail') }}
+                    </v-btn>
+                </v-form>
+            </v-window-item>
+
+            <v-window-item value="help">
+                <v-alert type="info" variant="tonal" class="mb-4">
+                    {{ t('pleaseGetNewEmail') }}
+                </v-alert>
                 <AdminContact />
-            </n-tab-pane>
-        </n-tabs>
+            </v-window-item>
+        </v-window>
+
+        <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+            {{ snackbarText }}
+        </v-snackbar>
     </div>
 </template>
-
-
-<style scoped>
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.n-form .n-button {
-    margin-top: 10px;
-}
-
-.switch-login-button {
-    display: flex;
-    justify-content: center;
-    margin: 10px 0;
-}
-
-.n-form {
-    text-align: left;
-}
-</style>

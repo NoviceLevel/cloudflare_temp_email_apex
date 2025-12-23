@@ -64,27 +64,13 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="openSettings.cfTurnstileSiteKey" class="center">
-        <n-spin description="loading..." :show="turnstileLoading">
-            <n-form-item-row>
-                <n-flex vertical>
-                    <div id="cf-turnstile"></div>
-                    <n-button text @click="checkCfTurnstile(true)">
-                        {{ t('refresh') }}
-                    </n-button>
-                </n-flex>
-            </n-form-item-row>
-        </n-spin>
-
+    <div v-if="openSettings.cfTurnstileSiteKey" class="d-flex justify-center">
+        <v-progress-circular v-if="turnstileLoading" indeterminate color="primary" />
+        <div v-else class="d-flex flex-column align-center">
+            <div id="cf-turnstile"></div>
+            <v-btn variant="text" size="small" @click="checkCfTurnstile(true)" class="mt-2">
+                {{ t('refresh') }}
+            </v-btn>
+        </div>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-}
-
-.n-button {
-    margin-left: 10px;
-}
-</style>

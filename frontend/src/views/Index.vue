@@ -1,12 +1,11 @@
 <script setup>
-import { defineAsyncComponent, onMounted, watch } from 'vue'
+import { defineAsyncComponent, onMounted, watch, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
 import { useIsMobile } from '../utils/composables'
-import { FullscreenExitOutlined } from '@vicons/material'
 
 import AddressBar from './index/AddressBar.vue';
 import MailBox from '../components/MailBox.vue';
@@ -19,10 +18,25 @@ import Attachment from './index/Attachment.vue';
 import About from './common/About.vue';
 import SimpleIndex from './index/SimpleIndex.vue';
 
-const { loading, settings, openSettings, indexTab, globalTabplacement, useSimpleIndex } = useGlobalState()
-const message = useMessage()
+const { loading, settings, openSettings, indexTab, useSimpleIndex } = useGlobalState()
 const route = useRoute()
 const isMobile = useIsMobile()
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('info')
+
+const showMessage = (text, color = 'info') => {
+  snackbarText.value = text
+  snackbarColor.value = color
+  snackbar.value = true
+}
+
+const message = {
+  error: (text) => showMessage(text, 'error'),
+  info: (text) => showMessage(text, 'info'),
+  success: (text) => showMessage(text, 'success'),
+}
 
 const SendMail = defineAsyncComponent(() => {
   loading.value = true;
@@ -90,7 +104,6 @@ const saveToS3 = async (mail_id, filename, blob) => {
       method: 'POST',
       body: JSON.stringify({ key: `${mail_id}/${filename}` })
     });
-    // upload to s3 by formdata
     const formData = new FormData();
     formData.append(filename, blob);
     await fetch(url, {
@@ -136,56 +149,119 @@ onMounted(() => {
     </div>
     <div v-else>
       <AddressBar />
-      <n-tabs v-if="settings.address" type="card" v-model:value="indexTab" :placement="globalTabplacement">
-        <template #prefix v-if="!isMobile">
-          <n-button @click="useSimpleIndex = true" tertiary size="small">
-            <template #icon>
-              <n-icon>
-                <FullscreenExitOutlined />
-              </n-icon>
-            </template>
-            {{ t('enterSimpleMode') }}
-          </n-button>
-        </template>
-        <n-tab-pane name="mailbox" :tab="t('mailbox')">
-          <div v-if="showMailIdQuery" style="margin-bottom: 10px;">
-            <n-input-group>
-              <n-input v-model:value="mailIdQuery" />
-              <n-button @click="queryMail" type="primary" tertiary>
-                {{ t('query') }}
-              </n-button>
-            </n-input-group>
-          </div>
-          <MailBox :key="mailBoxKey" :showEMailTo="false" :showReply="true" :showSaveS3="openSettings.isS3Enabled"
-            :saveToS3="saveToS3" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
-            :fetchMailData="fetchMailData" :deleteMail="deleteMail" :showFilterInput="true" />
-        </n-tab-pane>
-        <n-tab-pane name="sendbox" :tab="t('sendbox')">
-          <SendBox :fetchMailData="fetchSenboxData" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
-            :deleteMail="deleteSenboxMail" />
-        </n-tab-pane>
-        <n-tab-pane name="sendmail" :tab="t('sendmail')">
-          <SendMail />
-        </n-tab-pane>
-        <n-tab-pane name="accountSettings" :tab="t('accountSettings')">
-          <AccountSettings />
-        </n-tab-pane>
-        <n-tab-pane name="appearance" :tab="t('appearance')">
-          <Appearance :showUseSimpleIndex="true" />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableAutoReply" name="auto_reply" :tab="t('auto_reply')">
-          <AutoReply />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableWebhook" name="webhook" :tab="t('webhookSettings')">
-          <Webhook />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.isS3Enabled" name="s3_attachment" :tab="t('s3Attachment')">
-          <Attachment />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableIndexAbout" name="about" :tab="t('about')">
-          <About />
-        </n-tab-pane>
-      </n-tabs>
+      <v-card v-if="settings.address" class="mt-4">
+        <v-tabs v-model="indexTab" color="primary" grow>
+          <v-tab value="mailbox">
+            <v-icon start>mdi-inbox</v-icon>
+            {{ t('mailbox') }}
+          </v-tab>
+          <v-tab value="sendbox">
+            <v-icon start>mdi-send</v-icon>
+            {{ t('sendbox') }}
+          </v-tab>
+          <v-tab value="sendmail">
+            <v-icon start>mdi-email-edit</v-icon>
+            {{ t('sendmail') }}
+          </v-tab>
+          <v-tab value="accountSettings">
+            <v-icon start>mdi-account-cog</v-icon>
+            {{ t('accountSettings') }}
+          </v-tab>
+          <v-tab value="appearance">
+            <v-icon start>mdi-palette</v-icon>
+            {{ t('appearance') }}
+          </v-tab>
+          <v-tab v-if="openSettings.enableAutoReply" value="auto_reply">
+            <v-icon start>mdi-reply-all</v-icon>
+            {{ t('auto_reply') }}
+          </v-tab>
+          <v-tab v-if="openSettings.enableWebhook" value="webhook">
+            <v-icon start>mdi-webhook</v-icon>
+            {{ t('webhookSettings') }}
+          </v-tab>
+          <v-tab v-if="openSettings.isS3Enabled" value="s3_attachment">
+            <v-icon start>mdi-attachment</v-icon>
+            {{ t('s3Attachment') }}
+          </v-tab>
+          <v-tab v-if="openSettings.enableIndexAbout" value="about">
+            <v-icon start>mdi-information</v-icon>
+            {{ t('about') }}
+          </v-tab>
+        </v-tabs>
+
+        <v-btn v-if="!isMobile" variant="text" size="small" class="ma-2" @click="useSimpleIndex = true">
+          <v-icon start>mdi-fullscreen-exit</v-icon>
+          {{ t('enterSimpleMode') }}
+        </v-btn>
+
+        <v-window v-model="indexTab">
+          <v-window-item value="mailbox">
+            <v-card-text>
+              <div v-if="showMailIdQuery" class="mb-4">
+                <v-text-field v-model="mailIdQuery" variant="outlined" density="compact" hide-details
+                  append-inner-icon="mdi-magnify" @click:append-inner="queryMail">
+                </v-text-field>
+              </div>
+              <MailBox :key="mailBoxKey" :showEMailTo="false" :showReply="true" :showSaveS3="openSettings.isS3Enabled"
+                :saveToS3="saveToS3" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
+                :fetchMailData="fetchMailData" :deleteMail="deleteMail" :showFilterInput="true" />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item value="sendbox">
+            <v-card-text>
+              <SendBox :fetchMailData="fetchSenboxData" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
+                :deleteMail="deleteSenboxMail" />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item value="sendmail">
+            <v-card-text>
+              <SendMail />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item value="accountSettings">
+            <v-card-text>
+              <AccountSettings />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item value="appearance">
+            <v-card-text>
+              <Appearance :showUseSimpleIndex="true" />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item v-if="openSettings.enableAutoReply" value="auto_reply">
+            <v-card-text>
+              <AutoReply />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item v-if="openSettings.enableWebhook" value="webhook">
+            <v-card-text>
+              <Webhook />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item v-if="openSettings.isS3Enabled" value="s3_attachment">
+            <v-card-text>
+              <Attachment />
+            </v-card-text>
+          </v-window-item>
+
+          <v-window-item v-if="openSettings.enableIndexAbout" value="about">
+            <v-card-text>
+              <About />
+            </v-card-text>
+          </v-window-item>
+        </v-window>
+      </v-card>
     </div>
+
+    <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+      {{ snackbarText }}
+    </v-snackbar>
   </div>
 </template>

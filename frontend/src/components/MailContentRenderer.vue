@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { useI18n } from 'vue-i18n'
-import { CloudDownloadRound, ReplyFilled, ForwardFilled, FullscreenRound } from '@vicons/material'
 import ShadowHtmlComponent from "./ShadowHtmlComponent.vue";
 import AiExtractInfo from "./AiExtractInfo.vue";
 import { getDownloadEmlUrl } from '../utils/email-parser';
@@ -13,274 +12,157 @@ const { preferShowTextMail, useIframeShowMail, useUTCDate } = useGlobalState();
 const { t } = useI18n({
   messages: {
     en: {
-      delete: 'Delete',
-      deleteMailTip: 'Are you sure you want to delete mail?',
-      attachments: 'View Attachments',
-      downloadMail: 'Download Mail',
-      reply: 'Reply',
-      forward: 'Forward',
-      showTextMail: 'Show Text Mail',
-      showHtmlMail: 'Show HTML Mail',
-      saveToS3: 'Save to S3',
-      size: 'Size',
-      fullscreen: 'Fullscreen',
+      delete: 'Delete', deleteMailTip: 'Are you sure?', attachments: 'Attachments',
+      downloadMail: 'Download', reply: 'Reply', forward: 'Forward',
+      showTextMail: 'Text', showHtmlMail: 'HTML', saveToS3: 'Save S3',
+      size: 'Size', fullscreen: 'Fullscreen',
     },
     zh: {
-      delete: '删除',
-      deleteMailTip: '确定要删除邮件吗?',
-      attachments: '查看附件',
-      downloadMail: '下载邮件',
-      reply: '回复',
-      forward: '转发',
-      showTextMail: '显示纯文本邮件',
-      showHtmlMail: '显示HTML邮件',
-      saveToS3: '保存到S3',
-      size: '大小',
-      fullscreen: '全屏',
+      delete: '删除', deleteMailTip: '确定删除?', attachments: '附件',
+      downloadMail: '下载', reply: '回复', forward: '转发',
+      showTextMail: '纯文本', showHtmlMail: 'HTML', saveToS3: '保存S3',
+      size: '大小', fullscreen: '全屏',
     }
   }
 });
 
 const props = defineProps({
-  mail: {
-    type: Object,
-    required: true
-  },
-  showEMailTo: {
-    type: Boolean,
-    default: true
-  },
-  enableUserDeleteEmail: {
-    type: Boolean,
-    default: false
-  },
-  showReply: {
-    type: Boolean,
-    default: false
-  },
-  showSaveS3: {
-    type: Boolean,
-    default: false
-  },
-  // 回调函数 props
-  onDelete: {
-    type: Function,
-    default: () => { }
-  },
-  onReply: {
-    type: Function,
-    default: () => { }
-  },
-  onForward: {
-    type: Function,
-    default: () => { }
-  },
-  onSaveToS3: {
-    type: Function,
-    default: () => { }
-  }
+  mail: { type: Object, required: true },
+  showEMailTo: { type: Boolean, default: true },
+  enableUserDeleteEmail: { type: Boolean, default: false },
+  showReply: { type: Boolean, default: false },
+  showSaveS3: { type: Boolean, default: false },
+  onDelete: { type: Function, default: () => { } },
+  onReply: { type: Function, default: () => { } },
+  onForward: { type: Function, default: () => { } },
+  onSaveToS3: { type: Function, default: () => { } }
 });
 
 const showTextMail = ref(preferShowTextMail.value);
 const showAttachments = ref(false);
 const curAttachments = ref([]);
-const attachmentLoding = ref(false);
+const attachmentLoading = ref(false);
 const showFullscreen = ref(false);
+const deleteConfirmDialog = ref(false);
 
-const handleDelete = () => {
-  props.onDelete();
-};
-
-const handleViewAttachments = () => {
-  curAttachments.value = props.mail.attachments;
-  showAttachments.value = true;
-};
-
-const handleReply = () => {
-  props.onReply();
-};
-
-const handleForward = () => {
-  props.onForward();
-};
-
+const handleDelete = () => { props.onDelete(); };
+const handleViewAttachments = () => { curAttachments.value = props.mail.attachments; showAttachments.value = true; };
+const handleReply = () => { props.onReply(); };
+const handleForward = () => { props.onForward(); };
 
 const handleSaveToS3 = async (filename, blob) => {
-  attachmentLoding.value = true;
-  try {
-    await props.onSaveToS3(filename, blob);
-  } finally {
-    attachmentLoding.value = false;
-  }
+  attachmentLoading.value = true;
+  try { await props.onSaveToS3(filename, blob); } finally { attachmentLoading.value = false; }
 };
-
 </script>
 
 <template>
   <div class="mail-content-renderer">
-    <!-- 邮件信息标签 -->
-    <n-space>
-      <n-tag type="info">
-        ID: {{ mail.id }}
-      </n-tag>
-      <n-tag type="info">
-        {{ utcToLocalDate(mail.created_at, useUTCDate.value) }}
-      </n-tag>
-      <n-tag type="info">
-        FROM: {{ mail.source }}
-      </n-tag>
-      <n-tag v-if="showEMailTo" type="info">
-        TO: {{ mail.address }}
-      </n-tag>
+    <div class="d-flex flex-wrap ga-2 mb-2">
+      <v-chip size="small">ID: {{ mail.id }}</v-chip>
+      <v-chip size="small">{{ utcToLocalDate(mail.created_at, useUTCDate.value) }}</v-chip>
+      <v-chip size="small">FROM: {{ mail.source }}</v-chip>
+      <v-chip v-if="showEMailTo" size="small">TO: {{ mail.address }}</v-chip>
 
-      <!-- 操作按钮 -->
-      <n-popconfirm v-if="enableUserDeleteEmail" @positive-click="handleDelete">
-        <template #trigger>
-          <n-button tertiary type="error" size="small">{{ t('delete') }}</n-button>
-        </template>
-        {{ t('deleteMailTip') }}
-      </n-popconfirm>
+      <v-btn v-if="enableUserDeleteEmail" size="small" color="error" variant="text" @click="deleteConfirmDialog = true">
+        {{ t('delete') }}
+      </v-btn>
 
-      <n-button v-if="mail.attachments && mail.attachments.length > 0" size="small" tertiary type="info"
+      <v-btn v-if="mail.attachments && mail.attachments.length > 0" size="small" color="info" variant="text"
         @click="handleViewAttachments">
         {{ t('attachments') }}
-      </n-button>
+      </v-btn>
 
-      <n-button tag="a" target="_blank" tertiary type="info" size="small" :download="mail.id + '.eml'"
-        :href="getDownloadEmlUrl(mail.raw)">
-        <template #icon>
-          <n-icon :component="CloudDownloadRound" />
-        </template>
-        {{ t('downloadMail') }}
-      </n-button>
+      <v-btn :href="getDownloadEmlUrl(mail.raw)" :download="mail.id + '.eml'" size="small" color="info" variant="text">
+        <v-icon start>mdi-download</v-icon>{{ t('downloadMail') }}
+      </v-btn>
 
-      <n-button v-if="showReply" size="small" tertiary type="info" @click="handleReply">
-        <template #icon>
-          <n-icon :component="ReplyFilled" />
-        </template>
-        {{ t('reply') }}
-      </n-button>
+      <v-btn v-if="showReply" size="small" color="info" variant="text" @click="handleReply">
+        <v-icon start>mdi-reply</v-icon>{{ t('reply') }}
+      </v-btn>
 
-      <n-button v-if="showReply" size="small" tertiary type="info" @click="handleForward">
-        <template #icon>
-          <n-icon :component="ForwardFilled" />
-        </template>
-        {{ t('forward') }}
-      </n-button>
+      <v-btn v-if="showReply" size="small" color="info" variant="text" @click="handleForward">
+        <v-icon start>mdi-forward</v-icon>{{ t('forward') }}
+      </v-btn>
 
-      <n-button size="small" tertiary type="info" @click="showTextMail = !showTextMail">
+      <v-btn size="small" color="info" variant="text" @click="showTextMail = !showTextMail">
         {{ showTextMail ? t('showHtmlMail') : t('showTextMail') }}
-      </n-button>
+      </v-btn>
 
-      <n-button size="small" tertiary type="info" @click="showFullscreen = true">
-        <template #icon>
-          <n-icon :component="FullscreenRound" />
-        </template>
-        {{ t('fullscreen') }}
-      </n-button>
-    </n-space>
+      <v-btn size="small" color="info" variant="text" @click="showFullscreen = true">
+        <v-icon start>mdi-fullscreen</v-icon>{{ t('fullscreen') }}
+      </v-btn>
+    </div>
 
-    <!-- AI 提取信息 -->
     <AiExtractInfo :metadata="mail.metadata" />
 
-    <!-- 邮件内容 -->
     <div class="mail-content">
       <pre v-if="showTextMail" class="mail-text">{{ mail.text }}</pre>
-      <iframe v-else-if="useIframeShowMail" :srcdoc="mail.message" class="mail-iframe">
-      </iframe>
+      <iframe v-else-if="useIframeShowMail" :srcdoc="mail.message" class="mail-iframe"></iframe>
       <ShadowHtmlComponent v-else :key="mail.id" :htmlContent="mail.message" class="mail-html" />
     </div>
   </div>
 
-  <n-drawer v-model:show="showFullscreen" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
-    style="height: 100vh;">
-    <n-drawer-content :title="mail.subject" closable>
-      <div class="fullscreen-mail-content">
+  <v-navigation-drawer v-model="showFullscreen" location="bottom" temporary style="height: 100vh;">
+    <v-card flat>
+      <v-card-title class="d-flex justify-space-between">
+        {{ mail.subject }}
+        <v-btn icon @click="showFullscreen = false"><v-icon>mdi-close</v-icon></v-btn>
+      </v-card-title>
+      <v-card-text class="fullscreen-mail-content">
         <pre v-if="showTextMail" class="mail-text">{{ mail.text }}</pre>
-        <iframe v-else-if="useIframeShowMail" :srcdoc="mail.message" class="mail-iframe">
-        </iframe>
+        <iframe v-else-if="useIframeShowMail" :srcdoc="mail.message" class="mail-iframe"></iframe>
         <ShadowHtmlComponent v-else :key="mail.id" :htmlContent="mail.message" class="mail-html" />
-      </div>
-    </n-drawer-content>
-  </n-drawer>
+      </v-card-text>
+    </v-card>
+  </v-navigation-drawer>
 
-  <!-- 附件模态框 -->
-  <n-modal v-model:show="showAttachments" preset="dialog" title="Dialog">
-    <template #header>
-      <div>{{ t('attachments') }}</div>
-    </template>
-    <n-spin v-model:show="attachmentLoding">
-      <n-list hoverable clickable>
-        <n-list-item v-for="row in curAttachments" v-bind:key="row.id">
-          <n-thing class="center" :title="row.filename">
-            <template #description>
-              <n-space>
-                <n-tag type="info">
-                  Size: {{ row.size }}
-                </n-tag>
-                <n-button v-if="showSaveS3" @click="handleSaveToS3(row.filename, row.blob)" ghost type="info"
-                  size="small">
-                  {{ t('saveToS3') }}
-                </n-button>
-              </n-space>
+  <v-dialog v-model="showAttachments" max-width="500">
+    <v-card>
+      <v-card-title>{{ t('attachments') }}</v-card-title>
+      <v-card-text>
+        <v-overlay :model-value="attachmentLoading" contained class="align-center justify-center">
+          <v-progress-circular indeterminate></v-progress-circular>
+        </v-overlay>
+        <v-list>
+          <v-list-item v-for="row in curAttachments" :key="row.id">
+            <v-list-item-title>{{ row.filename }}</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip size="x-small">{{ t('size') }}: {{ row.size }}</v-chip>
+              <v-btn v-if="showSaveS3" @click="handleSaveToS3(row.filename, row.blob)" size="x-small" variant="text">
+                {{ t('saveToS3') }}
+              </v-btn>
+            </v-list-item-subtitle>
+            <template v-slot:append>
+              <v-btn :href="row.url" :download="row.filename" icon size="small" variant="text">
+                <v-icon>mdi-download</v-icon>
+              </v-btn>
             </template>
-          </n-thing>
-          <template #suffix>
-            <n-button tag="a" target="_blank" tertiary type="info" size="small" :download="row.filename"
-              :href="row.url">
-              <n-icon :component="CloudDownloadRound" />
-            </n-button>
-          </template>
-        </n-list-item>
-      </n-list>
-    </n-spin>
-  </n-modal>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="deleteConfirmDialog" max-width="300">
+    <v-card>
+      <v-card-title>{{ t('delete') }}</v-card-title>
+      <v-card-text>{{ t('deleteMailTip') }}</v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn @click="deleteConfirmDialog = false">Cancel</v-btn>
+        <v-btn color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
-.mail-content-renderer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.mail-content {
-  margin-top: 10px;
-  flex: 1;
-}
-
-.mail-text {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  margin: 0;
-  padding: 0;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-.mail-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  min-height: 400px;
-}
-
-.mail-html {
-  width: 100%;
-  height: 100%;
-}
-
-.center {
-  text-align: center;
-}
-
-.fullscreen-mail-content {
-  height: calc(100vh - 120px);
-  overflow: auto;
-}
-
-.fullscreen-mail-content .mail-iframe {
-  min-height: calc(100vh - 120px);
-}
+.mail-content-renderer { display: flex; flex-direction: column; gap: 10px; }
+.mail-content { margin-top: 10px; flex: 1; }
+.mail-text { white-space: pre-wrap; word-wrap: break-word; margin: 0; padding: 0; }
+.mail-iframe { width: 100%; height: 100%; border: none; min-height: 400px; }
+.mail-html { width: 100%; height: 100%; }
+.fullscreen-mail-content { height: calc(100vh - 120px); overflow: auto; }
+.fullscreen-mail-content .mail-iframe { min-height: calc(100vh - 120px); }
 </style>

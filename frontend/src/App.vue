@@ -1,8 +1,8 @@
 <script setup>
-import { darkTheme, NGlobalStyle, zhCN } from 'naive-ui'
 import { computed, onMounted } from 'vue'
 import { useScript } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
+import { useTheme } from 'vuetify'
 import { useGlobalState } from './store'
 import { useIsMobile } from './utils/composables'
 import Header from './views/Header.vue';
@@ -15,12 +15,16 @@ const {
 const adClient = import.meta.env.VITE_GOOGLE_AD_CLIENT;
 const adSlot = import.meta.env.VITE_GOOGLE_AD_SLOT;
 const { locale } = useI18n({});
-const theme = computed(() => isDark.value ? darkTheme : null)
-const localeConfig = computed(() => locale.value == 'zh' ? zhCN : null)
+const theme = useTheme()
 const isMobile = useIsMobile()
 const showSideMargin = computed(() => !isMobile.value && useSideMargin.value);
 const showAd = computed(() => !isMobile.value && adClient && adSlot);
-const gridMaxCols = computed(() => showAd.value ? 8 : 12);
+
+// Watch dark mode changes
+import { watch } from 'vue'
+watch(isDark, (val) => {
+  theme.global.name.value = val ? 'dark' : 'light'
+}, { immediate: true })
 
 // Load Google Ad script at top level (not inside onMounted)
 if (showAd.value) {
@@ -55,7 +59,6 @@ onMounted(async () => {
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   }
 
-
   // check if telegram is enabled
   const enableTelegram = import.meta.env.VITE_IS_TELEGRAM;
   if (
@@ -77,70 +80,40 @@ onMounted(async () => {
 </script>
 
 <template>
-  <n-config-provider :locale="localeConfig" :theme="theme">
-    <n-global-style />
-    <n-spin description="loading..." :show="loading">
-      <n-notification-provider container-style="margin-top: 60px;">
-        <n-message-provider container-style="margin-top: 20px;">
-          <n-grid x-gap="12" :cols="gridMaxCols">
-            <n-gi v-if="showSideMargin" span="1">
-              <div class="side" v-if="showAd">
-                <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
-                  data-ad-format="auto" data-full-width-responsive="true"></ins>
-              </div>
-            </n-gi>
-            <n-gi :span="!showSideMargin ? gridMaxCols : (gridMaxCols - 2)">
-              <div class="main">
-                <n-space vertical>
-                  <n-layout style="min-height: 80vh;">
-                    <Header />
-                    <router-view></router-view>
-                  </n-layout>
-                  <Footer />
-                </n-space>
-              </div>
-            </n-gi>
-            <n-gi v-if="showSideMargin" span="1">
-              <div class="side" v-if="showAd">
-                <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
-                  data-ad-format="auto" data-full-width-responsive="true"></ins>
-              </div>
-            </n-gi>
-          </n-grid>
-          <n-back-top />
-        </n-message-provider>
-      </n-notification-provider>
-    </n-spin>
-  </n-config-provider>
+  <v-app>
+    <v-overlay :model-value="loading" class="align-center justify-center" persistent>
+      <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
+    </v-overlay>
+    
+    <v-main>
+      <v-container fluid>
+        <v-row>
+          <v-col v-if="showSideMargin && showAd" cols="1">
+            <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
+              data-ad-format="auto" data-full-width-responsive="true"></ins>
+          </v-col>
+          
+          <v-col :cols="showSideMargin ? 10 : 12">
+            <Header />
+            <router-view></router-view>
+            <Footer />
+          </v-col>
+          
+          <v-col v-if="showSideMargin && showAd" cols="1">
+            <ins class="adsbygoogle" style="display:block" :data-ad-client="adClient" :data-ad-slot="adSlot"
+              data-ad-format="auto" data-full-width-responsive="true"></ins>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+
+    <v-snackbar-queue></v-snackbar-queue>
+  </v-app>
 </template>
 
-
 <style>
-.n-switch {
-  margin-left: 10px;
-  margin-right: 10px;
-}
-</style>
-
-<style scoped>
-.side {
-  height: 100vh;
-}
-
-.main {
-  height: 100vh;
-  text-align: center;
-}
-
-.n-grid {
+html, body {
   height: 100%;
-}
-
-.n-gi {
-  height: 100%;
-}
-
-.n-space {
-  height: 100%;
+  margin: 0;
 }
 </style>

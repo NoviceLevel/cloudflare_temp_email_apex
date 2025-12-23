@@ -1,8 +1,7 @@
-import { useBreakpoint, useMemo } from 'vooks'
+import { computed } from 'vue'
+import { useDisplay } from 'vuetify'
 
 export function useIsMobile() {
-    const breakpointRef = useBreakpoint()
-    return useMemo(() => {
-        return breakpointRef.value === 'xs'
-    })
+    const { mobile } = useDisplay()
+    return computed(() => mobile.value)
 }

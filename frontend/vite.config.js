@@ -3,9 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import vuetify from 'vite-plugin-vuetify'
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
@@ -16,25 +14,9 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    vuetify({ autoImport: true }),
     wasm(),
     topLevelAwait(),
-    AutoImport({
-      imports: [
-        'vue',
-        {
-          'naive-ui': [
-            'useMessage',
-            'useNotification',
-            'NButton',
-            'NPopconfirm',
-            'NIcon',
-          ]
-        }
-      ]
-    }),
-    Components({
-      resolvers: [NaiveUiResolver()]
-    }),
     VitePWA({
       registerType: null,
       devOptions: {

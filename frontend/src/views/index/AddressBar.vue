@@ -3,7 +3,6 @@ import useClipboard from 'vue-clipboard3'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Copy, User, ExchangeAlt } from '@vicons/fa'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
@@ -14,8 +13,17 @@ import LocalAddress from './LocalAddress.vue'
 import { getRouterPathWithLang } from '../../utils'
 
 const { toClipboard } = useClipboard()
-const message = useMessage()
 const router = useRouter()
+
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('info')
+
+const showMessage = (text, color = 'info') => {
+    snackbarText.value = text
+    snackbarColor.value = color
+    snackbar.value = true
+}
 
 const {
     jwt, settings, showAddressCredential, userJwt,
@@ -71,9 +79,9 @@ const addressLabel = computed(() => {
 const copy = async () => {
     try {
         await toClipboard(settings.value.address)
-        message.success(t('copied'));
+        showMessage(t('copied'), 'success')
     } catch (e) {
-        message.error(e.message || "error");
+        showMessage(e.message || "error", 'error')
     }
 }
 
@@ -92,98 +100,110 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-card :bordered="false" embedded v-if="!settings.fetched">
-            <n-skeleton style="height: 50vh" />
-        </n-card>
+        <v-card v-if="!settings.fetched" flat>
+            <v-skeleton-loader type="card" height="200"></v-skeleton-loader>
+        </v-card>
         <div v-else-if="settings.address">
-            <n-alert type="info" :show-icon="false" :bordered="false">
+            <v-alert type="info" variant="tonal" class="my-2 text-center">
                 <span>
                     <b>{{ addressLabel }}</b>
-                    <n-button v-if="isTelegram" style="margin-left: 10px" @click="showTelegramChangeAddress = true"
-                        size="small" tertiary type="primary">
-                        <n-icon :component="ExchangeAlt" /> {{ t('addressManage') }}
-                    </n-button>
-                    <n-button v-else-if="userJwt" style="margin-left: 10px" @click="showChangeAddress = true"
-                        size="small" tertiary type="primary">
-                        <n-icon :component="ExchangeAlt" /> {{ t('changeAddress') }}
-                    </n-button>
-                    <n-button v-else style="margin-left: 10px" @click="showLocalAddress = true" size="small" tertiary
-                        type="primary">
-                        <n-icon :component="ExchangeAlt" /> {{ t('addressManage') }}
-                    </n-button>
-                    <n-button style="margin-left: 10px" @click="copy" size="small" tertiary type="primary">
-                        <n-icon :component="Copy" /> {{ t('copy') }}
-                    </n-button>
+                    <v-btn v-if="isTelegram" class="ml-2" size="small" variant="tonal" color="primary"
+                        @click="showTelegramChangeAddress = true">
+                        <v-icon start>mdi-swap-horizontal</v-icon>
+                        {{ t('addressManage') }}
+                    </v-btn>
+                    <v-btn v-else-if="userJwt" class="ml-2" size="small" variant="tonal" color="primary"
+                        @click="showChangeAddress = true">
+                        <v-icon start>mdi-swap-horizontal</v-icon>
+                        {{ t('changeAddress') }}
+                    </v-btn>
+                    <v-btn v-else class="ml-2" size="small" variant="tonal" color="primary"
+                        @click="showLocalAddress = true">
+                        <v-icon start>mdi-swap-horizontal</v-icon>
+                        {{ t('addressManage') }}
+                    </v-btn>
+                    <v-btn class="ml-2" size="small" variant="tonal" color="primary" @click="copy">
+                        <v-icon start>mdi-content-copy</v-icon>
+                        {{ t('copy') }}
+                    </v-btn>
                 </span>
-            </n-alert>
+            </v-alert>
         </div>
         <div v-else-if="isTelegram">
             <TelegramAddress />
         </div>
-        <div v-else class="center">
-            <n-card :bordered="false" embedded style="max-width: 600px;">
-                <n-alert v-if="jwt" type="warning" :show-icon="false" :bordered="false" closable>
-                    <span>{{ t('fetchAddressError') }}</span>
-                </n-alert>
+        <div v-else class="d-flex justify-center my-4">
+            <v-card flat max-width="600" class="pa-4">
+                <v-alert v-if="jwt" type="warning" variant="tonal" closable class="mb-4">
+                    {{ t('fetchAddressError') }}
+                </v-alert>
                 <Login />
-                <n-divider />
-                <n-button @click="onUserLogin" type="primary" block secondary strong>
-                    <template #icon>
-                        <n-icon :component="User" />
-                    </template>
+                <v-divider class="my-4"></v-divider>
+                <v-btn @click="onUserLogin" color="primary" variant="outlined" block>
+                    <v-icon start>mdi-account</v-icon>
                     {{ t('userLogin') }}
-                </n-button>
-            </n-card>
+                </v-btn>
+            </v-card>
         </div>
-        <n-modal v-model:show="showTelegramChangeAddress" preset="card" :title="t('changeAddress')">
-            <TelegramAddress />
-        </n-modal>
-        <n-modal v-model:show="showChangeAddress" preset="card" :title="t('changeAddress')">
-            <AddressManagement />
-        </n-modal>
-        <n-modal v-model:show="showLocalAddress" preset="card" :title="t('changeAddress')">
-            <LocalAddress />
-        </n-modal>
-        <n-modal v-model:show="showAddressCredential" preset="dialog" :title="t('addressCredential')">
-            <span>
-                <p>{{ t("addressCredentialTip") }}</p>
-            </span>
-            <n-card embedded>
-                <b>{{ jwt }}</b>
-            </n-card>
-            <n-card embedded v-if="addressPassword">
-                <p><b>{{ settings.address }}</b></p>
-                <p>{{ t('addressPassword') }}: <b>{{ addressPassword }}</b></p>
-            </n-card>
-            <n-card embedded>
-                <n-collapse>
-                    <n-collapse-item :title='t("linkWithAddressCredential")'>
-                        <n-card embedded>
-                            <b>{{ getUrlWithJwt() }}</b>
-                        </n-card>
-                    </n-collapse-item>
-                </n-collapse>
-            </n-card>
-        </n-modal>
+
+        <!-- Telegram Change Address Dialog -->
+        <v-dialog v-model="showTelegramChangeAddress" max-width="600">
+            <v-card>
+                <v-card-title>{{ t('changeAddress') }}</v-card-title>
+                <v-card-text>
+                    <TelegramAddress />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <!-- Change Address Dialog -->
+        <v-dialog v-model="showChangeAddress" max-width="600">
+            <v-card>
+                <v-card-title>{{ t('changeAddress') }}</v-card-title>
+                <v-card-text>
+                    <AddressManagement />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <!-- Local Address Dialog -->
+        <v-dialog v-model="showLocalAddress" max-width="600">
+            <v-card>
+                <v-card-title>{{ t('changeAddress') }}</v-card-title>
+                <v-card-text>
+                    <LocalAddress />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <!-- Address Credential Dialog -->
+        <v-dialog v-model="showAddressCredential" max-width="600">
+            <v-card>
+                <v-card-title>{{ t('addressCredential') }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">{{ t("addressCredentialTip") }}</p>
+                    <v-card variant="tonal" class="mb-2 pa-2">
+                        <b>{{ jwt }}</b>
+                    </v-card>
+                    <v-card v-if="addressPassword" variant="tonal" class="mb-2 pa-2">
+                        <p><b>{{ settings.address }}</b></p>
+                        <p>{{ t('addressPassword') }}: <b>{{ addressPassword }}</b></p>
+                    </v-card>
+                    <v-expansion-panels>
+                        <v-expansion-panel :title="t('linkWithAddressCredential')">
+                            <v-expansion-panel-text>
+                                <v-card variant="tonal" class="pa-2">
+                                    <b>{{ getUrlWithJwt() }}</b>
+                                </v-card>
+                            </v-expansion-panel-text>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+            {{ snackbarText }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.n-card {
-    margin-top: 10px;
-}
-
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-    margin: 20px;
-}
-</style>

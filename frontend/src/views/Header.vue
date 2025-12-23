@@ -1,21 +1,23 @@
 <script setup>
-import { ref, h, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useIsMobile } from '../utils/composables'
-import {
-    DarkModeFilled, LightModeFilled, MenuFilled,
-    AdminPanelSettingsFilled
-} from '@vicons/material'
-import { GithubAlt, Language, User, Home } from '@vicons/fa'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
 import { getRouterPathWithLang } from '../utils'
 
-const message = useMessage()
-const notification = useNotification()
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('info')
+
+const showMessage = (text, color = 'info') => {
+  snackbarText.value = text
+  snackbarColor.value = color
+  snackbar.value = true
+}
 
 const {
     toggleDark, isDark, isTelegram, showAdminPage,
@@ -26,17 +28,12 @@ const router = useRouter()
 const isMobile = useIsMobile()
 
 const showMobileMenu = ref(false)
-const menuValue = computed(() => {
-    if (route.path.includes("user")) return "user";
-    if (route.path.includes("admin")) return "admin";
-    return "home";
-});
 
 const authFunc = async () => {
     try {
         location.reload()
     } catch (error) {
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error')
     }
 }
 
@@ -77,128 +74,32 @@ const { locale, t } = useI18n({
 
 const version = import.meta.env.PACKAGE_VERSION ? `v${import.meta.env.PACKAGE_VERSION}` : "";
 
-const menuOptions = computed(() => [
-    {
-        label: () => h(NButton,
-            {
-                text: true,
-                size: "small",
-                type: menuValue.value == "home" ? "primary" : "default",
-                style: "width: 100%",
-                onClick: async () => {
-                    await router.push(getRouterPathWithLang('/', locale.value));
-                    showMobileMenu.value = false;
-                }
-            },
-            {
-                default: () => t('home'),
-                icon: () => h(NIcon, { component: Home })
-            }),
-        key: "home"
-    },
-    {
-        label: () => h(
-            NButton,
-            {
-                text: true,
-                size: "small",
-                type: menuValue.value == "user" ? "primary" : "default",
-                style: "width: 100%",
-                onClick: async () => {
-                    await router.push(getRouterPathWithLang("/user", locale.value));
-                    showMobileMenu.value = false;
-                }
-            },
-            {
-                default: () => t('user'),
-                icon: () => h(NIcon, { component: User }),
-            }
-        ),
-        key: "user",
-        show: !isTelegram.value
-    },
-    {
-        label: () => h(
-            NButton,
-            {
-                text: true,
-                size: "small",
-                type: menuValue.value == "admin" ? "primary" : "default",
-                style: "width: 100%",
-                onClick: async () => {
-                    loading.value = true;
-                    await router.push(getRouterPathWithLang('/admin', locale.value));
-                    loading.value = false;
-                    showMobileMenu.value = false;
-                }
-            },
-            {
-                default: () => "Admin",
-                icon: () => h(NIcon, { component: AdminPanelSettingsFilled }),
-            }
-        ),
-        show: showAdminPage.value,
-        key: "admin"
-    },
-    {
-        label: () => h(
-            NButton,
-            {
-                text: true,
-                size: "small",
-                style: "width: 100%",
-                onClick: () => { toggleDark(); showMobileMenu.value = false; }
-            },
-            {
-                default: () => isDark.value ? t('light') : t('dark'),
-                icon: () => h(
-                    NIcon, { component: isDark.value ? LightModeFilled : DarkModeFilled }
-                )
-            }
-        ),
-        key: "theme"
-    },
-    {
-        label: () => h(
-            NButton,
-            {
-                text: true,
-                size: "small",
-                style: "width: 100%",
-                onClick: async () => {
-                    locale.value == 'zh' ? await changeLocale('en') : await changeLocale('zh');
-                    showMobileMenu.value = false;
-                }
-            },
-            {
-                default: () => locale.value == 'zh' ? "English" : "中文",
-                icon: () => h(
-                    NIcon, { component: Language }
-                )
-            }
-        ),
-        key: "lang"
-    },
-    {
-        label: () => h(
-            NButton,
-            {
-                text: true,
-                size: "small",
-                style: "width: 100%",
-                tag: "a",
-                target: "_blank",
-                href: "https://github.com/dreamhunter2333/cloudflare_temp_email",
-            },
-            {
-                default: () => version || "Github",
-                icon: () => h(NIcon, { component: GithubAlt })
-            }
-        ),
-        show: openSettings.value?.showGithub,
-        key: "github"
-    }
-]);
+const goHome = async () => {
+    await router.push(getRouterPathWithLang('/', locale.value));
+    showMobileMenu.value = false;
+}
+
+const goUser = async () => {
+    await router.push(getRouterPathWithLang("/user", locale.value));
+    showMobileMenu.value = false;
+}
+
+const goAdmin = async () => {
+    loading.value = true;
+    await router.push(getRouterPathWithLang('/admin', locale.value));
+    loading.value = false;
+    showMobileMenu.value = false;
+}
+
+const toggleTheme = () => {
+    toggleDark();
+    showMobileMenu.value = false;
+}
+
+const toggleLang = async () => {
+    locale.value == 'zh' ? await changeLocale('en') : await changeLocale('zh');
+    showMobileMenu.value = false;
+}
 
 useHead({
     title: () => openSettings.value.title || t('title'),
@@ -215,7 +116,7 @@ const logoClick = async () => {
     }
     if (logoClickCount.value >= 5) {
         logoClickCount.value = 0;
-        message.info("Change to admin Page");
+        showMessage("Change to admin Page", 'info');
         loading.value = true;
         await router.push(getRouterPathWithLang('/admin', locale.value));
         loading.value = false;
@@ -223,84 +124,123 @@ const logoClick = async () => {
         logoClickCount.value++;
     }
     if (logoClickCount.value > 0) {
-        message.info(`Click ${5 - logoClickCount.value + 1} times to enter the admin page`);
+        showMessage(`Click ${5 - logoClickCount.value + 1} times to enter the admin page`, 'info');
+    }
+}
+
+// Mock message/notification for api calls
+const message = {
+    error: (text) => showMessage(text, 'error'),
+    info: (text) => showMessage(text, 'info'),
+    success: (text) => showMessage(text, 'success'),
+}
+const notification = {
+    info: (opts) => {
+        if (opts.content) {
+            showMessage('Announcement', 'info')
+        }
     }
 }
 
 onMounted(async () => {
     await api.getOpenSettings(message, notification);
-    // make sure user_id is fetched
     if (!userSettings.value.user_id) await api.getUserSettings(message);
 });
 </script>
 
 <template>
     <div>
-        <n-page-header>
-            <template #title>
-                <h3>{{ openSettings.title || t('title') }}</h3>
+        <v-app-bar color="primary" density="comfortable">
+            <template v-slot:prepend>
+                <v-avatar @click="logoClick" class="cursor-pointer ml-2">
+                    <v-img src="/logo.png" alt="Logo"></v-img>
+                </v-avatar>
             </template>
-            <template #avatar>
-                <div @click="logoClick">
-                    <n-avatar style="margin-left: 10px;" src="/logo.png" />
-                </div>
+
+            <v-app-bar-title>{{ openSettings.title || t('title') }}</v-app-bar-title>
+
+            <template v-slot:append>
+                <!-- Desktop Menu -->
+                <template v-if="!isMobile">
+                    <v-btn variant="text" @click="goHome">
+                        <v-icon start>mdi-home</v-icon>
+                        {{ t('home') }}
+                    </v-btn>
+                    <v-btn v-if="!isTelegram" variant="text" @click="goUser">
+                        <v-icon start>mdi-account</v-icon>
+                        {{ t('user') }}
+                    </v-btn>
+                    <v-btn v-if="showAdminPage" variant="text" @click="goAdmin">
+                        <v-icon start>mdi-shield-account</v-icon>
+                        Admin
+                    </v-btn>
+                    <v-btn variant="text" @click="toggleTheme">
+                        <v-icon start>{{ isDark ? 'mdi-white-balance-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
+                        {{ isDark ? t('light') : t('dark') }}
+                    </v-btn>
+                    <v-btn variant="text" @click="toggleLang">
+                        <v-icon start>mdi-translate</v-icon>
+                        {{ locale == 'zh' ? 'English' : '中文' }}
+                    </v-btn>
+                    <v-btn v-if="openSettings?.showGithub" variant="text" 
+                        href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank">
+                        <v-icon start>mdi-github</v-icon>
+                        {{ version || 'Github' }}
+                    </v-btn>
+                </template>
+
+                <!-- Mobile Menu Button -->
+                <v-btn v-else icon @click="showMobileMenu = !showMobileMenu">
+                    <v-icon>mdi-menu</v-icon>
+                </v-btn>
             </template>
-            <template #extra>
-                <n-space>
-                    <n-menu v-if="!isMobile" mode="horizontal" :options="menuOptions" responsive />
-                    <n-button v-else :text="true" @click="showMobileMenu = !showMobileMenu" style="margin-right: 10px;">
-                        <template #icon>
-                            <n-icon :component="MenuFilled" />
-                        </template>
-                        {{ t('menu') }}
-                    </n-button>
-                </n-space>
+        </v-app-bar>
+
+        <!-- Mobile Navigation Drawer -->
+        <v-navigation-drawer v-model="showMobileMenu" location="top" temporary>
+            <v-list>
+                <v-list-item prepend-icon="mdi-home" :title="t('home')" @click="goHome"></v-list-item>
+                <v-list-item v-if="!isTelegram" prepend-icon="mdi-account" :title="t('user')" @click="goUser"></v-list-item>
+                <v-list-item v-if="showAdminPage" prepend-icon="mdi-shield-account" title="Admin" @click="goAdmin"></v-list-item>
+                <v-list-item :prepend-icon="isDark ? 'mdi-white-balance-sunny' : 'mdi-moon-waning-crescent'" 
+                    :title="isDark ? t('light') : t('dark')" @click="toggleTheme"></v-list-item>
+                <v-list-item prepend-icon="mdi-translate" :title="locale == 'zh' ? 'English' : '中文'" @click="toggleLang"></v-list-item>
+                <v-list-item v-if="openSettings?.showGithub" prepend-icon="mdi-github" :title="version || 'Github'"
+                    href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank"></v-list-item>
+            </v-list>
+        </v-navigation-drawer>
+
+        <!-- Access Password Dialog -->
+        <v-dialog v-model="showAuth" persistent max-width="400">
+            <v-card>
+                <v-card-title>{{ t('accessHeader') }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">{{ t('accessTip') }}</p>
+                    <v-text-field v-model="auth" type="password" 
+                        :append-inner-icon="'mdi-eye'"
+                        variant="outlined" density="compact"></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" :loading="loading" @click="authFunc">
+                        {{ t('ok') }}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Snackbar for messages -->
+        <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+            {{ snackbarText }}
+            <template v-slot:actions>
+                <v-btn variant="text" @click="snackbar = false">Close</v-btn>
             </template>
-        </n-page-header>
-        <n-drawer v-model:show="showMobileMenu" placement="top" style="height: 100vh;">
-            <n-drawer-content :title="t('menu')" closable>
-                <n-menu :options="menuOptions" />
-            </n-drawer-content>
-        </n-drawer>
-        <n-modal v-model:show="showAuth" :closable="false" :closeOnEsc="false" :maskClosable="false" preset="dialog"
-            :title="t('accessHeader')">
-            <p>{{ t('accessTip') }}</p>
-            <n-input v-model:value="auth" type="password" show-password-on="click" />
-            <template #action>
-                <n-button :loading="loading" @click="authFunc" type="primary">
-                    {{ t('ok') }}
-                </n-button>
-            </template>
-        </n-modal>
+        </v-snackbar>
     </div>
 </template>
 
 <style scoped>
-.n-layout-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.n-card {
-    margin-top: 10px;
-}
-
-.center {
-    display: flex;
-    text-align: left;
-    place-items: center;
-    justify-content: center;
-    margin: 20px;
-}
-
-.n-form .n-button {
-    margin-top: 10px;
+.cursor-pointer {
+    cursor: pointer;
 }
 </style>
