@@ -5,8 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 
-const { loading } = useGlobalState()
-const message = useMessage()
+const { loading, showSnackbar } = useGlobalState()
 
 const settings = ref({})
 
@@ -15,7 +14,7 @@ const fetchData = async () => {
         const res = await api.fetch(`/admin/worker/configs`)
         Object.assign(settings.value, res)
     } catch (error) {
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
 
@@ -26,9 +25,9 @@ onMounted(async () => {
 
 <template>
     <div class="center">
-        <n-card :bordered="false" embedded style="max-width: 800px; overflow: auto;">
-            <pre>{{ JSON.stringify(settings, null, 2) }}</pre>
-        </n-card>
+        <v-card variant="flat" max-width="800" width="100%" style="overflow: auto;">
+            <pre class="text-left pa-4">{{ JSON.stringify(settings, null, 2) }}</pre>
+        </v-card>
     </div>
 </template>
 

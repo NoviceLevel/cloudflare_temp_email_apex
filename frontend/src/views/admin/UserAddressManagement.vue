@@ -1,9 +1,9 @@
 <script setup>
-import { ref, h, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'
-import { NBadge } from 'naive-ui'
 
 import { api } from '../../api'
+import { useGlobalState } from '../../store'
 
 const props = defineProps({
     user_id: {
@@ -12,9 +12,9 @@ const props = defineProps({
     }
 });
 
-const message = useMessage()
+const { showSnackbar } = useGlobalState()
 
-const { locale, t } = useI18n({
+const { t } = useI18n({
     messages: {
         en: {
             success: 'success',
@@ -33,6 +33,12 @@ const { locale, t } = useI18n({
 
 const data = ref([])
 
+const headers = [
+    { title: t('name'), key: 'name' },
+    { title: t('mail_count'), key: 'mail_count', width: '150px' },
+    { title: t('send_count'), key: 'send_count', width: '150px' },
+];
+
 const fetchData = async () => {
     try {
         const { results } = await api.fetch(
@@ -41,40 +47,9 @@ const fetchData = async () => {
         data.value = results;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showSnackbar(error.message || "error", 'error')
     }
 }
-
-const columns = [
-    {
-        title: t('name'),
-        key: "name"
-    },
-    {
-        title: t('mail_count'),
-        key: "mail_count",
-        render(row) {
-            return h(NBadge, {
-                value: row.mail_count,
-                'show-zero': true,
-                max: 99,
-                type: "success"
-            })
-        }
-    },
-    {
-        title: t('send_count'),
-        key: "send_count",
-        render(row) {
-            return h(NBadge, {
-                value: row.send_count,
-                'show-zero': true,
-                max: 99,
-                type: "success"
-            })
-        }
-    }
-]
 
 onMounted(async () => {
     await fetchData()
@@ -83,12 +58,22 @@ onMounted(async () => {
 
 <template>
     <div style="overflow: auto;">
-        <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+        <v-data-table
+            :headers="headers"
+            :items="data"
+            hide-default-footer
+            class="elevation-0"
+            style="min-width: 500px;"
+        >
+            <template v-slot:item.mail_count="{ item }">
+                <v-badge :content="item.mail_count" color="success" inline></v-badge>
+            </template>
+            <template v-slot:item.send_count="{ item }">
+                <v-badge :content="item.send_count" color="success" inline></v-badge>
+            </template>
+        </v-data-table>
     </div>
 </template>
 
 <style scoped>
-.n-data-table {
-    min-width: 700px;
-}
 </style>
