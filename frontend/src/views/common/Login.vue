@@ -298,7 +298,7 @@ onMounted(async () => {
                     </div>
                     <div v-else>
                         <v-textarea v-model="credential" :label="t('credential')" variant="outlined"
-                            rows="3" class="mb-2"></v-textarea>
+                            rows="3" auto-grow class="mt-4 mb-2 no-resize-textarea"></v-textarea>
                     </div>
 
                     <div class="text-center mb-2">
@@ -376,3 +376,10 @@ onMounted(async () => {
         </v-snackbar>
     </div>
 </template>
+
+
+<style scoped>
+.no-resize-textarea :deep(textarea) {
+    resize: none;
+}
+</style>
