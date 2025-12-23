@@ -1,13 +1,11 @@
 <script setup>
-import { useMessage } from 'naive-ui'
 import { onMounted, ref } from "vue";
 import { useI18n } from 'vue-i18n'
-import { KeyFilled } from '@vicons/material'
+import { startAuthentication } from '@simplewebauthn/browser';
 
 import { api } from '../../api';
 import { useGlobalState } from '../../store'
 import { hashPassword } from '../../utils';
-import { startAuthentication } from '@simplewebauthn/browser';
 
 import Turnstile from '../../components/Turnstile.vue';
 
@@ -15,7 +13,11 @@ const {
     userJwt, userOpenSettings, openSettings,
     userOauth2SessionState, userOauth2SessionClientID
 } = useGlobalState()
-const message = useMessage();
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { t } = useI18n({
     messages: {
@@ -38,6 +40,7 @@ const { t } = useI18n({
             pleaseLogin: 'Please login',
             loginWithPasskey: 'Login with Passkey',
             loginWith: 'Login with {provider}',
+            cancel: 'Cancel',
         },
         zh: {
             login: '登录',
@@ -58,6 +61,7 @@ const { t } = useI18n({
             pleaseLogin: '请登录',
             loginWithPasskey: '使用 Passkey 登录',
             loginWith: '使用 {provider} 登录',
+            cancel: '取消',
         }
     }
 });
@@ -73,7 +77,7 @@ const cfToken = ref("")
 
 const emailLogin = async () => {
     if (!user.value.email || !user.value.password) {
-        message.error(t('pleaseInput'));
+        showMessage(t('pleaseInput'), 'error');
         return;
     }
     try {
@@ -81,14 +85,13 @@ const emailLogin = async () => {
             method: "POST",
             body: JSON.stringify({
                 email: user.value.email,
-                // hash password
                 password: await hashPassword(user.value.password)
             })
         });
         userJwt.value = res.jwt;
         location.reload();
     } catch (error) {
-        message.error(error.message || "login failed");
+        showMessage(error.message || "login failed", 'error');
     }
 };
 
@@ -102,11 +105,11 @@ const getVerifyCodeTimeout = () => {
 
 const sendVerificationCode = async () => {
     if (!user.value.email) {
-        message.error(t('pleaseInputEmail'));
+        showMessage(t('pleaseInputEmail'), 'error');
         return;
     }
     if (openSettings.value.cfTurnstileSiteKey && !cfToken.value && userOpenSettings.value.enableMailVerify) {
-        message.error(t('pleaseCompleteTurnstile'));
+        showMessage(t('pleaseCompleteTurnstile'), 'error');
         return;
     }
     try {
@@ -118,7 +121,7 @@ const sendVerificationCode = async () => {
             })
         });
         if (res && res.expirationTtl) {
-            message.success(t('verifyCodeSent', { timeout: res.expirationTtl }));
+            showMessage(t('verifyCodeSent', { timeout: res.expirationTtl }));
             verifyCodeExpire.value = new Date().getTime() + res.expirationTtl * 1000;
             const intervalId = setInterval(() => {
                 verifyCodeTimeout.value = getVerifyCodeTimeout();
@@ -129,17 +132,17 @@ const sendVerificationCode = async () => {
             }, 1000);
         }
     } catch (error) {
-        message.error(error.message || "send verification code failed");
+        showMessage(error.message || "send verification code failed", 'error');
     }
 };
 
 const emailSignup = async () => {
     if (!user.value.email || !user.value.password) {
-        message.error(t('pleaseInput'));
+        showMessage(t('pleaseInput'), 'error');
         return;
     }
     if (!user.value.code && userOpenSettings.value.enableMailVerify) {
-        message.error(t('pleaseInputCode'));
+        showMessage(t('pleaseInputCode'), 'error');
         return;
     }
     try {
@@ -147,19 +150,17 @@ const emailSignup = async () => {
             method: "POST",
             body: JSON.stringify({
                 email: user.value.email,
-                // hash password
                 password: await hashPassword(user.value.password),
                 code: user.value.code
-            }),
-            message: message
+            })
         });
         if (res) {
             tabValue.value = "signin";
-            message.success(t('pleaseLogin'));
+            showMessage(t('pleaseLogin'));
         }
         showModal.value = false;
     } catch (error) {
-        message.error(error.message || "register failed");
+        showMessage(error.message || "register failed", 'error');
     }
 };
 
@@ -173,7 +174,6 @@ const passkeyLogin = async () => {
         })
         const credential = await startAuthentication(options)
 
-        // Send the result to the server and return the promise.
         const res = await api.fetch(`/user_api/passkey/authenticate_response`, {
             method: 'POST',
             body: JSON.stringify({
@@ -186,7 +186,7 @@ const passkeyLogin = async () => {
         location.reload();
     } catch (e) {
         console.error(e)
-        message.error(e.message)
+        showMessage(e.message, 'error')
     }
 };
 
@@ -195,114 +195,102 @@ const oauth2Login = async (clientID) => {
         userOauth2SessionClientID.value = clientID;
         userOauth2SessionState.value = Math.random().toString(36).substring(2);
         const res = await api.fetch(`/user_api/oauth2/login_url?clientID=${clientID}&state=${userOauth2SessionState.value}`);
-        // redirect to oauth2 login page
         location.href = res.url;
     } catch (error) {
-        message.error(error.message || "login failed");
+        showMessage(error.message || "login failed", 'error');
     }
 };
-
-onMounted(async () => {
-
-});
 </script>
 
 <template>
-    <div class="center">
-        <n-tabs v-model:value="tabValue" size="large" v-if="userOpenSettings.fetched" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="t('login')">
-                <n-form>
-                    <n-form-item-row :label="t('email')" required>
-                        <n-input v-model:value="user.email" />
-                    </n-form-item-row>
-                    <n-form-item-row :label="t('password')" required>
-                        <n-input v-model:value="user.password" type="password" show-password-on="click" />
-                    </n-form-item-row>
-                    <n-button @click="emailLogin" type="primary" block secondary strong>
+    <div class="d-flex justify-center">
+        <div v-if="userOpenSettings.fetched" style="max-width: 400px; width: 100%;">
+            <v-tabs v-model="tabValue" color="primary" class="mb-4">
+                <v-tab value="signin">{{ t('login') }}</v-tab>
+                <v-tab v-if="userOpenSettings.enable" value="signup">{{ t('register') }}</v-tab>
+            </v-tabs>
+
+            <v-window v-model="tabValue">
+                <v-window-item value="signin">
+                    <v-text-field v-model="user.email" :label="t('email')" variant="outlined" density="compact"
+                        class="mb-3" />
+                    <v-text-field v-model="user.password" :label="t('password')" type="password" variant="outlined"
+                        density="compact" class="mb-3" />
+                    <v-btn @click="emailLogin" color="primary" variant="outlined" block class="mb-2">
                         {{ t('login') }}
-                    </n-button>
-                    <n-button @click="showModal = true" type="info" quaternary size="tiny">
+                    </v-btn>
+                    <v-btn @click="showModal = true" variant="text" size="small" class="mb-4">
                         {{ t('forgotPassword') }}
-                    </n-button>
-                    <n-divider />
-                    <n-button @click="passkeyLogin" type="primary" block secondary strong>
-                        <template #icon>
-                            <n-icon :component="KeyFilled" />
-                        </template>
+                    </v-btn>
+                    <v-divider class="mb-4" />
+                    <v-btn @click="passkeyLogin" color="primary" variant="outlined" block prepend-icon="mdi-key"
+                        class="mb-2">
                         {{ t('loginWithPasskey') }}
-                    </n-button>
-                    <n-button @click="oauth2Login(item.clientID)" v-for="item in userOpenSettings.oauth2ClientIDs"
-                        :key="item.clientID" block secondary strong>
+                    </v-btn>
+                    <v-btn v-for="item in userOpenSettings.oauth2ClientIDs" :key="item.clientID"
+                        @click="oauth2Login(item.clientID)" variant="outlined" block class="mb-2">
                         {{ t('loginWith', { provider: item.name }) }}
-                    </n-button>
-                </n-form>
-            </n-tab-pane>
-            <n-tab-pane v-if="userOpenSettings.enable" name="signup" :tab="t('register')">
-                <n-form>
-                    <n-form-item-row :label="t('email')" required>
-                        <n-input v-model:value="user.email" />
-                    </n-form-item-row>
-                    <n-form-item-row :label="t('password')" required>
-                        <n-input v-model:value="user.password" type="password" show-password-on="click" />
-                    </n-form-item-row>
+                    </v-btn>
+                </v-window-item>
+
+                <v-window-item v-if="userOpenSettings.enable" value="signup">
+                    <v-text-field v-model="user.email" :label="t('email')" variant="outlined" density="compact"
+                        class="mb-3" />
+                    <v-text-field v-model="user.password" :label="t('password')" type="password" variant="outlined"
+                        density="compact" class="mb-3" />
                     <Turnstile v-if="userOpenSettings.enableMailVerify" v-model:value="cfToken" />
-                    <n-form-item-row v-if="userOpenSettings.enableMailVerify" :label="t('verifyCode')" required>
-                        <n-input-group>
-                            <n-input v-model:value="user.code" />
-                            <n-button @click="sendVerificationCode" style="margin-bottom: 0" type="primary" ghost
-                                :disabled="verifyCodeTimeout > 0">
-                                {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout })
-                                    : t('sendVerificationCode') }}
-                            </n-button>
-                        </n-input-group>
-                    </n-form-item-row>
-                </n-form>
-                <n-button @click="emailSignup" type="primary" block secondary strong>
-                    {{ t('register') }}
-                </n-button>
-            </n-tab-pane>
-        </n-tabs>
-        <n-modal v-model:show="showModal" style="max-width: 600px;" preset="card" :title="t('forgotPassword')">
-            <n-form v-if="userOpenSettings.enable && userOpenSettings.enableMailVerify">
-                <n-form-item-row :label="t('email')" required>
-                    <n-input v-model:value="user.email" />
-                </n-form-item-row>
-                <n-form-item-row :label="t('password')" required>
-                    <n-input v-model:value="user.password" type="password" show-password-on="click" />
-                </n-form-item-row>
-                <Turnstile v-model:value="cfToken" />
-                <n-form-item-row :label="t('verifyCode')" required>
-                    <n-input-group>
-                        <n-input v-model:value="user.code" />
-                        <n-button @click="sendVerificationCode" style="margin-bottom: 0" type="primary" ghost
+                    <div v-if="userOpenSettings.enableMailVerify" class="d-flex ga-2 mb-3">
+                        <v-text-field v-model="user.code" :label="t('verifyCode')" variant="outlined" density="compact"
+                            hide-details />
+                        <v-btn @click="sendVerificationCode" color="primary" variant="outlined"
                             :disabled="verifyCodeTimeout > 0">
-                            {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout })
-                                : t('sendVerificationCode') }}
-                        </n-button>
-                    </n-input-group>
-                </n-form-item-row>
-                <n-button @click="emailSignup" type="primary" block secondary strong>
-                    {{ t('resetPassword') }}
-                </n-button>
-            </n-form>
-            <n-alert v-else :show-icon="false" :bordered="false">
-                <span>
-                    {{ t('cannotForgotPassword') }}
-                </span>
-            </n-alert>
-        </n-modal>
+                            {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout }) :
+                                t('sendVerificationCode') }}
+                        </v-btn>
+                    </div>
+                    <v-btn @click="emailSignup" color="primary" variant="outlined" block>
+                        {{ t('register') }}
+                    </v-btn>
+                </v-window-item>
+            </v-window>
+        </div>
+
+        <v-dialog v-model="showModal" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('forgotPassword') }}</v-card-title>
+                <v-card-text>
+                    <div v-if="userOpenSettings.enable && userOpenSettings.enableMailVerify">
+                        <v-text-field v-model="user.email" :label="t('email')" variant="outlined" density="compact"
+                            class="mb-3" />
+                        <v-text-field v-model="user.password" :label="t('password')" type="password" variant="outlined"
+                            density="compact" class="mb-3" />
+                        <Turnstile v-model:value="cfToken" />
+                        <div class="d-flex ga-2 mb-3">
+                            <v-text-field v-model="user.code" :label="t('verifyCode')" variant="outlined"
+                                density="compact" hide-details />
+                            <v-btn @click="sendVerificationCode" color="primary" variant="outlined"
+                                :disabled="verifyCodeTimeout > 0">
+                                {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout }) :
+                                    t('sendVerificationCode') }}
+                            </v-btn>
+                        </div>
+                        <v-btn @click="emailSignup" color="primary" variant="outlined" block>
+                            {{ t('resetPassword') }}
+                        </v-btn>
+                    </div>
+                    <v-alert v-else type="warning" variant="tonal">
+                        {{ t('cannotForgotPassword') }}
+                    </v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showModal = false">{{ t('cancel') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.center {
-    display: flex;
-    text-align: center;
-    place-items: center;
-    justify-content: center;
-}
-
-.n-button {
-    margin-top: 10px;
-}
-</style>

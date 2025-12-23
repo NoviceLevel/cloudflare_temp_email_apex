@@ -1,8 +1,7 @@
 <script setup>
-import { ref, h, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router';
-import { NBadge, NPopconfirm, NButton } from 'naive-ui'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
@@ -10,9 +9,13 @@ import { getRouterPathWithLang } from '../../utils'
 
 import Login from '../common/Login.vue';
 
-const { jwt } = useGlobalState()
-const message = useMessage()
+const { jwt, loading } = useGlobalState()
 const router = useRouter()
+
+const snackbar = ref({ show: false, text: '', color: 'success' })
+const showMessage = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color }
+}
 
 const { locale, t } = useI18n({
     messages: {
@@ -30,6 +33,7 @@ const { locale, t } = useI18n({
             transferAddressTip: 'Transfer address to another user will remove the address from your account and transfer it to another user. Are you sure to transfer the address?',
             address: 'Address',
             create_or_bind: 'Create or Bind',
+            cancel: 'Cancel',
         },
         zh: {
             success: '成功',
@@ -45,22 +49,26 @@ const { locale, t } = useI18n({
             transferAddressTip: '转移地址到其他用户将会从你的账户中移除此地址并转移给其他用户。确定要转移地址吗？',
             address: '地址',
             create_or_bind: '创建或绑定',
+            cancel: '取消',
         }
     }
 });
 
+const tabValue = ref('address')
 const data = ref([])
-const showTranferAddress = ref(false)
+const showTransferAddress = ref(false)
+const showChangeConfirm = ref(false)
+const showUnbindConfirm = ref(false)
 const currentAddress = ref("")
 const currentAddressId = ref(0)
 const targetUserEmail = ref('')
 
-const changeMailAddress = async (address_id) => {
+const changeMailAddress = async () => {
     try {
-        const res = await api.fetch(`/user_api/bind_address_jwt/${address_id}`);
-        message.success(t('changeMailAddress') + " " + t('success'));
+        const res = await api.fetch(`/user_api/bind_address_jwt/${currentAddressId.value}`);
+        showMessage(t('changeMailAddress') + " " + t('success'));
         if (!res.jwt) {
-            message.error("jwt not found");
+            showMessage("jwt not found", 'error');
             return;
         }
         jwt.value = res.jwt;
@@ -68,145 +76,81 @@ const changeMailAddress = async (address_id) => {
         location.reload();
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
-const unbindAddress = async (address_id) => {
+const unbindAddress = async () => {
     try {
-        const res = await api.fetch(`/user_api/unbind_address`, {
+        await api.fetch(`/user_api/unbind_address`, {
             method: 'POST',
-            body: JSON.stringify({ address_id })
+            body: JSON.stringify({ address_id: currentAddressId.value })
         });
-        message.success(t('unbindAddress') + " " + t('success'));
+        showMessage(t('unbindAddress') + " " + t('success'));
+        showUnbindConfirm.value = false;
         await fetchData();
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
 const transferAddress = async () => {
     if (!targetUserEmail.value) {
-        message.error("targetUserEmail is required");
+        showMessage("targetUserEmail is required", 'error');
         return;
     }
     if (!currentAddressId.value) {
-        message.error("currentAddressId is required");
+        showMessage("currentAddressId is required", 'error');
         return;
     }
     try {
-        const res = await api.fetch(`/user_api/transfer_address`, {
+        await api.fetch(`/user_api/transfer_address`, {
             method: 'POST',
             body: JSON.stringify({
                 address_id: currentAddressId.value,
                 target_user_email: targetUserEmail.value
             })
         });
-        message.success(t('transferAddress') + " " + t('success'));
+        showMessage(t('transferAddress') + " " + t('success'));
         await fetchData();
-        showTranferAddress.value = false;
+        showTransferAddress.value = false;
         currentAddressId.value = 0;
         currentAddress.value = "";
         targetUserEmail.value = "";
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
 const fetchData = async () => {
     try {
-        const { results } = await api.fetch(
-            `/user_api/bind_address`
-        );
+        const { results } = await api.fetch(`/user_api/bind_address`);
         data.value = results;
     } catch (error) {
         console.log(error)
-        message.error(error.message || "error");
+        showMessage(error.message || "error", 'error');
     }
 }
 
-const columns = [
-    {
-        title: t('name'),
-        key: "name"
-    },
-    {
-        title: t('mail_count'),
-        key: "mail_count",
-        render(row) {
-            return h(NBadge, {
-                value: row.mail_count,
-                'show-zero': true,
-                max: 99,
-                type: "success"
-            })
-        }
-    },
-    {
-        title: t('send_count'),
-        key: "send_count",
-        render(row) {
-            return h(NBadge, {
-                value: row.send_count,
-                'show-zero': true,
-                max: 99,
-                type: "success"
-            })
-        }
-    },
-    {
-        title: t('actions'),
-        key: 'actions',
-        render(row) {
-            return h('div', [
-                h(NPopconfirm,
-                    {
-                        onPositiveClick: () => changeMailAddress(row.id)
-                    },
-                    {
-                        trigger: () => h(NButton,
-                            {
-                                tertiary: true,
-                                type: "primary",
-                            },
-                            { default: () => t('changeMailAddress') }
-                        ),
-                        default: () => `${t('changeMailAddress')}?`
-                    }
-                ),
-                h(NButton,
-                    {
-                        tertiary: true,
-                        type: "primary",
-                        onClick: () => {
-                            currentAddressId.value = row.id;
-                            currentAddress.value = row.name;
-                            showTranferAddress.value = true;
-                        }
-                    },
-                    { default: () => t('transferAddress') }
-                ),
-                h(NPopconfirm,
-                    {
-                        onPositiveClick: () => unbindAddress(row.id)
-                    },
-                    {
-                        trigger: () => h(NButton,
-                            {
-                                tertiary: true,
-                                type: "error",
-                            },
-                            { default: () => t('unbindAddress') }
-                        ),
-                        default: () => t('unbindAddressTip')
-                    }
-                ),
-            ])
-        }
-    }
-]
+const confirmChange = (row) => {
+    currentAddressId.value = row.id;
+    currentAddress.value = row.name;
+    showChangeConfirm.value = true;
+}
+
+const confirmUnbind = (row) => {
+    currentAddressId.value = row.id;
+    currentAddress.value = row.name;
+    showUnbindConfirm.value = true;
+}
+
+const openTransfer = (row) => {
+    currentAddressId.value = row.id;
+    currentAddress.value = row.name;
+    showTransferAddress.value = true;
+}
 
 onMounted(async () => {
     await fetchData()
@@ -215,33 +159,96 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-modal v-model:show="showTranferAddress" preset="dialog" :title="t('transferAddress')">
-            <span>
-                <p>{{ t("transferAddressTip") }}</p>
-                <p>{{ t('transferAddress') + ": " + currentAddress }}</p>
-                <n-input v-model:value="targetUserEmail" :placeholder="t('targetUserEmail')" />
-            </span>
-            <template #action>
-                <n-button :loading="loading" @click="transferAddress" size="small" tertiary type="error">
-                    {{ t('transferAddress') }}
-                </n-button>
-            </template>
-        </n-modal>
-        <n-tabs type="segment">
-            <n-tab-pane name="address" :tab="t('address')">
-                <div style="overflow: auto;">
-                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+        <v-tabs v-model="tabValue" color="primary">
+            <v-tab value="address">{{ t('address') }}</v-tab>
+            <v-tab value="create_or_bind">{{ t('create_or_bind') }}</v-tab>
+        </v-tabs>
+
+        <v-window v-model="tabValue">
+            <v-window-item value="address">
+                <div style="overflow: auto;" class="mt-4">
+                    <v-table>
+                        <thead>
+                            <tr>
+                                <th>{{ t('name') }}</th>
+                                <th>{{ t('mail_count') }}</th>
+                                <th>{{ t('send_count') }}</th>
+                                <th>{{ t('actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in data" :key="row.id">
+                                <td>{{ row.name }}</td>
+                                <td>
+                                    <v-chip color="success" size="small">{{ row.mail_count }}</v-chip>
+                                </td>
+                                <td>
+                                    <v-chip color="success" size="small">{{ row.send_count }}</v-chip>
+                                </td>
+                                <td>
+                                    <v-btn size="small" color="primary" variant="text" @click="confirmChange(row)">
+                                        {{ t('changeMailAddress') }}
+                                    </v-btn>
+                                    <v-btn size="small" color="primary" variant="text" @click="openTransfer(row)">
+                                        {{ t('transferAddress') }}
+                                    </v-btn>
+                                    <v-btn size="small" color="error" variant="text" @click="confirmUnbind(row)">
+                                        {{ t('unbindAddress') }}
+                                    </v-btn>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </v-table>
                 </div>
-            </n-tab-pane>
-            <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">
-                <Login />
-            </n-tab-pane>
-        </n-tabs>
+            </v-window-item>
+            <v-window-item value="create_or_bind">
+                <div class="mt-4">
+                    <Login />
+                </div>
+            </v-window-item>
+        </v-window>
+
+        <v-dialog v-model="showTransferAddress" max-width="500">
+            <v-card>
+                <v-card-title>{{ t('transferAddress') }}</v-card-title>
+                <v-card-text>
+                    <p class="mb-2">{{ t("transferAddressTip") }}</p>
+                    <p class="mb-4">{{ t('transferAddress') + ": " + currentAddress }}</p>
+                    <v-text-field v-model="targetUserEmail" :label="t('targetUserEmail')" variant="outlined"
+                        density="compact" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showTransferAddress = false">{{ t('cancel') }}</v-btn>
+                    <v-btn :loading="loading" @click="transferAddress" color="error">{{ t('transferAddress') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showChangeConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('changeMailAddress') }}?</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showChangeConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="primary" @click="changeMailAddress">{{ t('changeMailAddress') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="showUnbindConfirm" max-width="400">
+            <v-card>
+                <v-card-text>{{ t('unbindAddressTip') }}</v-card-text>
+                <v-card-actions>
+                    <v-spacer />
+                    <v-btn @click="showUnbindConfirm = false">{{ t('cancel') }}</v-btn>
+                    <v-btn color="error" @click="unbindAddress">{{ t('unbindAddress') }}</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="2000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </div>
 </template>
-
-<style scoped>
-.n-data-table {
-    min-width: 700px;
-}
-</style>
