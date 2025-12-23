@@ -58,7 +58,7 @@ See [CHANGELOG](CHANGELOG.md) for the latest updates.
 
 ## 🎯 Live Demo
 
-Try it now → [https://mail.awsl.uk/](https://mail.awsl.uk/)
+Try it now → [https://mail.oo-ooo.fun/](https://mail.oo-ooo.fun/)
 
 <details>
 <summary>📊 Service Status Monitoring (Click to expand/collapse)</summary>
