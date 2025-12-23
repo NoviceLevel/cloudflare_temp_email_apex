@@ -213,7 +213,7 @@ const oauth2Login = async (clientID) => {
             <v-window v-model="tabValue">
                 <v-window-item value="signin">
                     <v-text-field v-model="user.email" :label="t('email')" variant="outlined" density="compact"
-                        class="mb-3" />
+                        class="mt-4 mb-3" />
                     <v-text-field v-model="user.password" :label="t('password')" type="password" variant="outlined"
                         density="compact" class="mb-3" />
                     <v-btn @click="emailLogin" color="primary" variant="outlined" block class="mb-2">
@@ -235,7 +235,7 @@ const oauth2Login = async (clientID) => {
 
                 <v-window-item v-if="userOpenSettings.enable" value="signup">
                     <v-text-field v-model="user.email" :label="t('email')" variant="outlined" density="compact"
-                        class="mb-3" />
+                        class="mt-4 mb-3" />
                     <v-text-field v-model="user.password" :label="t('password')" type="password" variant="outlined"
                         density="compact" class="mb-3" />
                     <Turnstile v-if="userOpenSettings.enableMailVerify" v-model:value="cfToken" />
