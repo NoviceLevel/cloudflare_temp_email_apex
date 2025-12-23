@@ -58,15 +58,15 @@ See [CHANGELOG](CHANGELOG.md) for the latest updates.
 
 ## 🎯 Live Demo
 
-Try it now → [https://mail.oo-ooo.fun/](https://mail.oo-ooo.fun/)
+Try it now → [https://oo-ooo.fun/](https://oo-ooo.fun/)
 
 <details>
 <summary>📊 Service Status Monitoring (Click to expand/collapse)</summary>
 
 |                                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Backend](https://temp-email-api.awsl.uk/) | [![Deploy Backend Production](https://github.com/dreamhunter2333/cloudflare_temp_email/actions/workflows/backend_deploy.yaml/badge.svg)](https://github.com/dreamhunter2333/cloudflare_temp_email/actions/workflows/backend_deploy.yaml) ![](https://uptime.aks.awsl.icu/api/badge/10/status) ![](https://uptime.aks.awsl.icu/api/badge/10/uptime) ![](https://uptime.aks.awsl.icu/api/badge/10/ping) ![](https://uptime.aks.awsl.icu/api/badge/10/avg-response) ![](https://uptime.aks.awsl.icu/api/badge/10/cert-exp) ![](https://uptime.aks.awsl.icu/api/badge/10/response) |
-| [Frontend](https://mail.awsl.uk/)          | [![Deploy Frontend](https://github.com/dreamhunter2333/cloudflare_temp_email/actions/workflows/frontend_deploy.yaml/badge.svg)](https://github.com/dreamhunter2333/cloudflare_temp_email/actions/workflows/frontend_deploy.yaml) ![](https://uptime.aks.awsl.icu/api/badge/12/status) ![](https://uptime.aks.awsl.icu/api/badge/12/uptime) ![](https://uptime.aks.awsl.icu/api/badge/12/ping) ![](https://uptime.aks.awsl.icu/api/badge/12/avg-response) ![](https://uptime.aks.awsl.icu/api/badge/12/cert-exp) ![](https://uptime.aks.awsl.icu/api/badge/12/response)         |
+| [Backend](https://api.oo-ooo.fun/) | [![Deploy Backend Production](https://github.com/NoviceLevel/cloudflare_temp_email_apex/actions/workflows/backend_deploy.yaml/badge.svg)](https://github.com/NoviceLevel/cloudflare_temp_email_apex/actions/workflows/backend_deploy.yaml) |
+| [Frontend](https://oo-ooo.fun/)          | [![Deploy Frontend](https://github.com/NoviceLevel/cloudflare_temp_email_apex/actions/workflows/frontend_deploy.yaml/badge.svg)](https://github.com/NoviceLevel/cloudflare_temp_email_apex/actions/workflows/frontend_deploy.yaml) |
 
 </details>
 
