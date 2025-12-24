@@ -117,6 +117,7 @@ const { t } = useI18n({
 
 const showAdminPasswordModal = computed(() => !showAdminPage.value || showAdminAuth.value)
 const tmpAdminAuth = ref('')
+const showPassword = ref(false)
 
 // Sub tabs
 const quickSetupTab = ref('database')
@@ -137,8 +138,8 @@ onMounted(async () => {
         <v-card-title>{{ t('accessHeader') }}</v-card-title>
         <v-card-text>
           <p class="mb-4">{{ t('accessTip') }}</p>
-          <v-text-field v-model="tmpAdminAuth" type="password" variant="outlined" density="compact"
-            :append-inner-icon="'mdi-eye'" @click:append-inner="() => { }" />
+          <v-text-field v-model="tmpAdminAuth" :type="showPassword ? 'text' : 'password'" variant="outlined" density="compact"
+            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'" @click:append-inner="showPassword = !showPassword" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
