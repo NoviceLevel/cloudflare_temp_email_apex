@@ -202,7 +202,7 @@ onMounted(async () => {
                 </div>
             </v-window-item>
             <v-window-item value="create_or_bind">
-                <div class="mt-4">
+                <div class="d-flex justify-center mt-4">
                     <Login />
                 </div>
             </v-window-item>
