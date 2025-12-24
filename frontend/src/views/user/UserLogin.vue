@@ -228,7 +228,8 @@ const oauth2Login = async (clientID) => {
                         {{ t('loginWithPasskey') }}
                     </v-btn>
                     <v-btn v-for="item in userOpenSettings.oauth2ClientIDs" :key="item.clientID"
-                        @click="oauth2Login(item.clientID)" variant="outlined" block class="mb-2">
+                        @click="oauth2Login(item.clientID)" variant="outlined" block class="mb-2"
+                        :prepend-icon="item.name.toLowerCase() === 'github' ? 'mdi-github' : 'mdi-login'">
                         {{ t('loginWith', { provider: item.name }) }}
                     </v-btn>
                 </v-window-item>
