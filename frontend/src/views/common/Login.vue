@@ -321,7 +321,7 @@ onMounted(async () => {
             </v-window-item>
 
             <v-window-item v-if="showNewAddressTab" value="register" class="tab-content">
-                <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center">
+                <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center" scrim="transparent">
                     <M3LoadingIndicator />
                 </v-overlay>
                 <v-form>
