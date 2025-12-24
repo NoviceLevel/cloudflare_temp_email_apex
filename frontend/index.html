@@ -105,8 +105,8 @@
 </head>
 
 <body>
-  <!-- 浏览器不支持提示 -->
-  <div id="browser-unsupported" class="browser-unsupported">
+  <!-- 浏览器不支持提示 - 默认显示 -->
+  <div id="browser-unsupported" class="browser-unsupported" style="display: block;">
     <div class="browser-unsupported-content">
       <div class="browser-unsupported-icon">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -126,25 +126,12 @@
     </div>
   </div>
 
-  <div id="app"></div>
+  <div id="app" style="display: none;"></div>
   
-  <!-- 浏览器检测脚本 - 使用老语法确保能运行 -->
-  <script>
-    (function() {
-      var isSupported = true;
-      try {
-        // 检测 Optional Chaining 和 Nullish Coalescing
-        eval('var a = {}; a?.b ?? "c"');
-        // 检测 Promise.allSettled
-        if (typeof Promise.allSettled !== 'function') isSupported = false;
-      } catch (e) {
-        isSupported = false;
-      }
-      if (!isSupported) {
-        document.getElementById('browser-unsupported').style.display = 'block';
-        document.getElementById('app').style.display = 'none';
-      }
-    })();
+  <!-- 现代浏览器会执行这个 module 脚本，隐藏提示并显示 app -->
+  <script type="module">
+    document.getElementById('browser-unsupported').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
   </script>
   <script type="module" src="/src/main.js"></script>
 </body>
