@@ -157,7 +157,6 @@ const handleSaveToS3 = async (filename, blob) => {
         <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
         <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
       </div>
-      </div>
     </v-card>
   </v-dialog>
 </template>
