@@ -12,13 +12,13 @@ const { preferShowTextMail, useIframeShowMail, useUTCDate } = useGlobalState();
 const { t } = useI18n({
   messages: {
     en: {
-      delete: 'Delete', deleteMailTip: 'Are you sure?', attachments: 'Attachments',
+      delete: 'Delete', deleteMailTip: 'This action cannot be undone. The email will be permanently removed.', attachments: 'Attachments',
       downloadMail: 'Download', reply: 'Reply', forward: 'Forward',
       showTextMail: 'Text', showHtmlMail: 'HTML', saveToS3: 'Save S3',
       size: 'Size', fullscreen: 'Fullscreen',
     },
     zh: {
-      delete: '删除', deleteMailTip: '确定删除?', attachments: '附件',
+      delete: '删除', deleteMailTip: '此操作无法撤销，邮件将被永久删除。', attachments: '附件',
       downloadMail: '下载', reply: '回复', forward: '转发',
       showTextMail: '纯文本', showHtmlMail: 'HTML', saveToS3: '保存S3',
       size: '大小', fullscreen: '全屏',
@@ -154,10 +154,10 @@ const handleSaveToS3 = async (filename, blob) => {
         <v-icon size="32" color="error" class="mb-4">mdi-delete-outline</v-icon>
         <div class="text-h6 mb-2">{{ t('delete') }}</div>
         <div class="text-body-2 text-medium-emphasis mb-4">{{ t('deleteMailTip') }}</div>
-      </div>
-      <div class="d-flex justify-end ga-2">
-        <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
-        <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
+        <div class="d-flex ga-2">
+          <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
+          <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
+        </div>
       </div>
     </v-card>
   </v-dialog>
