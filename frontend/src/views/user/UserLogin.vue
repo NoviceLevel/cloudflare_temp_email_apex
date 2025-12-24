@@ -294,3 +294,15 @@ const oauth2Login = async (clientID) => {
         </v-snackbar>
     </div>
 </template>
+
+
+<style scoped>
+/* v-window 保持 hidden 确保切换动画正常 */
+.v-window {
+    overflow: hidden !important;
+}
+/* v-window-item 内容加 padding 防止按钮动画被裁剪 */
+.v-window-item {
+    padding: 4px !important;
+}
+</style>

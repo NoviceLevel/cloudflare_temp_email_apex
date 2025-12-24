@@ -42,7 +42,7 @@ onMounted(async () => {
             </v-alert>
         </div>
         <div v-else class="d-flex justify-center my-5">
-            <v-card variant="flat" max-width="600" width="100%">
+            <v-card variant="flat" max-width="600" width="100%" class="login-card">
                 <v-card-text>
                     <v-alert v-if="userJwt" type="warning" variant="tonal" closable class="mb-4">
                         {{ t('fetchUserSettingsError') }}
@@ -57,3 +57,12 @@ onMounted(async () => {
         </v-snackbar>
     </div>
 </template>
+
+<style scoped>
+.login-card {
+    overflow: visible !important;
+}
+.login-card :deep(.v-card-text) {
+    overflow: visible !important;
+}
+</style>
