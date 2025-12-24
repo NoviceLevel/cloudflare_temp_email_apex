@@ -6,28 +6,17 @@ import { VitePWA } from 'vite-plugin-pwa'
 import vuetify from 'vite-plugin-vuetify'
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
-import legacy from '@vitejs/plugin-legacy';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
     outDir: './dist',
-    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
   },
   plugins: [
     vue(),
     vuetify({ autoImport: true }),
     wasm(),
-    topLevelAwait({
-      promiseExportName: '__tla',
-      promiseImportName: i => `__tla_${i}`
-    }),
-    legacy({
-      targets: ['iOS >= 12', 'Chrome >= 70', 'Safari >= 12', 'Firefox >= 60', 'Edge >= 88'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
-      modernPolyfills: ['es.promise', 'es.array.iterator'],
-      renderLegacyChunks: true,
-    }),
+    topLevelAwait(),
     VitePWA({
       registerType: null,
       devOptions: {
