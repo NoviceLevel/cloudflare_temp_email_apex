@@ -102,7 +102,7 @@ onMounted(async () => {
 
 <template>
     <div class="d-flex justify-center">
-        <v-card variant="flat" max-width="800" width="100%">
+        <v-card variant="flat" max-width="800" width="100%" class="pa-4">
             <v-card-actions class="justify-end">
                 <v-btn @click="fetchStatus" variant="outlined">{{ t('status') }}</v-btn>
                 <v-btn @click="init" color="primary" variant="outlined">{{ t('init') }}</v-btn>

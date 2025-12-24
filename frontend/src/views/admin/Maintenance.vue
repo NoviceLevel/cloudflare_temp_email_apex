@@ -140,7 +140,7 @@ onMounted(async () => {
 
 <template>
     <div class="center">
-        <v-card variant="flat" max-width="800" width="100%">
+        <v-card variant="flat" max-width="800" width="100%" class="pa-4">
             <v-alert type="warning" variant="tonal" class="mb-4">
                 {{ t('cronTip') }}
             </v-alert>
