@@ -154,10 +154,10 @@ const handleSaveToS3 = async (filename, blob) => {
         <v-icon size="32" color="error" class="mb-4">mdi-delete-outline</v-icon>
         <div class="text-h6 mb-2">{{ t('delete') }}</div>
         <div class="text-body-2 text-medium-emphasis mb-4">{{ t('deleteMailTip') }}</div>
-        <div class="d-flex ga-2">
-          <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
-          <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
-        </div>
+      </div>
+      <div class="d-flex justify-end ga-2">
+        <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
+        <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
       </div>
     </v-card>
   </v-dialog>
