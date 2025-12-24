@@ -33,7 +33,7 @@ const { t } = useI18n({
 
 <template>
     <div class="d-flex justify-center">
-        <div :style="userTab === 'user_mail_box_tab' ? 'max-width: 1200px; width: 100%;' : 'max-width: 400px; width: 100%;'">
+        <div style="max-width: 1200px; width: 100%;">
             <UserBar />
             <template v-if="userSettings.user_email">
                 <v-tabs v-model="userTab"
