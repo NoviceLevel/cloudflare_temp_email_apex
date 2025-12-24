@@ -309,24 +309,23 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
       </div>
 
       <div class="d-flex" style="gap: 16px;">
-        <div style="width: 33%; max-height: 70vh; overflow-y: auto;">
-          <v-list lines="three">
+        <div style="width: 280px; min-width: 280px; max-height: 70vh; overflow-y: auto;">
+          <v-list lines="three" density="compact">
             <v-list-item v-for="row in data" :key="row.id" @click="clickRow(row)" :class="mailItemClass(row)">
               <template v-slot:prepend v-if="multiActionMode">
                 <v-checkbox-btn v-model="row.checked"></v-checkbox-btn>
               </template>
-              <v-list-item-title>{{ row.subject }}</v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip size="x-small" class="mr-1">ID: {{ row.id }}</v-chip>
-                <v-chip size="x-small" class="mr-1">{{ utcToLocalDate(row.created_at, useUTCDate) }}</v-chip>
-                <v-chip size="x-small">{{ row.source }}</v-chip>
+              <v-list-item-title class="text-body-2 font-weight-medium">{{ row.subject }}</v-list-item-title>
+              <v-list-item-subtitle class="text-caption">
+                <div>ID: {{ row.id }} | {{ utcToLocalDate(row.created_at, useUTCDate) }}</div>
+                <div class="text-truncate">{{ row.source }}</div>
                 <AiExtractInfo :metadata="row.metadata" compact />
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </div>
-        <div style="flex: 1;">
-          <div v-if="curMail" class="d-flex justify-space-between mb-2">
+        <div style="flex: 1; min-width: 0;">
+          <div v-if="curMail" class="d-flex justify-space-between align-center mb-2">
             <v-btn @click="prevMail" :disabled="!canGoPrevMail" variant="text" size="small">
               <v-icon start>mdi-chevron-left</v-icon>{{ t('prevMail') }}
             </v-btn>
@@ -334,14 +333,14 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
               {{ t('nextMail') }}<v-icon end>mdi-chevron-right</v-icon>
             </v-btn>
           </div>
-          <v-card v-if="curMail" flat style="max-height: 70vh; overflow-y: auto;">
-            <v-card-title>{{ curMail.subject }}</v-card-title>
-            <v-card-text>
+          <div v-if="curMail" class="mail-preview-container">
+            <div class="mail-header mb-3">
+              <h3 class="text-h6 mb-2">{{ curMail.subject }}</h3>
               <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
                 :enableUserDeleteEmail="enableUserDeleteEmail" :showReply="showReply" :showSaveS3="showSaveS3"
                 :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
-            </v-card-text>
-          </v-card>
+            </div>
+          </div>
           <v-card v-else flat class="d-flex align-center justify-center" style="min-height: 200px;">
             <v-card-text class="text-center">{{ t('pleaseSelectMail') }}</v-card-text>
           </v-card>
@@ -432,6 +431,8 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
 
 <style scoped>
 .selected-mail { background-color: rgba(var(--v-theme-primary), 0.1); }
+.mail-preview-container { max-height: 70vh; overflow-y: auto; }
+.mail-header { border-bottom: 1px solid rgba(var(--v-border-color), 0.12); padding-bottom: 12px; }
 </style>
 
 <style>

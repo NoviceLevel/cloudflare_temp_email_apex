@@ -58,19 +58,18 @@ const handleSaveToS3 = async (filename, blob) => {
 
 <template>
   <div class="mail-content-renderer">
-    <div class="d-flex flex-wrap ga-2 mb-2">
-      <v-chip size="small">ID: {{ mail.id }}</v-chip>
-      <v-chip size="small">{{ utcToLocalDate(mail.created_at, useUTCDate.value) }}</v-chip>
-      <v-chip size="small">FROM: {{ mail.source }}</v-chip>
-      <v-chip v-if="showEMailTo" size="small">TO: {{ mail.address }}</v-chip>
+    <!-- 邮件头信息 -->
+    <div class="mail-meta mb-3">
+      <div class="text-body-2"><strong>发件人：</strong>{{ mail.source }}</div>
+      <div class="text-body-2"><strong>发送时间：</strong>{{ utcToLocalDate(mail.created_at, useUTCDate.value) }}</div>
+      <div v-if="showEMailTo" class="text-body-2"><strong>收件人：</strong>{{ mail.address }}</div>
+      <div class="text-body-2"><strong>主题：</strong>{{ mail.subject }}</div>
+    </div>
 
+    <!-- 操作按钮 -->
+    <div class="d-flex flex-wrap ga-2 mb-3">
       <v-btn v-if="enableUserDeleteEmail" size="small" color="error" variant="text" @click="deleteConfirmDialog = true">
         {{ t('delete') }}
-      </v-btn>
-
-      <v-btn v-if="mail.attachments && mail.attachments.length > 0" size="small" color="info" variant="text"
-        @click="handleViewAttachments">
-        {{ t('attachments') }}
       </v-btn>
 
       <v-btn :href="getDownloadEmlUrl(mail.raw)" :download="mail.id + '.eml'" size="small" color="info" variant="text">
@@ -91,6 +90,11 @@ const handleSaveToS3 = async (filename, blob) => {
 
       <v-btn size="small" color="info" variant="text" @click="showFullscreen = true">
         <v-icon start>mdi-fullscreen</v-icon>{{ t('fullscreen') }}
+      </v-btn>
+
+      <v-btn v-if="mail.attachments && mail.attachments.length > 0" size="small" color="info" variant="text"
+        @click="handleViewAttachments">
+        {{ t('attachments') }}
       </v-btn>
     </div>
 
@@ -159,6 +163,7 @@ const handleSaveToS3 = async (filename, blob) => {
 
 <style scoped>
 .mail-content-renderer { display: flex; flex-direction: column; gap: 10px; }
+.mail-meta { background: rgba(var(--v-theme-surface-variant), 0.3); padding: 12px; border-radius: 8px; }
 .mail-content { margin-top: 10px; flex: 1; }
 .mail-text { white-space: pre-wrap; word-wrap: break-word; margin: 0; padding: 0; }
 .mail-iframe { width: 100%; height: 100%; border: none; min-height: 400px; }
