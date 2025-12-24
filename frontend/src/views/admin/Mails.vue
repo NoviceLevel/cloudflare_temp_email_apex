@@ -47,7 +47,7 @@ const deleteMail = async (curMailId) => {
         <div class="d-flex ga-2 mb-3">
             <v-text-field v-model="adminMailTabAddress" :placeholder="t('addressQueryTip')" variant="outlined"
                 density="compact" hide-details clearable @keydown.enter="queryMail" style="max-width: 400px;" />
-            <v-btn @click="queryMail" color="primary" variant="outlined">
+            <v-btn @click="queryMail" color="primary" variant="tonal">
                 {{ t('query') }}
             </v-btn>
         </div>

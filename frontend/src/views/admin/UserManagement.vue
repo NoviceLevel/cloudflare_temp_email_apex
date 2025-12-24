@@ -322,7 +322,7 @@ onMounted(async () => {
             <span>{{ t('itemCount') }}: {{ count }}</span>
             <v-pagination v-model="page" :length="totalPages" density="compact" :total-visible="5"></v-pagination>
             <v-select v-model="pageSize" :items="[20, 50, 100]" variant="outlined" density="compact" hide-details style="max-width: 100px"></v-select>
-            <v-btn color="primary" size="small" variant="tonal" @click="showCreateUser = true">{{ t('createUser') }}</v-btn>
+            <v-btn color="primary" variant="tonal" @click="showCreateUser = true">{{ t('createUser') }}</v-btn>
         </div>
 
         <!-- Data Table -->

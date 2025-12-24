@@ -207,7 +207,6 @@ onMounted(async () => {
                 <v-btn variant="outlined" :loading="loading" @click="showAddOauth2 = true">{{ t('addOauth2') }}</v-btn>
                 <v-btn color="primary" :loading="loading" @click="save">{{ t('save') }}</v-btn>
             </div>
-            <v-divider class="mb-4"></v-divider>
             <v-expansion-panels>
                 <v-expansion-panel v-for="(item, index) in userOauth2Settings" :key="index">
                     <v-expansion-panel-title>

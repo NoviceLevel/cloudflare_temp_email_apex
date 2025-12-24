@@ -122,7 +122,7 @@ const handleCreated = (editor) => {
 
 <template>
     <div class="center">
-        <v-card variant="flat" max-width="800" width="100%">
+        <v-card variant="flat" max-width="800" width="100%" class="pa-4">
             <div class="d-flex justify-end mb-4">
                 <v-btn color="primary" @click="send">{{ t('send') }}</v-btn>
             </div>

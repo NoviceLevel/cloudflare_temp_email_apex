@@ -144,7 +144,7 @@ onMounted(async () => {
 
 <template>
     <div class="d-flex justify-center" v-if="settings.address">
-        <v-card variant="flat" max-width="800" width="100%">
+        <v-card variant="flat" max-width="800" width="100%" class="pa-4">
             <v-card-text>
                 <div v-if="!settings.send_balance || settings.send_balance <= 0">
                     <v-alert type="warning" variant="tonal" class="mb-3">

@@ -66,7 +66,7 @@ onMounted(() => {
         <div class="d-flex ga-2 mb-3">
             <v-select v-model="addressFilter" :items="addressFilterOptions" clearable :label="t('addressQueryTip')"
                 variant="outlined" density="compact" style="max-width: 300px;" hide-details />
-            <v-btn @click="queryMail" color="primary" variant="outlined">
+            <v-btn @click="queryMail" color="primary" variant="tonal">
                 {{ t('query') }}
             </v-btn>
         </div>

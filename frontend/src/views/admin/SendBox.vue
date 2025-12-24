@@ -38,7 +38,7 @@ const deleteSenboxMail = async (curMailId) => {
         <div class="d-flex ga-2 mb-3">
             <v-text-field v-model="adminSendBoxTabAddress" :placeholder="t('queryTip')" variant="outlined"
                 density="compact" hide-details @keydown.enter="fetchData" style="max-width: 400px;" />
-            <v-btn @click="fetchData" color="primary" variant="outlined">
+            <v-btn @click="fetchData" color="primary" variant="tonal">
                 {{ t('query') }}
             </v-btn>
         </div>
