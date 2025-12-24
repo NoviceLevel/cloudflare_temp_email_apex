@@ -149,6 +149,8 @@ const setupAutoRefresh = async (autoRefresh) => {
 
 watch(autoRefresh, async (val) => { setupAutoRefresh(val) }, { immediate: true })
 watch([page, pageSize], async () => { await refresh(); })
+// 当从移动端切换到桌面端时，关闭抽屉
+watch(isMobile, (val) => { if (!val) showMailDrawer.value = false; })
 
 const refresh = async () => {
   try {
@@ -306,8 +308,8 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
         </v-row>
       </div>
 
-      <v-row>
-        <v-col cols="4" style="max-height: 70vh; overflow-y: auto;">
+      <div class="d-flex" style="gap: 16px;">
+        <div style="width: 33%; max-height: 70vh; overflow-y: auto;">
           <v-list lines="three">
             <v-list-item v-for="row in data" :key="row.id" @click="clickRow(row)" :class="mailItemClass(row)">
               <template v-slot:prepend v-if="multiActionMode">
@@ -322,8 +324,8 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
-        </v-col>
-        <v-col cols="8">
+        </div>
+        <div style="flex: 1;">
           <div v-if="curMail" class="d-flex justify-space-between mb-2">
             <v-btn @click="prevMail" :disabled="!canGoPrevMail" variant="text" size="small">
               <v-icon start>mdi-chevron-left</v-icon>{{ t('prevMail') }}
@@ -343,8 +345,8 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
           <v-card v-else flat class="d-flex align-center justify-center" style="min-height: 200px;">
             <v-card-text class="text-center">{{ t('pleaseSelectMail') }}</v-card-text>
           </v-card>
-        </v-col>
-      </v-row>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile View -->
@@ -371,21 +373,22 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
           </v-list-item-subtitle>
         </v-list-item>
       </v-list>
-
-      <v-navigation-drawer v-model="showMailDrawer" location="bottom" temporary style="height: 80vh;">
-        <v-card v-if="curMail" flat>
-          <v-card-title class="d-flex justify-space-between">
-            {{ curMail.subject }}
-            <v-btn icon @click="showMailDrawer = false"><v-icon>mdi-close</v-icon></v-btn>
-          </v-card-title>
-          <v-card-text>
-            <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
-              :enableUserDeleteEmail="enableUserDeleteEmail" :showReply="showReply" :showSaveS3="showSaveS3"
-              :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
-          </v-card-text>
-        </v-card>
-      </v-navigation-drawer>
     </div>
+
+    <!-- Mobile Mail Drawer - 只在移动端显示 -->
+    <v-navigation-drawer v-if="isMobile" v-model="showMailDrawer" location="bottom" temporary style="height: 80vh;">
+      <v-card v-if="curMail" flat>
+        <v-card-title class="d-flex justify-space-between">
+          {{ curMail.subject }}
+          <v-btn icon variant="text" @click="showMailDrawer = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-card-title>
+        <v-card-text>
+          <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
+            :enableUserDeleteEmail="enableUserDeleteEmail" :showReply="showReply" :showSaveS3="showSaveS3"
+            :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
+        </v-card-text>
+      </v-card>
+    </v-navigation-drawer>
 
     <!-- Dialogs -->
     <v-dialog v-model="showMultiActionDownload" max-width="400">

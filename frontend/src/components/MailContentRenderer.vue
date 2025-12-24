@@ -103,11 +103,11 @@ const handleSaveToS3 = async (filename, blob) => {
     </div>
   </div>
 
-  <v-navigation-drawer v-model="showFullscreen" location="bottom" temporary style="height: 100vh;">
+  <v-dialog v-model="showFullscreen" fullscreen>
     <v-card flat>
       <v-card-title class="d-flex justify-space-between">
         {{ mail.subject }}
-        <v-btn icon @click="showFullscreen = false"><v-icon>mdi-close</v-icon></v-btn>
+        <v-btn icon variant="text" @click="showFullscreen = false"><v-icon>mdi-close</v-icon></v-btn>
       </v-card-title>
       <v-card-text class="fullscreen-mail-content">
         <pre v-if="showTextMail" class="mail-text">{{ mail.text }}</pre>
@@ -115,7 +115,7 @@ const handleSaveToS3 = async (filename, blob) => {
         <ShadowHtmlComponent v-else :key="mail.id" :htmlContent="mail.message" class="mail-html" />
       </v-card-text>
     </v-card>
-  </v-navigation-drawer>
+  </v-dialog>
 
   <v-dialog v-model="showAttachments" max-width="500">
     <v-card>
