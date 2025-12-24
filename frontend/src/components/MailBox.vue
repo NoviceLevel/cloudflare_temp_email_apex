@@ -376,19 +376,19 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
     </div>
 
     <!-- Mobile Mail Drawer - 只在移动端显示 -->
-    <v-navigation-drawer v-if="isMobile" v-model="showMailDrawer" location="bottom" temporary style="height: 80vh;">
-      <v-card v-if="curMail" flat>
-        <v-card-title class="d-flex justify-space-between">
-          {{ curMail.subject }}
-          <v-btn icon variant="text" @click="showMailDrawer = false"><v-icon>mdi-close</v-icon></v-btn>
+    <v-bottom-sheet v-if="isMobile" v-model="showMailDrawer" inset>
+      <v-card v-if="curMail">
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span class="text-truncate" style="max-width: 80%;">{{ curMail.subject }}</span>
+          <v-btn icon variant="text" size="small" @click="showMailDrawer = false; curMail = null"><v-icon>mdi-close</v-icon></v-btn>
         </v-card-title>
-        <v-card-text>
+        <v-card-text style="max-height: 70vh; overflow-y: auto;">
           <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
             :enableUserDeleteEmail="enableUserDeleteEmail" :showReply="showReply" :showSaveS3="showSaveS3"
             :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
         </v-card-text>
       </v-card>
-    </v-navigation-drawer>
+    </v-bottom-sheet>
 
     <!-- Dialogs -->
     <v-dialog v-model="showMultiActionDownload" max-width="400">
