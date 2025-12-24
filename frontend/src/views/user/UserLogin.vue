@@ -204,7 +204,7 @@ const oauth2Login = async (clientID) => {
 
 <template>
     <div class="d-flex justify-center">
-        <div v-if="userOpenSettings.fetched" style="max-width: 400px; width: 100%;">
+        <div v-if="userOpenSettings.fetched" style="max-width: 600px; width: 100%;">
             <v-tabs v-model="tabValue" color="primary" class="mb-4">
                 <v-tab value="signin">{{ t('login') }}</v-tab>
                 <v-tab v-if="userOpenSettings.enable" value="signup">{{ t('register') }}</v-tab>
