@@ -203,7 +203,9 @@ onMounted(async () => {
             </v-window-item>
             <v-window-item value="create_or_bind">
                 <div class="d-flex justify-center mt-4">
-                    <Login />
+                    <v-card variant="outlined" rounded="xl" max-width="600" width="100%" class="pa-4">
+                        <Login />
+                    </v-card>
                 </div>
             </v-window-item>
         </v-window>
