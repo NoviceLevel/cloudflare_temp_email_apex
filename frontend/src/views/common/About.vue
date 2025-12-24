@@ -5,7 +5,7 @@ const { announcement } = useGlobalState()
 
 <template>
     <div class="d-flex justify-center">
-        <v-card variant="flat" max-width="800">
+        <v-card variant="flat" max-width="800" width="100%">
             <v-card-text>
                 <div v-html="announcement"></div>
                 <div class="d-flex align-center justify-center mt-6">

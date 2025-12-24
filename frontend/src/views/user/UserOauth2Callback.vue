@@ -63,13 +63,15 @@ onMounted(async () => {
 </script>
 
 <template>
-    <v-card variant="flat">
-        <v-card-text class="text-center">
-            <v-progress-circular indeterminate color="primary" class="mb-4" />
-            <div class="text-h6">{{ t('logging') }}</div>
-            <div v-if="errorInfo" class="text-error mt-2">{{ errorInfo }}</div>
-        </v-card-text>
-    </v-card>
+    <div class="d-flex justify-center">
+        <v-card variant="flat" max-width="600" width="100%">
+            <v-card-text class="text-center">
+                <v-progress-circular indeterminate color="primary" class="mb-4" />
+                <div class="text-h6">{{ t('logging') }}</div>
+                <div v-if="errorInfo" class="text-error mt-2">{{ errorInfo }}</div>
+            </v-card-text>
+        </v-card>
+    </div>
 
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
         {{ snackbar.text }}
