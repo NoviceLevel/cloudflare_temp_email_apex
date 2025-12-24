@@ -7,7 +7,8 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
-// Material Design 3 (Material You) 风格配置
+// Material Design 3 Expressive 风格配置
+// 参考: https://m3.material.io/blog/building-with-m3-expressive
 export default createVuetify({
   components,
   directives,
@@ -15,10 +16,11 @@ export default createVuetify({
     defaultSet: 'mdi',
   },
   defaults: {
-    // 全局默认配置 - MD3 风格
+    // 全局默认配置 - M3 Expressive 风格
     VBtn: {
       rounded: 'pill',
       elevation: 0,
+      class: 'text-none font-weight-medium',
     },
     VCard: {
       rounded: 'xl',
@@ -27,27 +29,74 @@ export default createVuetify({
     },
     VTextField: {
       variant: 'outlined',
-      rounded: 'lg',
+      rounded: 'xl',
+      density: 'comfortable',
     },
     VTextarea: {
       variant: 'outlined',
-      rounded: 'lg',
+      rounded: 'xl',
+      density: 'comfortable',
     },
     VSelect: {
       variant: 'outlined',
-      rounded: 'lg',
+      rounded: 'xl',
+      density: 'comfortable',
     },
     VAlert: {
-      rounded: 'lg',
+      rounded: 'xl',
+      variant: 'tonal',
     },
     VChip: {
       rounded: 'pill',
+      variant: 'outlined',
     },
     VTabs: {
       rounded: true,
+      sliderColor: 'primary',
+    },
+    VTab: {
+      rounded: 'pill',
     },
     VDialog: {
       rounded: 'xl',
+    },
+    VBottomSheet: {
+      contentClass: 'bg-transparent',
+    },
+    VSnackbar: {
+      rounded: 'pill',
+    },
+    VSwitch: {
+      color: 'primary',
+      inset: true,
+    },
+    VCheckbox: {
+      color: 'primary',
+    },
+    VProgressCircular: {
+      color: 'primary',
+    },
+    VProgressLinear: {
+      color: 'primary',
+      rounded: true,
+    },
+    VList: {
+      rounded: 'lg',
+    },
+    VListItem: {
+      rounded: 'lg',
+    },
+    VMenu: {
+      rounded: 'xl',
+    },
+    VExpansionPanels: {
+      rounded: 'xl',
+    },
+    VExpansionPanel: {
+      rounded: 'xl',
+    },
+    VDivider: {
+      class: 'my-3',
     },
   },
   theme: {
@@ -55,7 +104,7 @@ export default createVuetify({
     themes: {
       light: {
         colors: {
-          // MD3 色彩 - 柔和的蓝色调
+          // M3 Expressive 色彩 - 更鲜艳、更有表现力
           primary: '#0061A4',
           'on-primary': '#FFFFFF',
           'primary-container': '#D1E4FF',
@@ -87,7 +136,7 @@ export default createVuetify({
       },
       dark: {
         colors: {
-          // MD3 暗色主题
+          // M3 Expressive 暗色主题
           primary: '#9ECAFF',
           'on-primary': '#003258',
           'primary-container': '#00497D',

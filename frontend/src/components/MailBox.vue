@@ -376,8 +376,8 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
     </div>
 
     <!-- Mobile Mail Drawer - 只在移动端显示 -->
-    <v-bottom-sheet v-if="isMobile" v-model="showMailDrawer" inset>
-      <v-card v-if="curMail">
+    <v-bottom-sheet v-if="isMobile" v-model="showMailDrawer" inset content-class="mobile-mail-sheet">
+      <v-card v-if="curMail" variant="flat" :border="false" class="bg-surface">
         <v-card-title class="d-flex justify-space-between align-center">
           <span class="text-truncate" style="max-width: 80%;">{{ curMail.subject }}</span>
           <v-btn icon variant="text" size="small" @click="showMailDrawer = false; curMail = null"><v-icon>mdi-close</v-icon></v-btn>
@@ -432,4 +432,17 @@ onBeforeUnmount(() => { clearInterval(timer.value) })
 
 <style scoped>
 .selected-mail { background-color: rgba(var(--v-theme-primary), 0.1); }
+</style>
+
+<style>
+/* 移动端邮件底部弹出层 - 修复圆角露出底色问题 */
+.mobile-mail-sheet {
+  background: transparent !important;
+}
+.mobile-mail-sheet > .v-bottom-sheet {
+  background: transparent !important;
+}
+.mobile-mail-sheet .v-card {
+  background-color: rgb(var(--v-theme-surface)) !important;
+}
 </style>

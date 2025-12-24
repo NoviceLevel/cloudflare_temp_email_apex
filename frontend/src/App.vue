@@ -7,6 +7,7 @@ import { useGlobalState } from './store'
 import { useIsMobile } from './utils/composables'
 import Header from './views/Header.vue';
 import Footer from './views/Footer.vue';
+import M3LoadingIndicator from './components/M3LoadingIndicator.vue';
 import { api } from './api'
 
 const {
@@ -82,7 +83,7 @@ onMounted(async () => {
 <template>
   <v-app>
     <v-overlay :model-value="loading" class="align-center justify-center" persistent>
-      <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
+      <M3LoadingIndicator />
     </v-overlay>
     
     <v-main class="d-flex flex-column" style="min-height: 100vh;">
@@ -93,7 +94,7 @@ onMounted(async () => {
               data-ad-format="auto" data-full-width-responsive="true"></ins>
           </v-col>
           
-          <v-col :cols="showSideMargin ? 10 : 12" :lg="showSideMargin ? 10 : 8" :xl="showSideMargin ? 10 : 6">
+          <v-col :cols="showSideMargin ? 10 : 12" :md="showSideMargin ? 10 : 10" :lg="showSideMargin ? 10 : 10" :xl="showSideMargin ? 10 : 8">
             <Header />
             <router-view></router-view>
           </v-col>
@@ -128,5 +129,158 @@ onMounted(async () => {
 html, body {
   height: 100%;
   margin: 0;
+}
+
+/* M3 Type Scale - 字体排版系统 */
+:root {
+  /* Display */
+  --md-sys-typescale-display-large: 600 57px/64px 'Roboto', sans-serif;
+  --md-sys-typescale-display-medium: 500 45px/52px 'Roboto', sans-serif;
+  --md-sys-typescale-display-small: 500 36px/44px 'Roboto', sans-serif;
+  
+  /* Headline */
+  --md-sys-typescale-headline-large: 500 32px/40px 'Roboto', sans-serif;
+  --md-sys-typescale-headline-medium: 500 28px/36px 'Roboto', sans-serif;
+  --md-sys-typescale-headline-small: 500 24px/32px 'Roboto', sans-serif;
+  
+  /* Title */
+  --md-sys-typescale-title-large: 500 22px/28px 'Roboto', sans-serif;
+  --md-sys-typescale-title-medium: 600 16px/24px 'Roboto', sans-serif;
+  --md-sys-typescale-title-small: 600 14px/20px 'Roboto', sans-serif;
+  
+  /* Body */
+  --md-sys-typescale-body-large: 400 16px/24px 'Roboto', sans-serif;
+  --md-sys-typescale-body-medium: 400 14px/20px 'Roboto', sans-serif;
+  --md-sys-typescale-body-small: 400 12px/16px 'Roboto', sans-serif;
+  
+  /* Label */
+  --md-sys-typescale-label-large: 600 14px/20px 'Roboto', sans-serif;
+  --md-sys-typescale-label-medium: 600 12px/16px 'Roboto', sans-serif;
+  --md-sys-typescale-label-small: 600 11px/16px 'Roboto', sans-serif;
+}
+
+/* M3 Expressive 字体层次 */
+.text-h1 {
+  font: var(--md-sys-typescale-display-large) !important;
+  letter-spacing: -0.25px !important;
+}
+
+.text-h2 {
+  font: var(--md-sys-typescale-display-medium) !important;
+  letter-spacing: 0 !important;
+}
+
+.text-h3 {
+  font: var(--md-sys-typescale-headline-large) !important;
+  letter-spacing: 0 !important;
+}
+
+.text-h4 {
+  font: var(--md-sys-typescale-headline-medium) !important;
+  letter-spacing: 0 !important;
+}
+
+.text-h5 {
+  font: var(--md-sys-typescale-headline-small) !important;
+  letter-spacing: 0 !important;
+}
+
+.text-h6 {
+  font: var(--md-sys-typescale-title-large) !important;
+  letter-spacing: 0 !important;
+}
+
+/* 卡片标题 - Title Large */
+.v-card-title {
+  font: var(--md-sys-typescale-title-large) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Tab 文字 - Label Large */
+.v-tab {
+  font: var(--md-sys-typescale-label-large) !important;
+  letter-spacing: 0.1px !important;
+  text-transform: none !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* 按钮文字 - Label Large */
+.v-btn {
+  font: var(--md-sys-typescale-label-large) !important;
+  letter-spacing: 0.1px !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+.v-btn:hover {
+  transform: scale(1.02);
+}
+
+.v-btn:active {
+  transform: scale(0.98);
+}
+
+/* Alert 内容 - Body Large */
+.v-alert__content {
+  font: var(--md-sys-typescale-body-large) !important;
+}
+
+/* 输入框标签 - Body Small */
+.v-field__label {
+  font: var(--md-sys-typescale-body-small) !important;
+}
+
+/* 输入框内容 - Body Large */
+.v-field__input {
+  font: var(--md-sys-typescale-body-large) !important;
+}
+
+/* 列表项标题 - Body Large */
+.v-list-item-title {
+  font: var(--md-sys-typescale-body-large) !important;
+}
+
+/* 列表项副标题 - Body Medium */
+.v-list-item-subtitle {
+  font: var(--md-sys-typescale-body-medium) !important;
+}
+
+/* Chip - Label Large */
+.v-chip {
+  font: var(--md-sys-typescale-label-large) !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+.v-chip:hover {
+  transform: scale(1.05);
+}
+
+/* 对话框标题 - Headline Small */
+.v-dialog .v-card-title {
+  font: var(--md-sys-typescale-headline-small) !important;
+}
+
+/* 卡片过渡 */
+.v-card {
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* 输入框聚焦动画 */
+.v-field {
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* 列表项 */
+.v-list-item {
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* Snackbar - Body Medium */
+.v-snackbar__content {
+  font: var(--md-sys-typescale-body-medium) !important;
+}
+
+/* 修复 v-bottom-sheet inset 模式下圆角露出阴影问题 */
+.v-bottom-sheet > .v-bottom-sheet__content.v-overlay__content {
+  box-shadow: none !important;
 }
 </style>
