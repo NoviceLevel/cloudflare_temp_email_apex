@@ -321,7 +321,7 @@ onMounted(async () => {
             </v-window-item>
 
             <v-window-item v-if="showNewAddressTab" value="register" class="tab-content">
-                <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center" scrim="transparent">
+                <v-overlay :model-value="generateNameLoading" class="align-center justify-center">
                     <M3LoadingIndicator />
                 </v-overlay>
                 <v-form>
@@ -383,5 +383,14 @@ onMounted(async () => {
 <style scoped>
 .no-resize-textarea :deep(textarea) {
     resize: none;
+}
+/* v-window 保持 hidden 确保切换动画正常，加 padding 防止按钮被裁剪 */
+.v-window {
+    overflow: hidden !important;
+    padding: 4px !important;
+}
+/* v-window-item 内容加 padding 防止按钮动画被裁剪 */
+.v-window-item {
+    padding: 4px !important;
 }
 </style>

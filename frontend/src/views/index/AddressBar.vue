@@ -148,7 +148,7 @@ onMounted(async () => {
 
         <!-- Telegram Change Address Dialog -->
         <v-dialog v-model="showTelegramChangeAddress" max-width="600">
-            <v-card>
+            <v-card class="address-dialog-card">
                 <v-card-title>{{ t('changeAddress') }}</v-card-title>
                 <v-card-text>
                     <TelegramAddress />
@@ -158,7 +158,7 @@ onMounted(async () => {
 
         <!-- Change Address Dialog -->
         <v-dialog v-model="showChangeAddress" max-width="600">
-            <v-card>
+            <v-card class="address-dialog-card">
                 <v-card-title>{{ t('changeAddress') }}</v-card-title>
                 <v-card-text>
                     <AddressManagement />
@@ -168,7 +168,7 @@ onMounted(async () => {
 
         <!-- Local Address Dialog -->
         <v-dialog v-model="showLocalAddress" max-width="600">
-            <v-card>
+            <v-card class="address-dialog-card">
                 <v-card-title>{{ t('changeAddress') }}</v-card-title>
                 <v-card-text>
                     <LocalAddress />
@@ -207,3 +207,12 @@ onMounted(async () => {
         </v-snackbar>
     </div>
 </template>
+
+<style scoped>
+.address-dialog-card {
+    overflow: visible !important;
+}
+.address-dialog-card :deep(.v-card-text) {
+    overflow: visible !important;
+}
+</style>
