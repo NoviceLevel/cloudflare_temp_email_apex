@@ -71,18 +71,52 @@ export default {
         const userInfo = await userRes.json<any>()
 
         const email = await (async () => {
+            // First try to get email from userInfo using configured key
+            let emailValue: string | null = null;
+            
             if (setting.userEmailKey.startsWith("$")) {
                 const { JSONPath } = await import('jsonpath-plus');
-                const email = JSONPath({
+                const result = JSONPath({
                     path: setting.userEmailKey,
                     json: userInfo,
                 })
-                if (email && Array.isArray(email) && email.length > 0) {
-                    return email[0];
+                if (result && Array.isArray(result) && result.length > 0) {
+                    emailValue = result[0];
+                }
+            } else {
+                emailValue = userInfo[setting.userEmailKey] as string;
+            }
+            
+            // If email is null and this is GitHub, try to fetch from /user/emails endpoint
+            if (!emailValue && setting.userInfoURL === 'https://api.github.com/user') {
+                try {
+                    const emailsRes = await fetch('https://api.github.com/user/emails', {
+                        headers: {
+                            "Authorization": `${token_type || 'Bearer'} ${access_token}`,
+                            "Accept": "application/json",
+                            "User-Agent": "Cloudflare Workers"
+                        }
+                    });
+                    if (emailsRes.ok) {
+                        const emails = await emailsRes.json<Array<{ email: string, primary: boolean, verified: boolean }>>();
+                        // Find primary verified email
+                        const primaryEmail = emails.find(e => e.primary && e.verified);
+                        if (primaryEmail) {
+                            emailValue = primaryEmail.email;
+                        } else {
+                            // Fallback to first verified email
+                            const verifiedEmail = emails.find(e => e.verified);
+                            if (verifiedEmail) {
+                                emailValue = verifiedEmail.email;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch GitHub emails:', e);
                 }
             }
-            const { [setting.userEmailKey]: email } = userInfo as { [key: string]: string };
-            return email;
+            
+            return emailValue;
         })()
 
         if (!email) {
