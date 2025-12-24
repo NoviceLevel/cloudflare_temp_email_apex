@@ -203,7 +203,7 @@ onMounted(async () => {
             </v-window-item>
             <v-window-item value="create_or_bind">
                 <div class="d-flex justify-center mt-4">
-                    <v-card variant="tonal" color="info" rounded="xl" max-width="600" width="100%" class="pa-4">
+                    <v-card variant="flat" rounded="xl" max-width="600" width="100%" class="pa-4 info-bg">
                         <Login />
                     </v-card>
                 </div>
@@ -265,5 +265,9 @@ onMounted(async () => {
 /* v-window-item 内容加 padding 防止按钮动画被裁剪 */
 .v-window-item {
     padding: 4px !important;
+}
+/* 浅蓝色背景，不影响子组件颜色 */
+.info-bg {
+    background-color: rgb(var(--v-theme-info), 0.1) !important;
 }
 </style>
