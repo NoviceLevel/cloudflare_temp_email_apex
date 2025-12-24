@@ -152,9 +152,7 @@ onMounted(async () => {
     <div>
         <v-app-bar color="primary" density="comfortable">
             <template v-slot:prepend>
-                <v-avatar @click="logoClick" class="cursor-pointer ml-2">
-                    <v-img src="/logo.png" alt="Logo"></v-img>
-                </v-avatar>
+                <v-img @click="logoClick" src="/logo.png" alt="Logo" width="40" height="40" class="cursor-pointer ml-2"></v-img>
             </template>
 
             <v-app-bar-title>{{ openSettings.title || t('title') }}</v-app-bar-title>
