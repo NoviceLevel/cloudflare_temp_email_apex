@@ -104,7 +104,7 @@ export default createVuetify({
     themes: {
       light: {
         colors: {
-          // M3 Expressive 色彩 - 更鲜艳、更有表现力
+          // M3 Expressive 蓝色调配色 - 经典稳重
           primary: '#0061A4',
           'on-primary': '#FFFFFF',
           'primary-container': '#D1E4FF',
@@ -136,7 +136,7 @@ export default createVuetify({
       },
       dark: {
         colors: {
-          // M3 Expressive 暗色主题
+          // M3 Expressive 蓝色调暗色主题
           primary: '#9ECAFF',
           'on-primary': '#003258',
           'primary-container': '#00497D',

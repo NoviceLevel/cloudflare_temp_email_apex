@@ -199,7 +199,7 @@ onMounted(async () => {
             </v-card>
         </v-dialog>
 
-        <v-card variant="flat" max-width="600" width="100%">
+        <v-card variant="flat" max-width="600" width="100%" class="pa-4">
             <v-alert type="warning" variant="tonal" closable class="mb-4">
                 {{ t("tip") }}
             </v-alert>
@@ -244,5 +244,8 @@ onMounted(async () => {
     text-align: left;
     place-items: center;
     justify-content: center;
+}
+.center :deep(.v-card) {
+    overflow: visible !important;
 }
 </style>
