@@ -82,8 +82,10 @@ onMounted(async () => {
     if (openSettings.prefix) {
         enablePrefix.value = true
     }
-    domainOptions.value = openSettings.value.domains || []
-    emailDomain.value = openSettings.value.domains?.[0]?.value || ""
+    // domains 可能是字符串数组或对象数组
+    const domains = openSettings.value.domains || []
+    domainOptions.value = domains.map(d => typeof d === 'string' ? { label: d, value: d } : d)
+    emailDomain.value = domainOptions.value[0]?.value || ""
 })
 </script>
 
@@ -97,8 +99,8 @@ onMounted(async () => {
                     <span v-if="enablePrefix && openSettings.prefix" class="text-body-1">{{ openSettings.prefix }}</span>
                     <v-text-field v-model="emailName" variant="outlined" density="compact" hide-details />
                     <span>@</span>
-                    <v-select v-model="emailDomain" :items="domainOptions" variant="outlined" density="compact"
-                        hide-details style="max-width: 200px;" />
+                    <v-select v-model="emailDomain" :items="domainOptions" item-title="label" item-value="value"
+                        variant="outlined" density="compact" hide-details style="max-width: 200px;" />
                 </div>
                 <v-btn @click="newEmail" color="primary" block :loading="loading">
                     {{ t('creatNewEmail') }}
