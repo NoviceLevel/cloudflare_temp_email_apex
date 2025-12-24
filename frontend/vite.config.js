@@ -12,17 +12,21 @@ import legacy from '@vitejs/plugin-legacy';
 export default defineConfig({
   build: {
     outDir: './dist',
-    target: 'es2015',
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
   },
   plugins: [
     vue(),
     vuetify({ autoImport: true }),
     wasm(),
-    topLevelAwait(),
+    topLevelAwait({
+      promiseExportName: '__tla',
+      promiseImportName: i => `__tla_${i}`
+    }),
     legacy({
-      targets: ['iOS >= 12', 'Chrome >= 70', 'Safari >= 12', 'Firefox >= 60'],
+      targets: ['iOS >= 12', 'Chrome >= 70', 'Safari >= 12', 'Firefox >= 60', 'Edge >= 88'],
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
-      modernPolyfills: true,
+      modernPolyfills: ['es.promise', 'es.array.iterator'],
+      renderLegacyChunks: true,
     }),
     VitePWA({
       registerType: null,
