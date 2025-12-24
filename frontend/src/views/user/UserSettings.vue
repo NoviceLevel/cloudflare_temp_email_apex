@@ -153,7 +153,7 @@ const openDelete = (row) => {
 
 <template>
     <div class="d-flex justify-center" v-if="userSettings.user_email">
-        <v-card variant="flat" max-width="800" width="100%">
+        <v-card variant="flat" max-width="600" width="100%">
             <v-card-text>
                 <v-btn @click="showPasskeyList = true; fetchPasskeyList();" variant="outlined" block class="mb-2">
                     {{ t('showPasskeyList') }}
