@@ -111,7 +111,7 @@ onMounted(async () => {
 
 <template>
     <div class="center ma-4">
-        <v-card :title="t('title')" variant="flat" max-width="800" width="100%">
+        <v-card :title="t('title')" variant="flat" max-width="600" width="100%">
             <template v-slot:append>
                 <v-btn color="primary" :loading="loading" @click="save">{{ t('save') }}</v-btn>
             </template>
