@@ -81,15 +81,6 @@ const { t } = useI18n({
                 <v-switch v-model="useUTCDate" :label="t('useUTCDate')" color="primary" hide-details class="mb-2" />
                 <v-switch v-if="!isMobile" v-model="useSideMargin" :label="t('useSideMargin')" color="primary"
                     hide-details class="mb-4" />
-                <div class="mb-2">
-                    <div class="text-subtitle-2 mb-2">{{ t('globalTabplacement') }}</div>
-                    <v-btn-toggle v-model="globalTabplacement" mandatory color="primary" variant="outlined">
-                        <v-btn value="top">{{ t('top') }}</v-btn>
-                        <v-btn value="left">{{ t('left') }}</v-btn>
-                        <v-btn value="right">{{ t('right') }}</v-btn>
-                        <v-btn value="bottom">{{ t('bottom') }}</v-btn>
-                    </v-btn-toggle>
-                </div>
             </v-card-text>
         </v-card>
     </div>

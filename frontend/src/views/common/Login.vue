@@ -330,7 +330,8 @@ onMounted(async () => {
                     <p v-if="!openSettings.disableCustomAddressName" class="mb-2">{{ t("getNewEmailTip2") }}</p>
                     <p class="mb-4">{{ t("getNewEmailTip3") }}</p>
 
-                    <v-btn v-if="!openSettings.disableCustomAddressName" @click="generateName" class="mb-4">
+                    <v-btn v-if="!openSettings.disableCustomAddressName" @click="generateName" 
+                        variant="text" color="primary" class="mb-4" prepend-icon="mdi-refresh">
                         {{ t('generateName') }}
                     </v-btn>
 
