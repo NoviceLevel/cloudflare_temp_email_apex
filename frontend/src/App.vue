@@ -283,4 +283,33 @@ html, body {
 .v-bottom-sheet > .v-bottom-sheet__content.v-overlay__content {
   box-shadow: none !important;
 }
+
+/* M3 风格滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.35);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(var(--v-theme-on-surface), 0.5);
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+}
 </style>
