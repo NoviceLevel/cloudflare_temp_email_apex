@@ -147,11 +147,13 @@ const handleCreated = (editor) => {
                 </div>
                 <div class="mb-4">
                     <div class="text-subtitle-2 mb-2">{{ t('options') }}</div>
-                    <div class="d-flex align-center ga-2">
-                        <v-btn-toggle v-model="sendMailModel.contentType" mandatory>
-                            <v-btn v-for="option in contentTypes" :key="option.value" :value="option.value">{{ option.title }}</v-btn>
-                        </v-btn-toggle>
-                        <v-btn v-if="sendMailModel.contentType != 'text'" variant="tonal" @click="isPreview = !isPreview">
+                    <div class="d-flex align-center ga-2 flex-wrap">
+                        <v-btn v-for="option in contentTypes" :key="option.value" 
+                            :variant="sendMailModel.contentType === option.value ? 'tonal' : 'outlined'"
+                            @click="sendMailModel.contentType = option.value">
+                            {{ option.title }}
+                        </v-btn>
+                        <v-btn v-if="sendMailModel.contentType != 'text'" variant="outlined" @click="isPreview = !isPreview">
                             {{ isPreview ? t('edit') : t('preview') }}
                         </v-btn>
                     </div>
