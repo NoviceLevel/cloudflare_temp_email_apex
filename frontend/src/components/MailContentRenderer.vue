@@ -108,7 +108,7 @@ const handleSaveToS3 = async (filename, blob) => {
   </div>
 
   <v-dialog v-model="showFullscreen" fullscreen>
-    <v-card flat>
+    <v-card flat rounded="0">
       <v-card-title class="d-flex align-center">
         <span class="text-truncate flex-grow-1 mr-2">{{ mail.subject }}</span>
         <v-btn icon variant="text" @click="showFullscreen = false" class="flex-shrink-0"><v-icon>mdi-close</v-icon></v-btn>
