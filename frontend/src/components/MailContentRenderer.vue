@@ -148,15 +148,17 @@ const handleSaveToS3 = async (filename, blob) => {
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="deleteConfirmDialog" max-width="300">
-    <v-card>
-      <v-card-title>{{ t('delete') }}</v-card-title>
-      <v-card-text>{{ t('deleteMailTip') }}</v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="deleteConfirmDialog = false">Cancel</v-btn>
-        <v-btn color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
-      </v-card-actions>
+  <v-dialog v-model="deleteConfirmDialog" max-width="320">
+    <v-card rounded="xl" class="pa-4">
+      <div class="d-flex flex-column align-center text-center">
+        <v-icon size="32" color="error" class="mb-4">mdi-delete-outline</v-icon>
+        <div class="text-h6 mb-2">{{ t('delete') }}</div>
+        <div class="text-body-2 text-medium-emphasis mb-4">{{ t('deleteMailTip') }}</div>
+        <div class="d-flex ga-2">
+          <v-btn variant="text" @click="deleteConfirmDialog = false">Cancel</v-btn>
+          <v-btn variant="text" color="error" @click="deleteConfirmDialog = false; handleDelete()">{{ t('delete') }}</v-btn>
+        </div>
+      </div>
     </v-card>
   </v-dialog>
 </template>
