@@ -276,7 +276,8 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
+    <div class="d-flex justify-center">
+        <div style="max-width: 600px; width: 100%;">
         <v-alert v-if="userSettings.user_email" type="info" variant="tonal" closable class="mb-4">
             {{ t('bindUserInfo') }}
         </v-alert>
@@ -376,6 +377,7 @@ onMounted(async () => {
         <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
             {{ snackbarText }}
         </v-snackbar>
+        </div>
     </div>
 </template>
 
