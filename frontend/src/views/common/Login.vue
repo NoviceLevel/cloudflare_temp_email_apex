@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 
 import AdminContact from '../common/AdminContact.vue'
 import Turnstile from '../../components/Turnstile.vue'
+import M3LoadingIndicator from '../../components/M3LoadingIndicator.vue'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
@@ -321,7 +322,7 @@ onMounted(async () => {
 
             <v-window-item v-if="showNewAddressTab" value="register" class="tab-content">
                 <v-overlay :model-value="generateNameLoading" contained class="align-center justify-center">
-                    <v-progress-circular indeterminate></v-progress-circular>
+                    <M3LoadingIndicator />
                 </v-overlay>
                 <v-form>
                     <p v-if="!openSettings.disableCustomAddressName" class="mb-2">
