@@ -88,42 +88,46 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="mt-4">
-        <v-alert type="info" variant="tonal" class="mb-4">
-            {{ t('roleConfigDesc') }}
-        </v-alert>
+    <div class="d-flex justify-center mt-4">
+        <v-card variant="flat" max-width="600" width="100%">
+            <v-card-text>
+                <v-alert type="info" variant="tonal" class="mb-4">
+                    {{ t('roleConfigDesc') }}
+                </v-alert>
 
-        <v-alert v-if="systemRoles.length === 0" type="warning" variant="tonal">
-            {{ t('noRolesAvailable') }}
-        </v-alert>
+                <v-alert v-if="systemRoles.length === 0" type="warning" variant="tonal">
+                    {{ t('noRolesAvailable') }}
+                </v-alert>
 
-        <div v-else>
-            <div class="d-flex justify-end mb-4">
-                <v-btn :loading="loading" color="primary" @click="saveConfig">
-                    {{ t('save') }}
-                </v-btn>
-            </div>
+                <div v-else>
+                    <div class="d-flex justify-end mb-4">
+                        <v-btn :loading="loading" color="primary" @click="saveConfig">
+                            {{ t('save') }}
+                        </v-btn>
+                    </div>
 
-            <v-data-table :headers="headers" :items="tableData" hide-default-footer class="elevation-0" style="min-width: 600px;">
-                <template v-slot:item.role="{ item }">
-                    <v-chip color="info" size="small">{{ item.role }}</v-chip>
-                </template>
-                <template v-slot:item.max_address_count="{ item }">
-                    <v-text-field
-                        v-model.number="item.max_address_count"
-                        type="number"
-                        :min="0"
-                        :max="999"
-                        clearable
-                        :placeholder="t('notConfigured')"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        style="max-width: 200px"
-                    ></v-text-field>
-                </template>
-            </v-data-table>
-        </div>
+                    <v-data-table :headers="headers" :items="tableData" hide-default-footer class="elevation-0">
+                        <template v-slot:item.role="{ item }">
+                            <v-chip color="info" size="small">{{ item.role }}</v-chip>
+                        </template>
+                        <template v-slot:item.max_address_count="{ item }">
+                            <v-text-field
+                                v-model.number="item.max_address_count"
+                                type="number"
+                                :min="0"
+                                :max="999"
+                                clearable
+                                :placeholder="t('notConfigured')"
+                                variant="outlined"
+                                density="compact"
+                                hide-details
+                                style="max-width: 200px"
+                            ></v-text-field>
+                        </template>
+                    </v-data-table>
+                </div>
+            </v-card-text>
+        </v-card>
     </div>
 </template>
 
