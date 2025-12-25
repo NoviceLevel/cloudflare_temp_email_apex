@@ -16,22 +16,26 @@ const { t } = useI18n({
 </script>
 
 <template>
-    <div>
-        <v-divider class="footer-divider"></v-divider>
-        <div class="text-center pa-5">
-            <div class="d-flex justify-center ga-2">
-                <span class="text-grey">
-                    {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
-                </span>
-                <span class="text-grey" v-html="openSettings.copyright"></span>
-            </div>
+    <footer class="m3-footer">
+        <div class="footer-content">
+            <span class="text-on-surface-variant">
+                {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
+            </span>
+            <span class="text-on-surface-variant" v-html="openSettings.copyright"></span>
         </div>
-    </div>
+    </footer>
 </template>
 
 <style scoped>
-.footer-divider {
-    margin: 0;
-    padding: 0 var(--x-padding);
+.m3-footer {
+    border-top: 1px solid rgb(var(--v-theme-outline-variant));
+    padding: 14px 0;
+    font-size: 14px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
 }
 </style>
