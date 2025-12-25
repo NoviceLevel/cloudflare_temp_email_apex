@@ -65,6 +65,7 @@ export default createVuetify({
     },
     VSnackbar: {
       rounded: 'pill',
+      location: 'top',
     },
     VSwitch: {
       color: 'primary',
