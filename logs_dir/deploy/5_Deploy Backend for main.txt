@@ -1,0 +1,151 @@
+﻿2025-12-25T23:48:57.7470139Z ##[group]Run export use_worker_assets=***
+2025-12-25T23:48:57.7470565Z [36;1mexport use_worker_assets=***[0m
+2025-12-25T23:48:57.7470884Z [36;1mexport use_angular_frontend=***[0m
+2025-12-25T23:48:57.7471183Z [36;1mif [ -n "$use_worker_assets" ]; then[0m
+2025-12-25T23:48:57.7471489Z [36;1m  if [ -n "$use_angular_frontend" ]; then[0m
+2025-12-25T23:48:57.7471815Z [36;1m    echo "Building Angular frontend"[0m
+2025-12-25T23:48:57.7472094Z [36;1m    cd frontend-angular/[0m
+2025-12-25T23:48:57.7472369Z [36;1m    pnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7472664Z [36;1m    pnpm build[0m
+2025-12-25T23:48:57.7472892Z [36;1m    cd ..[0m
+2025-12-25T23:48:57.7473075Z [36;1m  else[0m
+2025-12-25T23:48:57.7473268Z [36;1m    cd frontend/[0m
+2025-12-25T23:48:57.7473512Z [36;1m    pnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7473813Z [36;1m    export use_worker_assets_with_telegram=[0m
+2025-12-25T23:48:57.7474144Z [36;1m    if [ -n "$use_worker_assets_with_telegram" ]; then[0m
+2025-12-25T23:48:57.7474500Z [36;1m      echo "Building with telegram pages"[0m
+2025-12-25T23:48:57.7474795Z [36;1m      pnpm build:telegram:pages[0m
+2025-12-25T23:48:57.7475044Z [36;1m    else[0m
+2025-12-25T23:48:57.7475264Z [36;1m      echo "Building with normal pages"[0m
+2025-12-25T23:48:57.7475540Z [36;1m      pnpm build:pages[0m
+2025-12-25T23:48:57.7475759Z [36;1m    fi[0m
+2025-12-25T23:48:57.7475939Z [36;1m    cd ..[0m
+2025-12-25T23:48:57.7476129Z [36;1m  fi[0m
+2025-12-25T23:48:57.7476302Z [36;1mfi[0m
+2025-12-25T23:48:57.7476470Z [36;1m[0m
+2025-12-25T23:48:57.7476644Z [36;1mexport debug_mode=[0m
+2025-12-25T23:48:57.7476892Z [36;1mexport use_mail_wasm_parser=[0m
+2025-12-25T23:48:57.7477137Z [36;1mcd worker/[0m
+2025-12-25T23:48:57.7477521Z [36;1m[0m
+2025-12-25T23:48:57.7477728Z [36;1m# Decode Base64 encoded TOML content[0m
+2025-12-25T23:48:57.7486113Z [36;1mecho "***" | base64 -d > wrangler.toml[0m
+2025-12-25T23:48:57.7486383Z [36;1m[0m
+2025-12-25T23:48:57.7486584Z [36;1mpnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7486834Z [36;1m[0m
+2025-12-25T23:48:57.7487035Z [36;1mif [ -n "$use_mail_wasm_parser" ]; then[0m
+2025-12-25T23:48:57.7487627Z [36;1m  echo "Using mail-parser-wasm-worker"[0m
+2025-12-25T23:48:57.7487977Z [36;1m  pnpm add mail-parser-wasm-worker[0m
+2025-12-25T23:48:57.7488345Z [36;1m  git apply ../.github/config/mail-parser-wasm-worker.patch[0m
+2025-12-25T23:48:57.7488726Z [36;1m  echo "Applied mail-parser-wasm-worker patch"[0m
+2025-12-25T23:48:57.7489004Z [36;1mfi[0m
+2025-12-25T23:48:57.7489181Z [36;1m[0m
+2025-12-25T23:48:57.7489378Z [36;1mecho "=== wrangler.toml content ==="[0m
+2025-12-25T23:48:57.7489849Z [36;1mcat wrangler.toml[0m
+2025-12-25T23:48:57.7490089Z [36;1mecho "=== end of wrangler.toml ==="[0m
+2025-12-25T23:48:57.7490331Z [36;1m[0m
+2025-12-25T23:48:57.7490509Z [36;1mpnpm run deploy[0m
+2025-12-25T23:48:57.7490738Z [36;1mecho "Deployed for tag main"[0m
+2025-12-25T23:48:57.7536614Z shell: /usr/bin/bash -e {0}
+2025-12-25T23:48:57.7536899Z env:
+2025-12-25T23:48:57.7537137Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-12-25T23:48:57.7537774Z   CLOUDFLARE_ACCOUNT_ID: ***
+2025-12-25T23:48:57.7538123Z   CLOUDFLARE_API_TOKEN: ***
+2025-12-25T23:48:57.7538349Z ##[endgroup]
+2025-12-25T23:48:57.7610431Z Building Angular frontend
+2025-12-25T23:48:58.5350023Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-12-25T23:48:59.5509592Z Progress: resolved 43, reused 0, downloaded 21, added 0
+2025-12-25T23:49:00.5481701Z Progress: resolved 174, reused 0, downloaded 134, added 0
+2025-12-25T23:49:01.5482998Z Progress: resolved 350, reused 0, downloaded 298, added 0
+2025-12-25T23:49:02.5484366Z Progress: resolved 561, reused 0, downloaded 450, added 0
+2025-12-25T23:49:03.5487075Z Progress: resolved 813, reused 0, downloaded 665, added 0
+2025-12-25T23:49:04.0251236Z Packages: +773
+2025-12-25T23:49:04.0251930Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2025-12-25T23:49:04.5486506Z Progress: resolved 869, reused 0, downloaded 771, added 772
+2025-12-25T23:49:04.5598504Z Progress: resolved 869, reused 0, downloaded 771, added 773, done
+2025-12-25T23:49:04.7316899Z .../node_modules/@parcel/watcher install$ node scripts/build-from-source.js
+2025-12-25T23:49:04.7324895Z .../esbuild@0.25.4/node_modules/esbuild postinstall$ node install.js
+2025-12-25T23:49:04.7769238Z .../node_modules/@parcel/watcher install: Done
+2025-12-25T23:49:04.7945540Z .../esbuild@0.25.4/node_modules/esbuild postinstall: Done
+2025-12-25T23:49:04.8541190Z .../node_modules/msgpackr-extract install$ node-gyp-build-optional-packages
+2025-12-25T23:49:04.9293770Z .../node_modules/msgpackr-extract install: Done
+2025-12-25T23:49:04.9411511Z .../.pnpm/lmdb@3.2.6/node_modules/lmdb install$ node-gyp-build-optional-packages
+2025-12-25T23:49:05.0200956Z .../.pnpm/lmdb@3.2.6/node_modules/lmdb install: Done
+2025-12-25T23:49:06.1636350Z 
+2025-12-25T23:49:06.1636852Z dependencies:
+2025-12-25T23:49:06.1637576Z + @angular/animations 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1638247Z + @angular/cdk 19.2.19 (21.0.5 is available)
+2025-12-25T23:49:06.1638814Z + @angular/common 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1639398Z + @angular/compiler 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1640021Z + @angular/core 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1640579Z + @angular/forms 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1641149Z + @angular/material 19.2.19 (21.0.5 is available)
+2025-12-25T23:49:06.1641804Z + @angular/platform-browser 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1642586Z + @angular/platform-browser-dynamic 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1643296Z + @angular/router 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1643879Z + @faker-js/faker 10.1.0
+2025-12-25T23:49:06.1644421Z + @ngx-translate/core 16.0.4 (17.0.0 is available)
+2025-12-25T23:49:06.1645082Z + @ngx-translate/http-loader 16.0.1 (17.0.0 is available)
+2025-12-25T23:49:06.1645668Z + @simplewebauthn/browser 13.2.2
+2025-12-25T23:49:06.1646097Z + postal-mime 2.7.1
+2025-12-25T23:49:06.1646431Z + rxjs 7.8.2
+2025-12-25T23:49:06.1646741Z + tslib 2.8.1
+2025-12-25T23:49:06.1647146Z + zone.js 0.15.1 (0.16.0 is available)
+2025-12-25T23:49:06.1647576Z 
+2025-12-25T23:49:06.1647719Z devDependencies:
+2025-12-25T23:49:06.1648278Z + @angular-devkit/build-angular 19.2.19 (21.0.4 is available)
+2025-12-25T23:49:06.1648921Z + @angular/cli 19.2.19 (21.0.4 is available)
+2025-12-25T23:49:06.1649515Z + @angular/compiler-cli 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1650097Z + @types/node 22.19.3 (25.0.3 is available)
+2025-12-25T23:49:06.1650617Z + typescript 5.6.3 (5.9.3 is available)
+2025-12-25T23:49:06.1651157Z 
+2025-12-25T23:49:06.1651301Z Done in 8.3s
+2025-12-25T23:49:06.6315963Z 
+2025-12-25T23:49:06.6316970Z > cloudflare-temp-email-angular@1.2.0 build /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex/frontend-angular
+2025-12-25T23:49:06.6317810Z > ng build --configuration production
+2025-12-25T23:49:06.6318038Z 
+2025-12-25T23:49:07.2416882Z [33m❯[39m Building...
+2025-12-25T23:49:19.0886078Z [32m✔[39m Building...
+2025-12-25T23:49:19.0898508Z Application bundle generation failed. [11.847 seconds]
+2025-12-25T23:49:19.0898956Z 
+2025-12-25T23:49:19.0912262Z [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8011: Node matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" slot of the "MatButton" component, but will not be projected into the specific slot because the surrounding @else has more than one node at its root. To project the node in the right slot, you can:
+2025-12-25T23:49:19.0914484Z 
+2025-12-25T23:49:19.0915974Z 1. Wrap the content of the @else block in an <ng-container/> that matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" selector.
+2025-12-25T23:49:19.0918230Z 2. Split the content of the @else block across multiple @else blocks such that each one only has a single projectable node at its root.
+2025-12-25T23:49:19.0919997Z 3. Remove all content from the @else block, except for the node being projected.
+2025-12-25T23:49:19.0920509Z 
+2025-12-25T23:49:19.0922212Z This check can be disabled using the `extendedDiagnostics.checks.controlFlowPreventingContentProjection = "suppress" compiler option.`[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0923414Z 
+2025-12-25T23:49:19.0923864Z     src/app/components/address-bar/address-bar.component.ts:149:22:
+2025-12-25T23:49:19.0924850Z [37m      149 │                       [32m<mat-icon>[37mlogin</mat-icon>
+2025-12-25T23:49:19.0925516Z           ╵                       [32m~~~~~~~~~~[0m
+2025-12-25T23:49:19.0925815Z 
+2025-12-25T23:49:19.0925824Z 
+2025-12-25T23:49:19.0928844Z [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8011: Node matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" slot of the "MatButton" component, but will not be projected into the specific slot because the surrounding @else has more than one node at its root. To project the node in the right slot, you can:
+2025-12-25T23:49:19.0930703Z 
+2025-12-25T23:49:19.0931933Z 1. Wrap the content of the @else block in an <ng-container/> that matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" selector.
+2025-12-25T23:49:19.0933747Z 2. Split the content of the @else block across multiple @else blocks such that each one only has a single projectable node at its root.
+2025-12-25T23:49:19.0934925Z 3. Remove all content from the @else block, except for the node being projected.
+2025-12-25T23:49:19.0935395Z 
+2025-12-25T23:49:19.0936847Z This check can be disabled using the `extendedDiagnostics.checks.controlFlowPreventingContentProjection = "suppress" compiler option.`[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0938068Z 
+2025-12-25T23:49:19.0938437Z     src/app/components/address-bar/address-bar.component.ts:218:24:
+2025-12-25T23:49:19.0939293Z [37m      218 │                         [32m<mat-icon>[37madd</mat-icon>
+2025-12-25T23:49:19.0939914Z           ╵                         [32m~~~~~~~~~~[0m
+2025-12-25T23:49:19.0940203Z 
+2025-12-25T23:49:19.0940354Z [39m[22m
+2025-12-25T23:49:19.0942706Z [1m[31m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'MatDialogModule'.[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0944280Z 
+2025-12-25T23:49:19.0944597Z     src/app/components/mailbox/mailbox.component.ts:14:9:
+2025-12-25T23:49:19.0945530Z [37m      14 │ import { [32mMatDialogModule[37m } from '@angular/material/dialog';
+2025-12-25T23:49:19.0946535Z          ╵          [32m~~~~~~~~~~~~~~~[0m
+2025-12-25T23:49:19.0946813Z 
+2025-12-25T23:49:19.0946822Z 
+2025-12-25T23:49:19.0947962Z [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'MatDialogModule'.[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0948772Z 
+2025-12-25T23:49:19.0949134Z     src/app/components/mailbox/mailbox.component.ts:17:20:
+2025-12-25T23:49:19.0950341Z [37m      17 │ import { MatDialog, [32mMatDialogModule[37m, MatDialogRef, MAT_DIALOG_DATA...
+2025-12-25T23:49:19.0951374Z          ╵                     [32m~~~~~~~~~~~~~~~[0m
+2025-12-25T23:49:19.0951723Z 
+2025-12-25T23:49:19.0951936Z [39m[22m
+2025-12-25T23:49:19.2251147Z  ELIFECYCLE  Command failed with exit code 1.
+2025-12-25T23:49:19.2439061Z ##[error]Process completed with exit code 1.

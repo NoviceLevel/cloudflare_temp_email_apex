@@ -1,0 +1,20 @@
+﻿2025-12-25T23:48:56.6722685Z ##[group]Run pnpm/action-setup@v3
+2025-12-25T23:48:56.6722985Z with:
+2025-12-25T23:48:56.6723171Z   version: 8
+2025-12-25T23:48:56.6723354Z   run_install: false
+2025-12-25T23:48:56.6723565Z   dest: ~/setup-pnpm
+2025-12-25T23:48:56.6723780Z   package_json_file: package.json
+2025-12-25T23:48:56.6724022Z   standalone: false
+2025-12-25T23:48:56.6785103Z ##[endgroup]
+2025-12-25T23:48:56.7637824Z ##[group]Running self-installer...
+2025-12-25T23:48:57.3402990Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-12-25T23:48:57.3481810Z Packages: +1
+2025-12-25T23:48:57.3482317Z +
+2025-12-25T23:48:57.6872856Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-12-25T23:48:57.7158771Z 
+2025-12-25T23:48:57.7159284Z dependencies:
+2025-12-25T23:48:57.7159926Z + pnpm 8.15.9 (10.26.2 is available)
+2025-12-25T23:48:57.7160317Z 
+2025-12-25T23:48:57.7192861Z Done in 792ms
+2025-12-25T23:48:57.7347105Z ##[endgroup]
+2025-12-25T23:48:57.7351094Z Installation Completed!

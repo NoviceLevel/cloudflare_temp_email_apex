@@ -1,0 +1,31 @@
+﻿2025-12-25T23:48:51.0608390Z Current runner version: '2.330.0'
+2025-12-25T23:48:51.0637807Z ##[group]Runner Image Provisioner
+2025-12-25T23:48:51.0639285Z Hosted Compute Agent
+2025-12-25T23:48:51.0640365Z Version: 20251211.462
+2025-12-25T23:48:51.0641479Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+2025-12-25T23:48:51.0642906Z Build Date: 2025-12-11T16:28:49Z
+2025-12-25T23:48:51.0644012Z Worker ID: {5a1162f5-98e0-4acc-888e-44edfe7cc0ee}
+2025-12-25T23:48:51.0645043Z ##[endgroup]
+2025-12-25T23:48:51.0646108Z ##[group]Operating System
+2025-12-25T23:48:51.0647126Z Ubuntu
+2025-12-25T23:48:51.0648291Z 24.04.3
+2025-12-25T23:48:51.0649188Z LTS
+2025-12-25T23:48:51.0650041Z ##[endgroup]
+2025-12-25T23:48:51.0651064Z ##[group]Runner Image
+2025-12-25T23:48:51.0652119Z Image: ubuntu-24.04
+2025-12-25T23:48:51.0653095Z Version: 20251215.174.1
+2025-12-25T23:48:51.0655122Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
+2025-12-25T23:48:51.0658016Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
+2025-12-25T23:48:51.0660133Z ##[endgroup]
+2025-12-25T23:48:51.0661889Z ##[group]GITHUB_TOKEN Permissions
+2025-12-25T23:48:51.0664931Z Contents: write
+2025-12-25T23:48:51.0665886Z Metadata: read
+2025-12-25T23:48:51.0667000Z ##[endgroup]
+2025-12-25T23:48:51.0670200Z Secret source: Actions
+2025-12-25T23:48:51.0671722Z Prepare workflow directory
+2025-12-25T23:48:51.1112445Z Prepare all required actions
+2025-12-25T23:48:51.1166516Z Getting action download info
+2025-12-25T23:48:51.4186922Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2025-12-25T23:48:51.5728641Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2025-12-25T23:48:51.7248834Z Download action repository 'pnpm/action-setup@v3' (SHA:a3252b78c470c02df07e9d59298aecedc3ccdd6d)
+2025-12-25T23:48:52.1382311Z Complete job name: deploy

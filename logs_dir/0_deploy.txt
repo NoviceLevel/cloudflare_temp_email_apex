@@ -1,0 +1,304 @@
+﻿2025-12-25T23:48:51.0608987Z Current runner version: '2.330.0'
+2025-12-25T23:48:51.0637836Z ##[group]Runner Image Provisioner
+2025-12-25T23:48:51.0639306Z Hosted Compute Agent
+2025-12-25T23:48:51.0640384Z Version: 20251211.462
+2025-12-25T23:48:51.0641495Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+2025-12-25T23:48:51.0642925Z Build Date: 2025-12-11T16:28:49Z
+2025-12-25T23:48:51.0644021Z Worker ID: {5a1162f5-98e0-4acc-888e-44edfe7cc0ee}
+2025-12-25T23:48:51.0645053Z ##[endgroup]
+2025-12-25T23:48:51.0646125Z ##[group]Operating System
+2025-12-25T23:48:51.0647141Z Ubuntu
+2025-12-25T23:48:51.0648309Z 24.04.3
+2025-12-25T23:48:51.0649202Z LTS
+2025-12-25T23:48:51.0650057Z ##[endgroup]
+2025-12-25T23:48:51.0651081Z ##[group]Runner Image
+2025-12-25T23:48:51.0652135Z Image: ubuntu-24.04
+2025-12-25T23:48:51.0653109Z Version: 20251215.174.1
+2025-12-25T23:48:51.0655142Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
+2025-12-25T23:48:51.0658219Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
+2025-12-25T23:48:51.0660155Z ##[endgroup]
+2025-12-25T23:48:51.0661905Z ##[group]GITHUB_TOKEN Permissions
+2025-12-25T23:48:51.0664957Z Contents: write
+2025-12-25T23:48:51.0665903Z Metadata: read
+2025-12-25T23:48:51.0667022Z ##[endgroup]
+2025-12-25T23:48:51.0670249Z Secret source: Actions
+2025-12-25T23:48:51.0671743Z Prepare workflow directory
+2025-12-25T23:48:51.1112471Z Prepare all required actions
+2025-12-25T23:48:51.1166541Z Getting action download info
+2025-12-25T23:48:51.4186946Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2025-12-25T23:48:51.5728665Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2025-12-25T23:48:51.7248861Z Download action repository 'pnpm/action-setup@v3' (SHA:a3252b78c470c02df07e9d59298aecedc3ccdd6d)
+2025-12-25T23:48:52.1382341Z Complete job name: deploy
+2025-12-25T23:48:52.2016610Z ##[group]Run actions/checkout@v4
+2025-12-25T23:48:52.2017742Z with:
+2025-12-25T23:48:52.2018300Z   repository: NoviceLevel/cloudflare_temp_email_apex
+2025-12-25T23:48:52.2019122Z   token: ***
+2025-12-25T23:48:52.2019594Z   ssh-strict: ***
+2025-12-25T23:48:52.2020069Z   ssh-user: git
+2025-12-25T23:48:52.2020561Z   persist-credentials: ***
+2025-12-25T23:48:52.2021078Z   clean: ***
+2025-12-25T23:48:52.2021595Z   sparse-checkout-cone-mode: ***
+2025-12-25T23:48:52.2022149Z   fetch-depth: 1
+2025-12-25T23:48:52.2022614Z   fetch-tags: false
+2025-12-25T23:48:52.2023115Z   show-progress: ***
+2025-12-25T23:48:52.2023590Z   lfs: false
+2025-12-25T23:48:52.2024028Z   submodules: false
+2025-12-25T23:48:52.2024531Z   set-safe-directory: ***
+2025-12-25T23:48:52.2025313Z ##[endgroup]
+2025-12-25T23:48:52.3124198Z Syncing repository: NoviceLevel/cloudflare_temp_email_apex
+2025-12-25T23:48:52.3128061Z ##[group]Getting Git version info
+2025-12-25T23:48:52.3130013Z Working directory is '/home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex'
+2025-12-25T23:48:52.3132657Z [command]/usr/bin/git version
+2025-12-25T23:48:52.3234839Z git version 2.52.0
+2025-12-25T23:48:52.3261965Z ##[endgroup]
+2025-12-25T23:48:52.3283833Z Temporarily overriding HOME='/home/runner/work/_temp/45536e44-cca3-4ee4-af1d-b039251c565f' before making global git config changes
+2025-12-25T23:48:52.3286647Z Adding repository directory to the temporary git global config as a safe directory
+2025-12-25T23:48:52.3290417Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex
+2025-12-25T23:48:52.3329288Z Deleting the contents of '/home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex'
+2025-12-25T23:48:52.3332795Z ##[group]Initializing the repository
+2025-12-25T23:48:52.3338228Z [command]/usr/bin/git init /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex
+2025-12-25T23:48:52.3516374Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-12-25T23:48:52.3518405Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2025-12-25T23:48:52.3519495Z hint: to use in all of your new repositories, which will suppress this warning,
+2025-12-25T23:48:52.3521037Z hint: call:
+2025-12-25T23:48:52.3521616Z hint:
+2025-12-25T23:48:52.3522617Z hint: 	git config --global init.defaultBranch <name>
+2025-12-25T23:48:52.3523977Z hint:
+2025-12-25T23:48:52.3525263Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-12-25T23:48:52.3527249Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-12-25T23:48:52.3529054Z hint:
+2025-12-25T23:48:52.3529936Z hint: 	git branch -m <name>
+2025-12-25T23:48:52.3530878Z hint:
+2025-12-25T23:48:52.3532220Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-12-25T23:48:52.3534900Z Initialized empty Git repository in /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex/.git/
+2025-12-25T23:48:52.3539051Z [command]/usr/bin/git remote add origin https://github.com/NoviceLevel/cloudflare_temp_email_apex
+2025-12-25T23:48:52.3570113Z ##[endgroup]
+2025-12-25T23:48:52.3571605Z ##[group]Disabling automatic garbage collection
+2025-12-25T23:48:52.3574605Z [command]/usr/bin/git config --local gc.auto 0
+2025-12-25T23:48:52.3603045Z ##[endgroup]
+2025-12-25T23:48:52.3604664Z ##[group]Setting up auth
+2025-12-25T23:48:52.3610678Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-12-25T23:48:52.3640553Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-12-25T23:48:52.4048877Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-12-25T23:48:52.4077672Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-12-25T23:48:52.4290848Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2025-12-25T23:48:52.4321349Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2025-12-25T23:48:52.4540147Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-12-25T23:48:52.4573233Z ##[endgroup]
+2025-12-25T23:48:52.4574885Z ##[group]Fetching the repository
+2025-12-25T23:48:52.4583450Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +a092670e0e1d63aabeb3e7ea6391a3ad12e3fd3b:refs/remotes/origin/main
+2025-12-25T23:48:53.0359910Z From https://github.com/NoviceLevel/cloudflare_temp_email_apex
+2025-12-25T23:48:53.0363760Z  * [new ref]         a092670e0e1d63aabeb3e7ea6391a3ad12e3fd3b -> origin/main
+2025-12-25T23:48:53.0394969Z ##[endgroup]
+2025-12-25T23:48:53.0397138Z ##[group]Determining the checkout info
+2025-12-25T23:48:53.0399573Z ##[endgroup]
+2025-12-25T23:48:53.0402976Z [command]/usr/bin/git sparse-checkout disable
+2025-12-25T23:48:53.0445076Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-12-25T23:48:53.0473018Z ##[group]Checking out the ref
+2025-12-25T23:48:53.0476179Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-12-25T23:48:53.2029418Z Switched to a new branch 'main'
+2025-12-25T23:48:53.2031350Z branch 'main' set up to track 'origin/main'.
+2025-12-25T23:48:53.2044223Z ##[endgroup]
+2025-12-25T23:48:53.2080961Z [command]/usr/bin/git log -1 --format=%H
+2025-12-25T23:48:53.2101854Z a092670e0e1d63aabeb3e7ea6391a3ad12e3fd3b
+2025-12-25T23:48:53.2433612Z ##[group]Run actions/setup-node@v4
+2025-12-25T23:48:53.2434853Z with:
+2025-12-25T23:48:53.2435724Z   node-version: 20
+2025-12-25T23:48:53.2436699Z   always-auth: false
+2025-12-25T23:48:53.2438038Z   check-latest: false
+2025-12-25T23:48:53.2439582Z   token: ***
+2025-12-25T23:48:53.2440449Z ##[endgroup]
+2025-12-25T23:48:53.4184066Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
+2025-12-25T23:48:53.4190261Z ##[group]Environment details
+2025-12-25T23:48:56.6605319Z node: v20.19.6
+2025-12-25T23:48:56.6605909Z npm: 10.8.2
+2025-12-25T23:48:56.6606261Z yarn: 1.22.22
+2025-12-25T23:48:56.6607884Z ##[endgroup]
+2025-12-25T23:48:56.6722700Z ##[group]Run pnpm/action-setup@v3
+2025-12-25T23:48:56.6722989Z with:
+2025-12-25T23:48:56.6723174Z   version: 8
+2025-12-25T23:48:56.6723363Z   run_install: false
+2025-12-25T23:48:56.6723567Z   dest: ~/setup-pnpm
+2025-12-25T23:48:56.6723783Z   package_json_file: package.json
+2025-12-25T23:48:56.6724025Z   standalone: false
+2025-12-25T23:48:56.6785122Z ##[endgroup]
+2025-12-25T23:48:56.7637876Z ##[group]Running self-installer...
+2025-12-25T23:48:57.3403047Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-12-25T23:48:57.3481847Z Packages: +1
+2025-12-25T23:48:57.3482326Z +
+2025-12-25T23:48:57.6872897Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-12-25T23:48:57.7158800Z 
+2025-12-25T23:48:57.7159296Z dependencies:
+2025-12-25T23:48:57.7159938Z + pnpm 8.15.9 (10.26.2 is available)
+2025-12-25T23:48:57.7160326Z 
+2025-12-25T23:48:57.7192879Z Done in 792ms
+2025-12-25T23:48:57.7347119Z ##[endgroup]
+2025-12-25T23:48:57.7351105Z Installation Completed!
+2025-12-25T23:48:57.7470150Z ##[group]Run export use_worker_assets=***
+2025-12-25T23:48:57.7470569Z [36;1mexport use_worker_assets=***[0m
+2025-12-25T23:48:57.7470887Z [36;1mexport use_angular_frontend=***[0m
+2025-12-25T23:48:57.7471186Z [36;1mif [ -n "$use_worker_assets" ]; then[0m
+2025-12-25T23:48:57.7471498Z [36;1m  if [ -n "$use_angular_frontend" ]; then[0m
+2025-12-25T23:48:57.7471817Z [36;1m    echo "Building Angular frontend"[0m
+2025-12-25T23:48:57.7472096Z [36;1m    cd frontend-angular/[0m
+2025-12-25T23:48:57.7472372Z [36;1m    pnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7472668Z [36;1m    pnpm build[0m
+2025-12-25T23:48:57.7472895Z [36;1m    cd ..[0m
+2025-12-25T23:48:57.7473077Z [36;1m  else[0m
+2025-12-25T23:48:57.7473270Z [36;1m    cd frontend/[0m
+2025-12-25T23:48:57.7473515Z [36;1m    pnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7473815Z [36;1m    export use_worker_assets_with_telegram=[0m
+2025-12-25T23:48:57.7474179Z [36;1m    if [ -n "$use_worker_assets_with_telegram" ]; then[0m
+2025-12-25T23:48:57.7474503Z [36;1m      echo "Building with telegram pages"[0m
+2025-12-25T23:48:57.7474798Z [36;1m      pnpm build:telegram:pages[0m
+2025-12-25T23:48:57.7475046Z [36;1m    else[0m
+2025-12-25T23:48:57.7475267Z [36;1m      echo "Building with normal pages"[0m
+2025-12-25T23:48:57.7475543Z [36;1m      pnpm build:pages[0m
+2025-12-25T23:48:57.7475761Z [36;1m    fi[0m
+2025-12-25T23:48:57.7475942Z [36;1m    cd ..[0m
+2025-12-25T23:48:57.7476131Z [36;1m  fi[0m
+2025-12-25T23:48:57.7476304Z [36;1mfi[0m
+2025-12-25T23:48:57.7476473Z [36;1m[0m
+2025-12-25T23:48:57.7476652Z [36;1mexport debug_mode=[0m
+2025-12-25T23:48:57.7476894Z [36;1mexport use_mail_wasm_parser=[0m
+2025-12-25T23:48:57.7477140Z [36;1mcd worker/[0m
+2025-12-25T23:48:57.7477525Z [36;1m[0m
+2025-12-25T23:48:57.7477731Z [36;1m# Decode Base64 encoded TOML content[0m
+2025-12-25T23:48:57.7486116Z [36;1mecho "***" | base64 -d > wrangler.toml[0m
+2025-12-25T23:48:57.7486386Z [36;1m[0m
+2025-12-25T23:48:57.7486592Z [36;1mpnpm install --no-frozen-lockfile[0m
+2025-12-25T23:48:57.7486837Z [36;1m[0m
+2025-12-25T23:48:57.7487038Z [36;1mif [ -n "$use_mail_wasm_parser" ]; then[0m
+2025-12-25T23:48:57.7487639Z [36;1m  echo "Using mail-parser-wasm-worker"[0m
+2025-12-25T23:48:57.7487980Z [36;1m  pnpm add mail-parser-wasm-worker[0m
+2025-12-25T23:48:57.7488348Z [36;1m  git apply ../.github/config/mail-parser-wasm-worker.patch[0m
+2025-12-25T23:48:57.7488729Z [36;1m  echo "Applied mail-parser-wasm-worker patch"[0m
+2025-12-25T23:48:57.7489007Z [36;1mfi[0m
+2025-12-25T23:48:57.7489184Z [36;1m[0m
+2025-12-25T23:48:57.7489381Z [36;1mecho "=== wrangler.toml content ==="[0m
+2025-12-25T23:48:57.7489852Z [36;1mcat wrangler.toml[0m
+2025-12-25T23:48:57.7490092Z [36;1mecho "=== end of wrangler.toml ==="[0m
+2025-12-25T23:48:57.7490334Z [36;1m[0m
+2025-12-25T23:48:57.7490511Z [36;1mpnpm run deploy[0m
+2025-12-25T23:48:57.7490741Z [36;1mecho "Deployed for tag main"[0m
+2025-12-25T23:48:57.7536637Z shell: /usr/bin/bash -e {0}
+2025-12-25T23:48:57.7536903Z env:
+2025-12-25T23:48:57.7537140Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-12-25T23:48:57.7537778Z   CLOUDFLARE_ACCOUNT_ID: ***
+2025-12-25T23:48:57.7538126Z   CLOUDFLARE_API_TOKEN: ***
+2025-12-25T23:48:57.7538353Z ##[endgroup]
+2025-12-25T23:48:57.7610445Z Building Angular frontend
+2025-12-25T23:48:58.5350063Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-12-25T23:48:59.5509630Z Progress: resolved 43, reused 0, downloaded 21, added 0
+2025-12-25T23:49:00.5481738Z Progress: resolved 174, reused 0, downloaded 134, added 0
+2025-12-25T23:49:01.5483037Z Progress: resolved 350, reused 0, downloaded 298, added 0
+2025-12-25T23:49:02.5484408Z Progress: resolved 561, reused 0, downloaded 450, added 0
+2025-12-25T23:49:03.5487114Z Progress: resolved 813, reused 0, downloaded 665, added 0
+2025-12-25T23:49:04.0251273Z Packages: +773
+2025-12-25T23:49:04.0252214Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2025-12-25T23:49:04.5486547Z Progress: resolved 869, reused 0, downloaded 771, added 772
+2025-12-25T23:49:04.5598521Z Progress: resolved 869, reused 0, downloaded 771, added 773, done
+2025-12-25T23:49:04.7316933Z .../node_modules/@parcel/watcher install$ node scripts/build-from-source.js
+2025-12-25T23:49:04.7324906Z .../esbuild@0.25.4/node_modules/esbuild postinstall$ node install.js
+2025-12-25T23:49:04.7769284Z .../node_modules/@parcel/watcher install: Done
+2025-12-25T23:49:04.7945571Z .../esbuild@0.25.4/node_modules/esbuild postinstall: Done
+2025-12-25T23:49:04.8541224Z .../node_modules/msgpackr-extract install$ node-gyp-build-optional-packages
+2025-12-25T23:49:04.9293811Z .../node_modules/msgpackr-extract install: Done
+2025-12-25T23:49:04.9411533Z .../.pnpm/lmdb@3.2.6/node_modules/lmdb install$ node-gyp-build-optional-packages
+2025-12-25T23:49:05.0200999Z .../.pnpm/lmdb@3.2.6/node_modules/lmdb install: Done
+2025-12-25T23:49:06.1636391Z 
+2025-12-25T23:49:06.1636857Z dependencies:
+2025-12-25T23:49:06.1637612Z + @angular/animations 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1638251Z + @angular/cdk 19.2.19 (21.0.5 is available)
+2025-12-25T23:49:06.1638817Z + @angular/common 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1639401Z + @angular/compiler 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1640024Z + @angular/core 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1640582Z + @angular/forms 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1641152Z + @angular/material 19.2.19 (21.0.5 is available)
+2025-12-25T23:49:06.1641808Z + @angular/platform-browser 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1642590Z + @angular/platform-browser-dynamic 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1643307Z + @angular/router 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1643883Z + @faker-js/faker 10.1.0
+2025-12-25T23:49:06.1644426Z + @ngx-translate/core 16.0.4 (17.0.0 is available)
+2025-12-25T23:49:06.1645086Z + @ngx-translate/http-loader 16.0.1 (17.0.0 is available)
+2025-12-25T23:49:06.1645679Z + @simplewebauthn/browser 13.2.2
+2025-12-25T23:49:06.1646101Z + postal-mime 2.7.1
+2025-12-25T23:49:06.1646433Z + rxjs 7.8.2
+2025-12-25T23:49:06.1646744Z + tslib 2.8.1
+2025-12-25T23:49:06.1647149Z + zone.js 0.15.1 (0.16.0 is available)
+2025-12-25T23:49:06.1647581Z 
+2025-12-25T23:49:06.1647722Z devDependencies:
+2025-12-25T23:49:06.1648281Z + @angular-devkit/build-angular 19.2.19 (21.0.4 is available)
+2025-12-25T23:49:06.1648924Z + @angular/cli 19.2.19 (21.0.4 is available)
+2025-12-25T23:49:06.1649518Z + @angular/compiler-cli 19.2.17 (21.0.6 is available)
+2025-12-25T23:49:06.1650100Z + @types/node 22.19.3 (25.0.3 is available)
+2025-12-25T23:49:06.1650620Z + typescript 5.6.3 (5.9.3 is available)
+2025-12-25T23:49:06.1651160Z 
+2025-12-25T23:49:06.1651305Z Done in 8.3s
+2025-12-25T23:49:06.6316002Z 
+2025-12-25T23:49:06.6316976Z > cloudflare-temp-email-angular@1.2.0 build /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex/frontend-angular
+2025-12-25T23:49:06.6317842Z > ng build --configuration production
+2025-12-25T23:49:06.6318041Z 
+2025-12-25T23:49:07.2416922Z [33m❯[39m Building...
+2025-12-25T23:49:19.0886124Z [32m✔[39m Building...
+2025-12-25T23:49:19.0898526Z Application bundle generation failed. [11.847 seconds]
+2025-12-25T23:49:19.0898963Z 
+2025-12-25T23:49:19.0912284Z [1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8011: Node matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" slot of the "MatButton" component, but will not be projected into the specific slot because the surrounding @else has more than one node at its root. To project the node in the right slot, you can:
+2025-12-25T23:49:19.0914499Z 
+2025-12-25T23:49:19.0915986Z 1. Wrap the content of the @else block in an <ng-container/> that matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" selector.
+2025-12-25T23:49:19.0918607Z 2. Split the content of the @else block across multiple @else blocks such that each one only has a single projectable node at its root.
+2025-12-25T23:49:19.0920007Z 3. Remove all content from the @else block, except for the node being projected.
+2025-12-25T23:49:19.0920515Z 
+2025-12-25T23:49:19.0922225Z This check can be disabled using the `extendedDiagnostics.checks.controlFlowPreventingContentProjection = "suppress" compiler option.`[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0923425Z 
+2025-12-25T23:49:19.0923872Z     src/app/components/address-bar/address-bar.component.ts:149:22:
+2025-12-25T23:49:19.0924858Z [37m      149 │                       [32m<mat-icon>[37mlogin</mat-icon>
+2025-12-25T23:49:19.0925521Z           ╵                       [32m~~~~~~~~~~[0m
+2025-12-25T23:49:19.0925818Z 
+2025-12-25T23:49:19.0925826Z 
+2025-12-25T23:49:19.0928870Z [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8011: Node matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" slot of the "MatButton" component, but will not be projected into the specific slot because the surrounding @else has more than one node at its root. To project the node in the right slot, you can:
+2025-12-25T23:49:19.0930707Z 
+2025-12-25T23:49:19.0931938Z 1. Wrap the content of the @else block in an <ng-container/> that matches the ".material-icons:not([iconPositionEnd]), mat-icon:not([iconPositionEnd]), [matButtonIcon]:not([iconPositionEnd])" selector.
+2025-12-25T23:49:19.0933751Z 2. Split the content of the @else block across multiple @else blocks such that each one only has a single projectable node at its root.
+2025-12-25T23:49:19.0934930Z 3. Remove all content from the @else block, except for the node being projected.
+2025-12-25T23:49:19.0935398Z 
+2025-12-25T23:49:19.0936853Z This check can be disabled using the `extendedDiagnostics.checks.controlFlowPreventingContentProjection = "suppress" compiler option.`[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0938072Z 
+2025-12-25T23:49:19.0938450Z     src/app/components/address-bar/address-bar.component.ts:218:24:
+2025-12-25T23:49:19.0939298Z [37m      218 │                         [32m<mat-icon>[37madd</mat-icon>
+2025-12-25T23:49:19.0939918Z           ╵                         [32m~~~~~~~~~~[0m
+2025-12-25T23:49:19.0940206Z 
+2025-12-25T23:49:19.0940358Z [39m[22m
+2025-12-25T23:49:19.0942712Z [1m[31m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'MatDialogModule'.[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0944286Z 
+2025-12-25T23:49:19.0944601Z     src/app/components/mailbox/mailbox.component.ts:14:9:
+2025-12-25T23:49:19.0945535Z [37m      14 │ import { [32mMatDialogModule[37m } from '@angular/material/dialog';
+2025-12-25T23:49:19.0946540Z          ╵          [32m~~~~~~~~~~~~~~~[0m
+2025-12-25T23:49:19.0946816Z 
+2025-12-25T23:49:19.0946824Z 
+2025-12-25T23:49:19.0947988Z [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'MatDialogModule'.[0m [1m[35m[plugin angular-compiler][0m
+2025-12-25T23:49:19.0948780Z 
+2025-12-25T23:49:19.0949139Z     src/app/components/mailbox/mailbox.component.ts:17:20:
+2025-12-25T23:49:19.0950353Z [37m      17 │ import { MatDialog, [32mMatDialogModule[37m, MatDialogRef, MAT_DIALOG_DATA...
+2025-12-25T23:49:19.0951384Z          ╵                     [32m~~~~~~~~~~~~~~~[0m
+2025-12-25T23:49:19.0951729Z 
+2025-12-25T23:49:19.0951942Z [39m[22m
+2025-12-25T23:49:19.2251187Z  ELIFECYCLE  Command failed with exit code 1.
+2025-12-25T23:49:19.2439078Z ##[error]Process completed with exit code 1.
+2025-12-25T23:49:19.2494521Z Post job cleanup.
+2025-12-25T23:49:19.3336533Z Pruning is unnecessary.
+2025-12-25T23:49:19.3446595Z Post job cleanup.
+2025-12-25T23:49:19.4372227Z [command]/usr/bin/git version
+2025-12-25T23:49:19.4406885Z git version 2.52.0
+2025-12-25T23:49:19.4449412Z Temporarily overriding HOME='/home/runner/work/_temp/31bef4fe-61c2-4b53-82d9-18152b41ac27' before making global git config changes
+2025-12-25T23:49:19.4450515Z Adding repository directory to the temporary git global config as a safe directory
+2025-12-25T23:49:19.4455025Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/cloudflare_temp_email_apex/cloudflare_temp_email_apex
+2025-12-25T23:49:19.4489906Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-12-25T23:49:19.4521350Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-12-25T23:49:19.4745927Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-12-25T23:49:19.4764989Z http.https://github.com/.extraheader
+2025-12-25T23:49:19.4777184Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-12-25T23:49:19.4806448Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-12-25T23:49:19.5021381Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2025-12-25T23:49:19.5050687Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2025-12-25T23:49:19.5371952Z Cleaning up orphan processes
