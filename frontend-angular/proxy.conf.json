@@ -1,0 +1,32 @@
+{
+  "/api": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/open_api": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/admin/": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/user_api": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/external": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/telegram": {
+    "target": "http://127.0.0.1:8787",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
