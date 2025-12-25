@@ -103,6 +103,14 @@ export class AppComponent implements OnInit {
       body.dark-theme .mat-mdc-tab-header {
         background-color: #202124;
       }
+      /* Fullscreen dialog for mobile */
+      .fullscreen-dialog .mat-mdc-dialog-container {
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+      .fullscreen-dialog .mat-mdc-dialog-surface {
+        border-radius: 0 !important;
+      }
     `;
     this.document.head.appendChild(style);
   }
