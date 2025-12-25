@@ -18,7 +18,7 @@ const { t } = useI18n({
 <template>
     <div>
         <v-divider class="footer-divider"></v-divider>
-        <div class="text-center pa-3">
+        <div class="text-center py-1">
             <div class="d-flex justify-center ga-2 text-caption">
                 <span class="text-grey">
                     {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
@@ -31,7 +31,7 @@ const { t } = useI18n({
 
 <style scoped>
 .footer-divider {
-    margin: 0;
+    margin: 0 !important;
     padding: 0 var(--x-padding);
 }
 </style>
