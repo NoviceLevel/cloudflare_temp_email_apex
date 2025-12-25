@@ -69,8 +69,17 @@ export interface SendMailModel {
 
 @Injectable({ providedIn: 'root' })
 export class GlobalStateService {
-  // Theme
-  isDark = signal(localStorage.getItem('isDark') === 'true');
+  // Theme - use system preference if no localStorage value
+  isDark = signal(this.getInitialDarkMode());
+
+  private getInitialDarkMode(): boolean {
+    const stored = localStorage.getItem('isDark');
+    if (stored !== null) {
+      return stored === 'true';
+    }
+    // Follow system preference
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
 
   // Loading state
   loading = signal(false);

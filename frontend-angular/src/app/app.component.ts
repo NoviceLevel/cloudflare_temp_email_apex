@@ -71,8 +71,9 @@ export class AppComponent implements OnInit {
       if (this.themeLink) {
         this.themeLink.href = isDark ? DARK_THEME : LIGHT_THEME;
       }
-      this.document.body.style.backgroundColor = isDark ? '#121212' : '#fafafa';
-      this.document.body.style.color = isDark ? '#e0e0e0' : '#212121';
+      // Google style colors: dark #202124 bg / #e8eaed text
+      this.document.body.style.backgroundColor = isDark ? '#202124' : '#fafafa';
+      this.document.body.style.color = isDark ? '#e8eaed' : '#212121';
     });
   }
 
