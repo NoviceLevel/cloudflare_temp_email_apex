@@ -1,70 +1,85 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HeaderComponent } from './views/header/header.component';
-import { FooterComponent } from './views/footer/footer.component';
-import { GlobalStateService } from './services/global-state.service';
-import { ApiService } from './services/api.service';
+name: Deploy Backend
 
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent, MatProgressSpinnerModule],
-  template: `
-    <div class="app-container" [class.dark-theme]="state.isDark()">
-      <!-- 全局加载遮罩 -->
-      @if (state.loading()) {
-        <div class="loading-overlay">
-          <mat-spinner diameter="50"></mat-spinner>
-        </div>
-      }
-      
-      <app-header></app-header>
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
-      <app-footer></app-footer>
-    </div>
-  `,
-  styles: [`
-    .app-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .main-content {
-      flex: 1;
-      padding: 16px 0;
-    }
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    .dark-theme {
-      background-color: #121212;
-      color: #ffffff;
-    }
-  `]
-})
-export class AppComponent implements OnInit {
-  state = inject(GlobalStateService);
-  private api = inject(ApiService);
+on:
+  workflow_run:
+    workflows: [Upstream Sync]
+    types: [completed]
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  workflow_dispatch:
 
-  async ngOnInit() {
-    // 初始化时获取用户设置
-    try {
-      await this.api.getUserSettings();
-    } catch (error) {
-      console.error('getUserSettings error:', error);
-    }
-  }
-}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8
+          run_install: false
+
+      - name: Deploy Backend for ${{ github.ref_name }}
+        run: |
+          export use_worker_assets=${{ secrets.USE_WORKER_ASSETS }}
+          export use_angular_frontend=${{ secrets.USE_ANGULAR_FRONTEND }}
+          if [ -n "$use_worker_assets" ]; then
+            if [ -n "$use_angular_frontend" ]; then
+              echo "Building Angular frontend"
+              cd frontend-angular/
+              pnpm install --no-frozen-lockfile
+              pnpm build
+              cd ..
+            else
+              cd frontend/
+              pnpm install --no-frozen-lockfile
+              export use_worker_assets_with_telegram=${{ secrets.USE_WORKER_ASSETS_WITH_TELEGRAM }}
+              if [ -n "$use_worker_assets_with_telegram" ]; then
+                echo "Building with telegram pages"
+                pnpm build:telegram:pages
+              else
+                echo "Building with normal pages"
+                pnpm build:pages
+              fi
+              cd ..
+            fi
+          fi
+
+          export debug_mode=${{ secrets.DEBUG_MODE }}
+          export use_mail_wasm_parser=${{ secrets.BACKEND_USE_MAIL_WASM_PARSER }}
+          cd worker/
+          
+          # Decode Base64 encoded TOML content
+          echo "${{ secrets.BACKEND_TOML_BASE64 }}" | base64 -d > wrangler.toml
+          
+          pnpm install --no-frozen-lockfile
+
+          if [ -n "$use_mail_wasm_parser" ]; then
+            echo "Using mail-parser-wasm-worker"
+            pnpm add mail-parser-wasm-worker
+            git apply ../.github/config/mail-parser-wasm-worker.patch
+            echo "Applied mail-parser-wasm-worker patch"
+          fi
+
+          echo "=== wrangler.toml content ==="
+          cat wrangler.toml
+          echo "=== end of wrangler.toml ==="
+          
+          pnpm run deploy
+          echo "Deployed for tag ${{ github.ref_name }}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
