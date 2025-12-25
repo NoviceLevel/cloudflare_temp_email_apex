@@ -70,17 +70,6 @@
 
 </details>
 
-<details>
-<summary>⭐ Star History（点击收缩/展开）</summary>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date&theme=dark" />
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date" />
-  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=NoviceLevel/cloudflare_temp_email_apex&type=Date" />
-</picture>
-
-</details>
-
 <details open>
 <summary>📖 目录（点击收缩/展开）</summary>
 
