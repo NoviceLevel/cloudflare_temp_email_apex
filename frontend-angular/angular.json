@@ -1,63 +1,85 @@
-{
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "cloudflare-temp-email": {
-      "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "standalone": true
-        }
-      },
-      "root": "",
-      "sourceRoot": "src",
-      "prefix": "app",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:application",
-          "options": {
-            "outputPath": "dist",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
-            "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [{ "glob": "**/*", "input": "public" }],
-            "styles": [
-              "@angular/material/prebuilt-themes/azure-blue.css"
-            ],
-            "scripts": []
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                { "type": "initial", "maximumWarning": "500kB", "maximumError": "2MB" },
-                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
-              ],
-              "outputHashing": "all"
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "proxy.conf.json"
-          },
-          "configurations": {
-            "production": { "buildTarget": "cloudflare-temp-email:build:production" },
-            "development": { "buildTarget": "cloudflare-temp-email:build:development" }
-          },
-          "defaultConfiguration": "development"
-        }
-      }
-    }
-  }
-}
+name: Deploy Backend
+
+on:
+  workflow_run:
+    workflows: [Upstream Sync]
+    types: [completed]
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8
+          run_install: false
+
+      - name: Deploy Backend for ${{ github.ref_name }}
+        run: |
+          export use_worker_assets=${{ secrets.USE_WORKER_ASSETS }}
+          export use_angular_frontend=${{ secrets.USE_ANGULAR_FRONTEND }}
+          if [ -n "$use_worker_assets" ]; then
+            if [ -n "$use_angular_frontend" ]; then
+              echo "Building Angular frontend"
+              cd frontend-angular/
+              pnpm install --no-frozen-lockfile
+              pnpm build
+              cd ..
+            else
+              cd frontend/
+              pnpm install --no-frozen-lockfile
+              export use_worker_assets_with_telegram=${{ secrets.USE_WORKER_ASSETS_WITH_TELEGRAM }}
+              if [ -n "$use_worker_assets_with_telegram" ]; then
+                echo "Building with telegram pages"
+                pnpm build:telegram:pages
+              else
+                echo "Building with normal pages"
+                pnpm build:pages
+              fi
+              cd ..
+            fi
+          fi
+
+          export debug_mode=${{ secrets.DEBUG_MODE }}
+          export use_mail_wasm_parser=${{ secrets.BACKEND_USE_MAIL_WASM_PARSER }}
+          cd worker/
+          
+          # Decode Base64 encoded TOML content
+          echo "${{ secrets.BACKEND_TOML_BASE64 }}" | base64 -d > wrangler.toml
+          
+          pnpm install --no-frozen-lockfile
+
+          if [ -n "$use_mail_wasm_parser" ]; then
+            echo "Using mail-parser-wasm-worker"
+            pnpm add mail-parser-wasm-worker
+            git apply ../.github/config/mail-parser-wasm-worker.patch
+            echo "Applied mail-parser-wasm-worker patch"
+          fi
+
+          echo "=== wrangler.toml content ==="
+          cat wrangler.toml
+          echo "=== end of wrangler.toml ==="
+          
+          pnpm run deploy
+          echo "Deployed for tag ${{ github.ref_name }}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
