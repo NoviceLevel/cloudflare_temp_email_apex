@@ -13,7 +13,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatBottomSheetModule, MatBottomSheet, MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { GlobalStateService } from '../../services/global-state.service';
@@ -317,7 +318,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
   state = inject(GlobalStateService);
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
-  private bottomSheet = inject(MatBottomSheet);
+  private dialog = inject(MatDialog);
 
   rawData = signal<ParsedMail[]>([]);
   curMail = signal<ParsedMail | null>(null);
@@ -399,7 +400,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
 
   selectMailMobile(mail: ParsedMail) {
     this.curMail.set(mail);
-    this.bottomSheet.open(MobileMailSheetComponent, {
+    this.dialog.open(MobileMailDialogComponent, {
       data: {
         mail,
         enableUserDeleteEmail: this.enableUserDeleteEmail,
@@ -408,7 +409,11 @@ export class MailboxComponent implements OnInit, OnDestroy {
         onReply: () => this.replyMail(),
         onForward: () => this.forwardMail(),
       },
-      panelClass: 'mobile-mail-sheet'
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      panelClass: 'fullscreen-dialog'
     });
   }
 
@@ -500,63 +505,81 @@ export class MailboxComponent implements OnInit, OnDestroy {
   }
 }
 
-// Mobile Mail Bottom Sheet Component
+// Mobile Mail Fullscreen Dialog Component
 @Component({
-  selector: 'app-mobile-mail-sheet',
+  selector: 'app-mobile-mail-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MailContentRendererComponent],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MailContentRendererComponent],
   template: `
-    <div class="sheet-header">
-      <span class="sheet-title">{{ data.mail.subject }}</span>
-      <button mat-icon-button (click)="close()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-    <div class="sheet-content">
-      <app-mail-content-renderer
-        [mail]="data.mail"
-        [enableUserDeleteEmail]="data.enableUserDeleteEmail"
-        [showReply]="data.showReply"
-        [showEMailTo]="false"
-        (onDelete)="onDelete()"
-        (onReply)="data.onReply()"
-        (onForward)="data.onForward()">
-      </app-mail-content-renderer>
+    <div class="fullscreen-mail-dialog">
+      <div class="dialog-header">
+        <button mat-icon-button (click)="close()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <span class="dialog-title">{{ data.mail.subject }}</span>
+      </div>
+      <div class="dialog-content">
+        <app-mail-content-renderer
+          [mail]="data.mail"
+          [enableUserDeleteEmail]="data.enableUserDeleteEmail"
+          [showReply]="data.showReply"
+          [showEMailTo]="false"
+          (onDelete)="onDelete()"
+          (onReply)="data.onReply()"
+          (onForward)="data.onForward()">
+        </app-mail-content-renderer>
+      </div>
     </div>
   `,
   styles: [`
-    .sheet-header {
+    .fullscreen-mail-dialog {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--mat-sys-surface, #fff);
+    }
+    :host-context(.dark-theme) .fullscreen-mail-dialog {
+      background: #202124;
+    }
+    .dialog-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid #ccc;
+      padding: 8px;
+      border-bottom: 1px solid var(--mat-sys-outline-variant, #ccc);
+      position: sticky;
+      top: 0;
+      background: inherit;
+      z-index: 1;
     }
-    .sheet-title {
+    :host-context(.dark-theme) .dialog-header {
+      border-bottom-color: #3c4043;
+    }
+    .dialog-title {
       font-size: 16px;
       font-weight: 500;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: calc(100% - 48px);
+      flex: 1;
+      margin-left: 8px;
     }
-    .sheet-content {
-      padding: 16px;
-      max-height: 70vh;
+    .dialog-content {
+      flex: 1;
       overflow-y: auto;
+      padding: 16px;
     }
   `]
 })
-export class MobileMailSheetComponent {
-  data = inject(MAT_BOTTOM_SHEET_DATA);
-  private bottomSheetRef = inject(MatBottomSheetRef);
+export class MobileMailDialogComponent {
+  data = inject(MAT_DIALOG_DATA);
+  private dialogRef = inject(MatDialogRef);
 
   close() {
-    this.bottomSheetRef.dismiss();
+    this.dialogRef.close();
   }
 
   onDelete() {
     this.data.onDelete();
-    this.bottomSheetRef.dismiss();
+    this.dialogRef.close();
   }
 }
