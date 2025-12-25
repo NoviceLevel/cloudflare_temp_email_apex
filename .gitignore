@@ -137,3 +137,7 @@ dist
 wrangler.toml
 .dev.vars
 pnpm-lock.yaml
+
+# Flutter
+flutter_frontend/
+*.zip
