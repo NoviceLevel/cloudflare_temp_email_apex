@@ -371,22 +371,22 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       color: #1976d2;
     }
     :host-context(.dark-theme) .address-display {
-      background: #1e3a5f;
+      background: #303134;
     }
     :host-context(.dark-theme) .warning-alert {
-      background-color: #4a3000;
-      color: #ffb74d;
+      background-color: #3c3000;
+      color: #fdd663;
     }
     :host-context(.dark-theme) .info-alert {
-      background-color: #1e3a5f;
-      color: #90caf9;
+      background-color: #303134;
+      color: #8ab4f8;
     }
     :host-context(.dark-theme) .hint-text {
-      color: #aaa;
+      color: #9aa0a6;
     }
     :host-context(.dark-theme) .prefix-chip {
-      background: #1e3a5f;
-      color: #90caf9;
+      background: #303134;
+      color: #8ab4f8;
     }
   `],
 })
@@ -698,7 +698,7 @@ export class AddressBarComponent implements OnInit {
       word-break: break-all;
     }
     :host-context(.dark-theme) .credential-card {
-      background: #333;
+      background: #303134;
     }
   `]
 })

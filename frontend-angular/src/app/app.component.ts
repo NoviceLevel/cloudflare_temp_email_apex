@@ -74,6 +74,12 @@ export class AppComponent implements OnInit {
       // Google style colors: dark #202124 bg / #e8eaed text
       this.document.body.style.backgroundColor = isDark ? '#202124' : '#fafafa';
       this.document.body.style.color = isDark ? '#e8eaed' : '#212121';
+      // Add dark-theme class for component styles
+      if (isDark) {
+        this.document.body.classList.add('dark-theme');
+      } else {
+        this.document.body.classList.remove('dark-theme');
+      }
     });
   }
 
@@ -82,6 +88,21 @@ export class AppComponent implements OnInit {
     style.textContent = `
       html, body { height: 100%; margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
       body { transition: background-color 0.3s, color 0.3s; }
+      /* Google dark mode overrides */
+      body.dark-theme .mat-mdc-card,
+      body.dark-theme .mat-mdc-dialog-container,
+      body.dark-theme .mat-mdc-menu-panel,
+      body.dark-theme .mat-mdc-select-panel,
+      body.dark-theme .mat-mdc-autocomplete-panel,
+      body.dark-theme .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+        background-color: #303134 !important;
+      }
+      body.dark-theme .mat-toolbar {
+        background-color: #202124 !important;
+      }
+      body.dark-theme .mat-mdc-tab-header {
+        background-color: #202124;
+      }
     `;
     this.document.head.appendChild(style);
   }

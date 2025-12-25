@@ -138,6 +138,9 @@ wrangler.toml
 .dev.vars
 pnpm-lock.yaml
 
+# Angular cache
+.angular/
+
 # Flutter
 flutter_frontend/
 *.zip
