@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 import { MailboxComponent } from '../../../components/mailbox/mailbox.component';
@@ -17,21 +18,22 @@ import { MailboxComponent } from '../../../components/mailbox/mailbox.component'
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
+    TranslateModule,
     MailboxComponent,
   ],
   template: `
     <div class="user-mailbox">
       <div class="filter-row">
         <mat-form-field appearance="outline" class="address-select">
-          <mat-label>留空查询所有地址</mat-label>
+          <mat-label>{{ 'emptyQueryAllAddresses' | translate }}</mat-label>
           <mat-select [(ngModel)]="addressFilter" (selectionChange)="queryMail()">
-            <mat-option [value]="''">全部地址</mat-option>
+            <mat-option [value]="''">{{ 'allAddresses' | translate }}</mat-option>
             @for (option of addressFilterOptions(); track option.value) {
               <mat-option [value]="option.value">{{ option.title }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
-        <button mat-stroked-button color="primary" (click)="queryMail()">查询</button>
+        <button mat-stroked-button color="primary" (click)="queryMail()">{{ 'query' | translate }}</button>
       </div>
 
       <app-mailbox

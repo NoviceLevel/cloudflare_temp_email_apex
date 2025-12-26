@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -28,13 +29,13 @@ interface AddressRow {
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatTabsModule, MatTableModule, MatButtonModule,
-    MatChipsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatDialogModule, LoginComponent
+    MatChipsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatDialogModule, TranslateModule, LoginComponent
   ],
   template: `
     <div class="address-management">
       <mat-tab-group [(selectedIndex)]="selectedTab" color="primary" animationDuration="0ms">
-        <mat-tab label="地址"></mat-tab>
-        <mat-tab label="创建或绑定"></mat-tab>
+        <mat-tab [label]="'address' | translate"></mat-tab>
+        <mat-tab [label]="'createOrBind' | translate"></mat-tab>
       </mat-tab-group>
 
       <div class="tab-content">
@@ -42,23 +43,23 @@ interface AddressRow {
           <div class="table-container">
             <table mat-table [dataSource]="data()" class="full-width">
               <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef>名称</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'name' | translate }}</th>
                 <td mat-cell *matCellDef="let row">{{ row.name }}</td>
               </ng-container>
               <ng-container matColumnDef="mail_count">
-                <th mat-header-cell *matHeaderCellDef>邮件数量</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'mail_count' | translate }}</th>
                 <td mat-cell *matCellDef="let row"><mat-chip color="primary" highlighted>{{ row.mail_count }}</mat-chip></td>
               </ng-container>
               <ng-container matColumnDef="send_count">
-                <th mat-header-cell *matHeaderCellDef>发送数量</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'send_count' | translate }}</th>
                 <td mat-cell *matCellDef="let row"><mat-chip color="primary" highlighted>{{ row.send_count }}</mat-chip></td>
               </ng-container>
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>操作</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'actions' | translate }}</th>
                 <td mat-cell *matCellDef="let row">
-                  <button mat-button color="primary" (click)="confirmChange(row)">切换地址</button>
-                  <button mat-button color="primary" (click)="openTransferDialog(row)">转移地址</button>
-                  <button mat-button color="warn" (click)="confirmUnbind(row)">解绑地址</button>
+                  <button mat-button color="primary" (click)="confirmChange(row)">{{ 'switchAddress' | translate }}</button>
+                  <button mat-button color="primary" (click)="openTransferDialog(row)">{{ 'transferAddress' | translate }}</button>
+                  <button mat-button color="warn" (click)="confirmUnbind(row)">{{ 'unbindAddress' | translate }}</button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -90,6 +91,7 @@ export class AddressManagementComponent implements OnInit {
   private snackbar = inject(SnackbarService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   selectedTab = 0;
   displayedColumns = ['name', 'mail_count', 'send_count', 'actions'];
@@ -114,7 +116,7 @@ export class AddressManagementComponent implements OnInit {
     this.currentAddressId.set(row.id);
     const dialogRef = this.dialog.open(AddressConfirmDialogComponent, {
       width: '320px',
-      data: { message: '切换地址?', confirmText: '切换地址', confirmColor: 'primary' }
+      data: { message: this.translate.instant('switchAddressConfirm'), confirmText: this.translate.instant('switchAddress'), confirmColor: 'primary' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.changeMailAddress(); });
   }
@@ -123,7 +125,7 @@ export class AddressManagementComponent implements OnInit {
     this.currentAddressId.set(row.id);
     const dialogRef = this.dialog.open(AddressConfirmDialogComponent, {
       width: '360px',
-      data: { message: '解绑前请切换到此邮箱地址并保存邮箱地址凭证。', confirmText: '解绑地址', confirmColor: 'warn' }
+      data: { message: this.translate.instant('unbindAddressTip'), confirmText: this.translate.instant('unbindAddress'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.unbindAddress(); });
   }
@@ -145,7 +147,7 @@ export class AddressManagementComponent implements OnInit {
   async changeMailAddress() {
     try {
       const res = await this.api.getBindAddressJwt(this.currentAddressId());
-      this.snackbar.success('切换地址 成功');
+      this.snackbar.success(this.translate.instant('successTip'));
       if (!res.jwt) {
         this.snackbar.error('jwt not found');
         return;
@@ -161,7 +163,7 @@ export class AddressManagementComponent implements OnInit {
   async unbindAddress() {
     try {
       await this.api.unbindAddress(this.currentAddressId());
-      this.snackbar.success('解绑地址 成功');
+      this.snackbar.success(this.translate.instant('successTip'));
       await this.fetchData();
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');
@@ -171,7 +173,7 @@ export class AddressManagementComponent implements OnInit {
   async transferAddress(targetUserEmail: string) {
     try {
       await this.api.transferAddress(this.currentAddressId(), targetUserEmail);
-      this.snackbar.success('转移地址 成功');
+      this.snackbar.success(this.translate.instant('successTip'));
       await this.fetchData();
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');
@@ -179,15 +181,14 @@ export class AddressManagementComponent implements OnInit {
   }
 }
 
-// Confirm Dialog
 @Component({
   selector: 'app-address-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       <button mat-raised-button [color]="data.confirmColor || 'primary'" [mat-dialog-close]="true">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `
@@ -196,24 +197,23 @@ export class AddressConfirmDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 }
 
-// Transfer Address Dialog
 @Component({
   selector: 'app-transfer-address-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>转移地址</h2>
+    <h2 mat-dialog-title>{{ 'transferAddressTitle' | translate }}</h2>
     <mat-dialog-content>
-      <p class="mb-2">转移地址到其他用户将会从你的账户中移除此地址并转移给其他用户。确定要转移地址吗？</p>
-      <p class="mb-3">转移地址: {{ data.address }}</p>
+      <p class="mb-2">{{ 'transferAddressTip' | translate }}</p>
+      <p class="mb-3">{{ 'transferAddress' | translate }}: {{ data.address }}</p>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>目标用户邮箱</mat-label>
+        <mat-label>{{ 'targetUserEmail' | translate }}</mat-label>
         <input matInput [(ngModel)]="targetUserEmail">
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
-      <button mat-raised-button color="warn" [mat-dialog-close]="targetUserEmail" [disabled]="!targetUserEmail">转移地址</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="targetUserEmail" [disabled]="!targetUserEmail">{{ 'transferAddress' | translate }}</button>
     </mat-dialog-actions>
   `,
   styles: [`.full-width { width: 100%; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; }`]

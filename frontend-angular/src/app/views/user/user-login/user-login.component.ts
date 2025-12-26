@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -19,63 +20,63 @@ import { hashPassword } from '../../../utils';
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatTabsModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule, MatIconModule, MatDividerModule, MatDialogModule
+    MatFormFieldModule, MatInputModule, MatIconModule, MatDividerModule, MatDialogModule, TranslateModule
   ],
   template: `
     @if (state.userOpenSettings().fetched) {
       <div class="user-login-container">
         <mat-tab-group [(selectedIndex)]="selectedTab" color="primary" animationDuration="0ms">
-          <mat-tab label="登录"></mat-tab>
+          <mat-tab [label]="'login' | translate"></mat-tab>
           @if (state.userOpenSettings().enable) {
-            <mat-tab label="注册"></mat-tab>
+            <mat-tab [label]="'register' | translate"></mat-tab>
           }
         </mat-tab-group>
 
         <div class="tab-content">
           @if (selectedTab === 0) {
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>邮箱</mat-label>
+              <mat-label>{{ 'email' | translate }}</mat-label>
               <input matInput [(ngModel)]="user.email" type="email">
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>密码</mat-label>
+              <mat-label>{{ 'password' | translate }}</mat-label>
               <input matInput [(ngModel)]="user.password" type="password">
             </mat-form-field>
             <button mat-stroked-button color="primary" class="full-width mb-2" (click)="emailLogin()">
-              <mat-icon>email</mat-icon> 登录
+              <mat-icon>email</mat-icon> {{ 'login' | translate }}
             </button>
-            <button mat-button (click)="openForgotPasswordDialog()" class="mb-3">忘记密码</button>
+            <button mat-button (click)="openForgotPasswordDialog()" class="mb-3">{{ 'forgotPassword' | translate }}</button>
             <mat-divider class="mb-3"></mat-divider>
             <button mat-stroked-button color="primary" class="full-width mb-2" (click)="passkeyLogin()">
-              <mat-icon>key</mat-icon> 使用 Passkey 登录
+              <mat-icon>key</mat-icon> {{ 'passkeyLogin' | translate }}
             </button>
             @for (item of state.userOpenSettings().oauth2ClientIDs; track item.clientID) {
               <button mat-stroked-button class="full-width mb-2" (click)="oauth2Login(item.clientID)">
                 <mat-icon>{{ item.name.toLowerCase() === 'github' ? 'code' : 'login' }}</mat-icon>
-                使用 {{ item.name }} 登录
+                {{ 'loginWith' | translate }} {{ item.name }}
               </button>
             }
           } @else if (selectedTab === 1) {
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>邮箱</mat-label>
+              <mat-label>{{ 'email' | translate }}</mat-label>
               <input matInput [(ngModel)]="user.email" type="email">
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>密码</mat-label>
+              <mat-label>{{ 'password' | translate }}</mat-label>
               <input matInput [(ngModel)]="user.password" type="password">
             </mat-form-field>
             @if (state.userOpenSettings().enableMailVerify) {
               <div class="verify-code-row">
                 <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>验证码</mat-label>
+                  <mat-label>{{ 'verifyCode' | translate }}</mat-label>
                   <input matInput [(ngModel)]="user.code">
                 </mat-form-field>
                 <button mat-stroked-button color="primary" [disabled]="verifyCodeTimeout() > 0" (click)="sendVerificationCode()">
-                  {{ verifyCodeTimeout() > 0 ? '等待' + verifyCodeTimeout() + '秒' : '发送验证码' }}
+                  {{ verifyCodeTimeout() > 0 ? (('waitSeconds' | translate:{seconds: verifyCodeTimeout()})) : ('sendCode' | translate) }}
                 </button>
               </div>
             }
-            <button mat-stroked-button color="primary" class="full-width" (click)="emailSignup()">注册</button>
+            <button mat-stroked-button color="primary" class="full-width" (click)="emailSignup()">{{ 'register' | translate }}</button>
           }
         </div>
       </div>
@@ -96,6 +97,7 @@ export class UserLoginComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   selectedTab = 0;
   verifyCodeTimeout = signal(0);
@@ -121,14 +123,14 @@ export class UserLoginComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.selectedTab = 0;
-        this.snackbar.success('密码重置成功，请登录');
+        this.snackbar.success(this.translate.instant('resetPasswordSuccess'));
       }
     });
   }
 
   async emailLogin() {
     if (!this.user.email || !this.user.password) {
-      this.snackbar.error('请输入邮箱和密码');
+      this.snackbar.error(this.translate.instant('pleaseEnterEmailAndPassword'));
       return;
     }
     try {
@@ -137,24 +139,24 @@ export class UserLoginComponent implements OnInit {
       this.state.setUserJwt(res.jwt);
       location.reload();
     } catch (error: any) {
-      this.snackbar.error(error.message || '登录失败');
+      this.snackbar.error(error.message || this.translate.instant('loginFailed'));
     }
   }
 
   async sendVerificationCode() {
     if (!this.user.email) {
-      this.snackbar.error('请输入邮箱');
+      this.snackbar.error(this.translate.instant('pleaseEnterEmail'));
       return;
     }
     try {
       const res = await this.api.sendVerifyCode(this.user.email, this.cfToken);
       if (res && res.expirationTtl) {
-        this.snackbar.success(`验证码已发送, ${res.expirationTtl} 秒后失效`);
+        this.snackbar.success(this.translate.instant('verifyCodeSent', { seconds: res.expirationTtl }));
         this.verifyCodeExpire = Date.now() + res.expirationTtl * 1000;
         this.startVerifyCodeCountdown();
       }
     } catch (error: any) {
-      this.snackbar.error(error.message || '发送验证码失败');
+      this.snackbar.error(error.message || this.translate.instant('sendCodeFailed'));
     }
   }
 
@@ -172,20 +174,20 @@ export class UserLoginComponent implements OnInit {
 
   async emailSignup() {
     if (!this.user.email || !this.user.password) {
-      this.snackbar.error('请输入邮箱和密码');
+      this.snackbar.error(this.translate.instant('pleaseEnterEmailAndPassword'));
       return;
     }
     if (!this.user.code && this.state.userOpenSettings().enableMailVerify) {
-      this.snackbar.error('请输入验证码');
+      this.snackbar.error(this.translate.instant('pleaseEnterVerifyCode'));
       return;
     }
     try {
       const hashedPassword = await hashPassword(this.user.password);
       await this.api.userRegister(this.user.email, hashedPassword, this.user.code);
       this.selectedTab = 0;
-      this.snackbar.success('请登录');
+      this.snackbar.success(this.translate.instant('pleaseLogin'));
     } catch (error: any) {
-      this.snackbar.error(error.message || '注册失败');
+      this.snackbar.error(error.message || this.translate.instant('registerFailed'));
     }
   }
 
@@ -199,7 +201,7 @@ export class UserLoginComponent implements OnInit {
       location.reload();
     } catch (error: any) {
       console.error(error);
-      this.snackbar.error(error.message || 'Passkey 登录失败');
+      this.snackbar.error(error.message || this.translate.instant('passkeyLoginFailed'));
     }
   }
 
@@ -211,48 +213,47 @@ export class UserLoginComponent implements OnInit {
       const res = await this.api.getOauth2LoginUrl(clientID, state);
       location.href = res.url;
     } catch (error: any) {
-      this.snackbar.error(error.message || '登录失败');
+      this.snackbar.error(error.message || this.translate.instant('loginFailed'));
     }
   }
 }
 
-// Forgot Password Dialog
 @Component({
   selector: 'app-forgot-password-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>忘记密码</h2>
+    <h2 mat-dialog-title>{{ 'forgotPassword' | translate }}</h2>
     <mat-dialog-content>
       @if (data.enable && data.enableMailVerify) {
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>邮箱</mat-label>
+          <mat-label>{{ 'email' | translate }}</mat-label>
           <input matInput [(ngModel)]="email" type="email">
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>新密码</mat-label>
+          <mat-label>{{ 'newPassword' | translate }}</mat-label>
           <input matInput [(ngModel)]="password" type="password">
         </mat-form-field>
         <div class="verify-code-row">
           <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>验证码</mat-label>
+            <mat-label>{{ 'verifyCode' | translate }}</mat-label>
             <input matInput [(ngModel)]="code">
           </mat-form-field>
           <button mat-stroked-button color="primary" [disabled]="verifyCodeTimeout > 0" (click)="sendVerificationCode()">
-            {{ verifyCodeTimeout > 0 ? '等待' + verifyCodeTimeout + '秒' : '发送验证码' }}
+            {{ verifyCodeTimeout > 0 ? (('waitSeconds' | translate:{seconds: verifyCodeTimeout})) : ('sendCode' | translate) }}
           </button>
         </div>
       } @else {
         <div class="warning-alert">
           <mat-icon>warning</mat-icon>
-          <span>未开启邮箱验证或未开启注册功能，无法重置密码，请联系管理员</span>
+          <span>{{ 'resetPasswordDisabled' | translate }}</span>
         </div>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       @if (data.enable && data.enableMailVerify) {
-        <button mat-raised-button color="primary" (click)="resetPassword()">重置密码</button>
+        <button mat-raised-button color="primary" (click)="resetPassword()">{{ 'resetPassword' | translate }}</button>
       }
     </mat-dialog-actions>
   `,
@@ -271,6 +272,7 @@ export class ForgotPasswordDialogComponent {
   private dialogRef = inject(MatDialogRef<ForgotPasswordDialogComponent>);
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
+  private translate = inject(TranslateService);
 
   email = '';
   password = '';
@@ -280,18 +282,18 @@ export class ForgotPasswordDialogComponent {
 
   async sendVerificationCode() {
     if (!this.email) {
-      this.snackbar.error('请输入邮箱');
+      this.snackbar.error(this.translate.instant('pleaseEnterEmail'));
       return;
     }
     try {
       const res = await this.api.sendVerifyCode(this.email, '');
       if (res && res.expirationTtl) {
-        this.snackbar.success(`验证码已发送, ${res.expirationTtl} 秒后失效`);
+        this.snackbar.success(this.translate.instant('verifyCodeSent', { seconds: res.expirationTtl }));
         this.verifyCodeExpire = Date.now() + res.expirationTtl * 1000;
         this.startVerifyCodeCountdown();
       }
     } catch (error: any) {
-      this.snackbar.error(error.message || '发送验证码失败');
+      this.snackbar.error(error.message || this.translate.instant('sendCodeFailed'));
     }
   }
 
@@ -309,7 +311,7 @@ export class ForgotPasswordDialogComponent {
 
   async resetPassword() {
     if (!this.email || !this.password || !this.code) {
-      this.snackbar.error('请填写完整信息');
+      this.snackbar.error(this.translate.instant('pleaseCompleteForm'));
       return;
     }
     try {
@@ -317,7 +319,7 @@ export class ForgotPasswordDialogComponent {
       await this.api.userRegister(this.email, hashedPassword, this.code);
       this.dialogRef.close(true);
     } catch (error: any) {
-      this.snackbar.error(error.message || '重置失败');
+      this.snackbar.error(error.message || this.translate.instant('resetFailed'));
     }
   }
 }
