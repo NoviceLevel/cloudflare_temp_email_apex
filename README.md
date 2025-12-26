@@ -1,7 +1,7 @@
 <!-- markdownlint-disable-file MD033 MD045 -->
 # Cloudflare 临时邮箱 - 免费搭建临时邮件服务
 
-> 本项目基于 [dreamhunter2333/cloudflare_temp_email](https://github.com/dreamhunter2333/cloudflare_temp_email) 进行二次开发，UI 框架从 Naive UI 迁移至 Vuetify 3 (Material Design)。
+> 本项目基于 [dreamhunter2333/cloudflare_temp_email](https://github.com/dreamhunter2333/cloudflare_temp_email) 进行二次开发，UI 框架已迁移至 Angular 19 + Angular Material (Material Design)。
 
 <p align="center">
   <a href="https://temp-mail-docs.awsl.uk" target="_blank">
@@ -156,8 +156,8 @@
 
 ### 🛠️ 技术栈
 
-- **前端**: Vue 3 + Vite + Vuetify 3 + TypeScript
-- **UI 框架**: Vuetify 3 (Material Design)
+- **前端**: Angular 19 + Angular Material + TypeScript
+- **UI 框架**: Angular Material (Material Design)
 - **后端**: TypeScript + Cloudflare Workers
 - **邮件解析**: Rust WASM (mail-parser-wasm)
 - **数据库**: Cloudflare D1 (SQLite)
@@ -167,7 +167,7 @@
 ### 📦 主要组件
 
 - **Worker**: 核心后端服务
-- **Frontend**: Vue 3 + Vuetify 3 用户界面
+- **Frontend**: Angular 19 + Angular Material 用户界面
 - **Mail Parser WASM**: Rust 邮件解析模块
 - **SMTP Proxy Server**: Python 邮件代理服务
 - **Pages Functions**: Cloudflare Pages 中间件

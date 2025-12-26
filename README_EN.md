@@ -1,7 +1,7 @@
 <!-- markdownlint-disable-file MD033 MD045 -->
 # Cloudflare Temp Email - Free Temporary Email Service
 
-> This project is based on [dreamhunter2333/cloudflare_temp_email](https://github.com/dreamhunter2333/cloudflare_temp_email), with UI framework migrated from Naive UI to Vuetify 3 (Material Design).
+> This project is based on [dreamhunter2333/cloudflare_temp_email](https://github.com/dreamhunter2333/cloudflare_temp_email), with UI framework migrated to Angular 19 + Angular Material (Material Design).
 
 <p align="center">
   <a href="https://temp-mail-docs.awsl.uk" target="_blank">
@@ -157,8 +157,8 @@ Try it now → [https://oo-ooo.fun/](https://oo-ooo.fun/)
 
 ### 🛠️ Tech Stack
 
-- **Frontend**: Vue 3 + Vite + Vuetify 3 + TypeScript
-- **UI Framework**: Vuetify 3 (Material Design)
+- **Frontend**: Angular 19 + Angular Material + TypeScript
+- **UI Framework**: Angular Material (Material Design)
 - **Backend**: TypeScript + Cloudflare Workers
 - **Email Parsing**: Rust WASM (mail-parser-wasm)
 - **Database**: Cloudflare D1 (SQLite)
@@ -168,7 +168,7 @@ Try it now → [https://oo-ooo.fun/](https://oo-ooo.fun/)
 ### 📦 Main Components
 
 - **Worker**: Core backend service
-- **Frontend**: Vue 3 + Vuetify 3 user interface
+- **Frontend**: Angular 19 + Angular Material user interface
 - **Mail Parser WASM**: Rust email parsing module
 - **SMTP Proxy Server**: Python email proxy service
 - **Pages Functions**: Cloudflare Pages middleware
