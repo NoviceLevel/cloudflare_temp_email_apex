@@ -1,6 +1,6 @@
-cd frontend/
-pnpm up
-pnpm add -D wrangler@latest
+cd frontend-angular/
+npm update
+npm install -D wrangler@latest
 cd ..
 
 cd worker/

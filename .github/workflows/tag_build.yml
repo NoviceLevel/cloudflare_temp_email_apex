@@ -27,16 +27,10 @@ jobs:
           run_install: false
 
       - name: Build Frontend
-        run: cd frontend && pnpm install --no-frozen-lockfile && pnpm build:release
+        run: cd frontend-angular && npm install && npm run build
 
       - name: Zip Frontend dist
-        run: cd frontend/dist/ && zip -r frontend.zip * && mv frontend.zip ../
-
-      - name: Build Telegram Frontend
-        run: cd frontend && pnpm install --no-frozen-lockfile && pnpm build:telegram:release
-
-      - name: Zip Telegram Frontend dist
-        run: cd frontend/dist/ && zip -r telegram-frontend.zip * && mv telegram-frontend.zip ../
+        run: cd frontend-angular/dist/frontend-angular/browser && zip -r frontend.zip * && mv frontend.zip ../../..
 
       - name: cp wrangler.toml
         run: cd worker && cp wrangler.toml.template wrangler.toml
@@ -61,7 +55,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            frontend/frontend.zip
-            frontend/telegram-frontend.zip
+            frontend-angular/frontend.zip
             worker/worker.js
             worker/worker-with-wasm-mail-parser.zip

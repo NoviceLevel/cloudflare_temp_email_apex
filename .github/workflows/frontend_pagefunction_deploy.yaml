@@ -26,14 +26,14 @@ jobs:
 
       - name: Deploy Frontend for ${{ github.ref_name }}
         run: |
-          cd frontend/
-          pnpm install --no-frozen-lockfile
-          pnpm build:pages
+          cd frontend-angular/
+          npm install
+          npm run build
           cd ../pages/
           echo '${{ secrets.PAGE_TOML }}' > wrangler.toml
-          pnpm install --no-frozen-lockfile
-          pnpm run deploy
-          echo "Deploying prodcution for ${{ github.ref_name }}"
+          npm install
+          npm run deploy
+          echo "Deploying production for ${{ github.ref_name }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

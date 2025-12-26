@@ -1,85 +1,127 @@
-name: Deploy Backend
+// Global styles for Angular Material application
+@use '@angular/material' as mat;
 
-on:
-  workflow_run:
-    workflows: [Upstream Sync]
-    types: [completed]
-  push:
-    branches:
-      - main
-    tags:
-      - "*"
-  workflow_dispatch:
+// Custom theme colors
+$primary-palette: (
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #1976d2,
+  600: #1e88e5,
+  700: #1976d2,
+  800: #1565c0,
+  900: #0d47a1,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+);
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+// Define the theme
+$app-primary: mat.m2-define-palette($primary-palette);
+$app-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$app-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+// Light theme
+$light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $app-primary,
+    accent: $app-accent,
+    warn: $app-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
 
-      - uses: pnpm/action-setup@v3
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 8
-          run_install: false
+// Dark theme
+$dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $app-primary,
+    accent: $app-accent,
+    warn: $app-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
 
-      - name: Deploy Backend for ${{ github.ref_name }}
-        run: |
-          export use_worker_assets=${{ secrets.USE_WORKER_ASSETS }}
-          export use_angular_frontend=${{ secrets.USE_ANGULAR_FRONTEND }}
-          if [ -n "$use_worker_assets" ]; then
-            if [ -n "$use_angular_frontend" ]; then
-              echo "Building Angular frontend"
-              cd frontend-angular/
-              pnpm install --no-frozen-lockfile
-              pnpm build
-              cd ..
-            else
-              cd frontend/
-              pnpm install --no-frozen-lockfile
-              export use_worker_assets_with_telegram=${{ secrets.USE_WORKER_ASSETS_WITH_TELEGRAM }}
-              if [ -n "$use_worker_assets_with_telegram" ]; then
-                echo "Building with telegram pages"
-                pnpm build:telegram:pages
-              else
-                echo "Building with normal pages"
-                pnpm build:pages
-              fi
-              cd ..
-            fi
-          fi
+// Include core styles
+@include mat.core();
 
-          export debug_mode=${{ secrets.DEBUG_MODE }}
-          export use_mail_wasm_parser=${{ secrets.BACKEND_USE_MAIL_WASM_PARSER }}
-          cd worker/
-          
-          # Decode Base64 encoded TOML content
-          echo "${{ secrets.BACKEND_TOML_BASE64 }}" | base64 -d > wrangler.toml
-          
-          pnpm install --no-frozen-lockfile
+// Apply light theme by default
+@include mat.all-component-themes($light-theme);
 
-          if [ -n "$use_mail_wasm_parser" ]; then
-            echo "Using mail-parser-wasm-worker"
-            pnpm add mail-parser-wasm-worker
-            git apply ../.github/config/mail-parser-wasm-worker.patch
-            echo "Applied mail-parser-wasm-worker patch"
-          fi
+// Dark mode support
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+  
+  // Custom dark mode overrides
+  background-color: #202124;
+  color: #e8eaed;
+  
+  .mat-mdc-card {
+    background-color: #303134;
+  }
+  
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: #303134;
+  }
+}
 
-          echo "=== wrangler.toml content ==="
-          cat wrangler.toml
-          echo "=== end of wrangler.toml ==="
-          
-          pnpm run deploy
-          echo "Deployed for tag ${{ github.ref_name }}"
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+// Global styles
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Responsive utilities
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+// Utility classes
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.full-width {
+  width: 100%;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

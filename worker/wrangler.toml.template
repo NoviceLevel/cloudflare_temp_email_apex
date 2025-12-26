@@ -9,7 +9,7 @@ compatibility_flags = [ "nodejs_compat" ]
 
 # if you want deploy worker with frontend assets, you need to add assets
 # [assets]
-# directory = "../frontend/dist/"
+# directory = "../frontend-angular/dist/frontend-angular/browser/"
 # binding = "ASSETS"
 # run_worker_first = true
 
