@@ -39,7 +39,7 @@ interface AccountRow {
   template: `
     <div class="account-container">
       <div class="search-row">
-        <mat-form-field appearance="outline" class="flex-1">
+        <mat-form-field appearance="outline" class="flex-1 no-subscript">
           <mat-label>{{ 'leaveEmptyQueryAll' | translate }}</mat-label>
           <input matInput [(ngModel)]="addressQuery" (keydown.enter)="fetchData()">
         </mat-form-field>

@@ -186,7 +186,7 @@ export class GlobalStateService {
   useUTCDate = signal(localStorage.getItem('useUTCDate') === 'true');
   autoRefresh = signal(localStorage.getItem('autoRefresh') === 'true');
   configAutoRefreshInterval = signal(parseInt(localStorage.getItem('configAutoRefreshInterval') || '60'));
-  useSimpleIndex = signal(localStorage.getItem('useSimpleIndex') === 'true');
+  useSimpleIndex = signal(localStorage.getItem('useSimpleIndex') !== 'false');
 
   // OAuth2 session
   userOauth2SessionState = signal(sessionStorage.getItem('userOauth2SessionState') || '');

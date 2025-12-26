@@ -138,3 +138,8 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+// Hide subscript wrapper for search fields
+mat-form-field.no-subscript .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
