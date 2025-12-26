@@ -45,8 +45,11 @@ import { MailboxComponent } from '../../../components/mailbox/mailbox.component'
     .filter-row {
       display: flex;
       gap: 8px;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 16px;
+    }
+    .filter-row mat-form-field {
+      margin-bottom: 0;
     }
     .address-input {
       max-width: 400px;

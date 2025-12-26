@@ -96,7 +96,8 @@ interface AccountRow {
   `,
   styles: [`
     .account-container { padding: 16px 0; }
-    .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .search-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .search-row mat-form-field { margin-bottom: 0; }
     .flex-1 { flex: 1; }
     .multi-action-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
     .table-container { overflow: auto; }

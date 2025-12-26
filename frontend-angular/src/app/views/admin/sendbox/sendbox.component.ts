@@ -34,6 +34,7 @@ import { SendboxComponent as SendboxListComponent } from '../../../components/se
   styles: [`
     .container { padding: 16px; }
     .search-row { display: flex; gap: 8px; align-items: center; }
+    .search-row mat-form-field { margin-bottom: 0; }
     .search-field { max-width: 400px; flex: 1; }
     .mb-3 { margin-bottom: 12px; }
   `]
