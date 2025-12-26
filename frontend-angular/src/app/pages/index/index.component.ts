@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { GlobalStateService } from '../../services/global-state.service';
 import { ApiService } from '../../services/api.service';
@@ -28,6 +29,7 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
     MatTabsModule,
     MatIconModule,
     MatButtonModule,
+    TranslateModule,
     AddressBarComponent,
     MailboxComponent,
     SendboxComponent,
@@ -50,11 +52,10 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
         @if (state.settings().address) {
           <mat-card class="main-card">
             <mat-tab-group [(selectedIndex)]="selectedTab" (selectedIndexChange)="onTabChange($event)" color="primary" animationDuration="0ms">
-              <!-- 收件箱 -->
               <mat-tab>
                 <ng-template mat-tab-label>
                   <mat-icon>inbox</mat-icon>
-                  <span class="tab-label">收件箱</span>
+                  <span class="tab-label">{{ 'inbox' | translate }}</span>
                 </ng-template>
                 <div class="tab-content">
                   <app-mailbox 
@@ -65,11 +66,10 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
                 </div>
               </mat-tab>
 
-              <!-- 发件箱 -->
               <mat-tab>
                 <ng-template mat-tab-label>
                   <mat-icon>send</mat-icon>
-                  <span class="tab-label">发件箱</span>
+                  <span class="tab-label">{{ 'sendbox' | translate }}</span>
                 </ng-template>
                 <div class="tab-content">
                   <app-sendbox
@@ -81,45 +81,41 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
                 </div>
               </mat-tab>
 
-              <!-- 发送邮件 -->
               <mat-tab>
                 <ng-template mat-tab-label>
                   <mat-icon>edit</mat-icon>
-                  <span class="tab-label">发送邮件</span>
+                  <span class="tab-label">{{ 'sendMail' | translate }}</span>
                 </ng-template>
                 <div class="tab-content">
                   <app-send-mail></app-send-mail>
                 </div>
               </mat-tab>
 
-              <!-- 账户设置 -->
               <mat-tab>
                 <ng-template mat-tab-label>
                   <mat-icon>settings</mat-icon>
-                  <span class="tab-label">账户</span>
+                  <span class="tab-label">{{ 'account' | translate }}</span>
                 </ng-template>
                 <div class="tab-content">
                   <app-account-settings></app-account-settings>
                 </div>
               </mat-tab>
 
-              <!-- 外观 -->
               <mat-tab>
                 <ng-template mat-tab-label>
                   <mat-icon>palette</mat-icon>
-                  <span class="tab-label">外观</span>
+                  <span class="tab-label">{{ 'appearance' | translate }}</span>
                 </ng-template>
                 <div class="tab-content">
                   <app-appearance [showUseSimpleIndex]="true"></app-appearance>
                 </div>
               </mat-tab>
 
-              <!-- 自动回复 -->
               @if (state.openSettings().enableAutoReply) {
                 <mat-tab>
                   <ng-template mat-tab-label>
                     <mat-icon>reply_all</mat-icon>
-                    <span class="tab-label">自动回复</span>
+                    <span class="tab-label">{{ 'autoReply' | translate }}</span>
                   </ng-template>
                   <div class="tab-content">
                     <app-auto-reply></app-auto-reply>
@@ -127,7 +123,6 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
                 </mat-tab>
               }
 
-              <!-- Webhook -->
               @if (state.openSettings().enableWebhook) {
                 <mat-tab>
                   <ng-template mat-tab-label>
@@ -140,12 +135,11 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
                 </mat-tab>
               }
 
-              <!-- S3 附件 -->
               @if (state.openSettings().isS3Enabled) {
                 <mat-tab>
                   <ng-template mat-tab-label>
                     <mat-icon>attachment</mat-icon>
-                    <span class="tab-label">S3附件</span>
+                    <span class="tab-label">{{ 'attachments' | translate }}</span>
                   </ng-template>
                   <div class="tab-content">
                     <app-attachment></app-attachment>
@@ -153,12 +147,11 @@ import { SimpleIndexComponent } from '../../views/index/simple-index/simple-inde
                 </mat-tab>
               }
 
-              <!-- 关于 -->
               @if (state.openSettings().enableIndexAbout) {
                 <mat-tab>
                   <ng-template mat-tab-label>
                     <mat-icon>info</mat-icon>
-                    <span class="tab-label">关于</span>
+                    <span class="tab-label">{{ 'about' | translate }}</span>
                   </ng-template>
                   <div class="tab-content">
                     <app-about></app-about>
@@ -202,12 +195,9 @@ export class IndexComponent implements OnInit {
   private api = inject(ApiService);
   
   selectedTab = 0;
-
-  // Tab name to index mapping
   private tabNames = ['inbox', 'sendbox', 'sendmail', 'account', 'appearance', 'autoreply', 'webhook', 'attachment', 'about'];
 
   constructor() {
-    // Watch for indexTab changes from other components
     effect(() => {
       const tab = this.state.indexTab();
       const index = this.tabNames.indexOf(tab);
@@ -217,10 +207,7 @@ export class IndexComponent implements OnInit {
     });
   }
 
-  async ngOnInit() {
-    // AddressBarComponent 会处理 getOpenSettings 和 getSettings
-    // 这里不需要重复调用
-  }
+  async ngOnInit() {}
 
   onTabChange(index: number) {
     if (index < this.tabNames.length) {
@@ -228,7 +215,6 @@ export class IndexComponent implements OnInit {
     }
   }
 
-  // Sendbox data fetching
   fetchSendboxData = async (limit: number, offset: number) => {
     return await this.api.fetch<{ results: any[]; count: number }>(`/api/sendbox?limit=${limit}&offset=${offset}`);
   };

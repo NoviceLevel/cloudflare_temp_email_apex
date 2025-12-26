@@ -36,7 +36,7 @@ import { SnackbarService } from '../../services/snackbar.service';
   template: `
     <mat-toolbar color="primary">
       <img src="/logo.png" alt="Logo" width="32" height="32" class="logo" (click)="logoClick()">
-      <span class="title">{{ state.openSettings().title || '临时邮箱' }}</span>
+      <span class="title">{{ state.openSettings().title || ('title' | translate) }}</span>
       
       <span class="spacer"></span>
 
@@ -44,28 +44,28 @@ import { SnackbarService } from '../../services/snackbar.service';
       <ng-container *ngIf="!isMobile()">
         <button mat-button (click)="goHome()">
           <mat-icon>home</mat-icon>
-          主页
+          {{ 'home' | translate }}
         </button>
         <button mat-button (click)="goUser()">
           <mat-icon>person</mat-icon>
-          用户
+          {{ 'user' | translate }}
         </button>
         @if (state.showAdminPage()) {
           <button mat-button (click)="goAdmin()">
             <mat-icon>admin_panel_settings</mat-icon>
-            Admin
+            {{ 'admin' | translate }}
           </button>
         }
         <button mat-button (click)="toggleTheme()">
           <mat-icon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
-          {{ isDark() ? '亮色' : '暗色' }}
+          {{ isDark() ? ('light' | translate) : ('dark' | translate) }}
         </button>
         <button mat-button (click)="toggleLang()">
           <mat-icon>translate</mat-icon>
           {{ currentLang() === 'zh' ? 'English' : '中文' }}
         </button>
         @if (state.openSettings().showGithub) {
-          <a mat-button href="https://github.com/dreamhunter2333/cloudflare_temp_email" target="_blank">
+          <a mat-button href="https://github.com/NoviceLevel/cloudflare_temp_email_apex" target="_blank">
             <mat-icon>code</mat-icon>
             Github
           </a>
@@ -86,21 +86,21 @@ import { SnackbarService } from '../../services/snackbar.service';
         <mat-nav-list>
           <mat-list-item (click)="goHome()">
             <mat-icon matListItemIcon>home</mat-icon>
-            <span matListItemTitle>主页</span>
+            <span matListItemTitle>{{ 'home' | translate }}</span>
           </mat-list-item>
           <mat-list-item (click)="goUser()">
             <mat-icon matListItemIcon>person</mat-icon>
-            <span matListItemTitle>用户</span>
+            <span matListItemTitle>{{ 'user' | translate }}</span>
           </mat-list-item>
           @if (state.showAdminPage()) {
             <mat-list-item (click)="goAdmin()">
               <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
-              <span matListItemTitle>Admin</span>
+              <span matListItemTitle>{{ 'admin' | translate }}</span>
             </mat-list-item>
           }
           <mat-list-item (click)="toggleTheme()">
             <mat-icon matListItemIcon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
-            <span matListItemTitle>{{ isDark() ? '亮色' : '暗色' }}</span>
+            <span matListItemTitle>{{ isDark() ? ('light' | translate) : ('dark' | translate) }}</span>
           </mat-list-item>
           <mat-list-item (click)="toggleLang()">
             <mat-icon matListItemIcon>translate</mat-icon>

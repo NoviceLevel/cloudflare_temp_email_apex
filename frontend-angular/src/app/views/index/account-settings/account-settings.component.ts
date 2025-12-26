@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
@@ -16,33 +17,33 @@ import { hashPassword } from '../../../utils/index';
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, TranslateModule],
   template: `
     @if (state.settings().address) {
       <div class="settings-container">
         <button mat-stroked-button color="primary" class="full-width mb-2" 
                 (click)="state.showAddressCredential.set(true)">
-          查看邮箱地址凭证
+          {{ 'viewCredential' | translate }}
         </button>
         @if (state.openSettings().enableAddressPassword) {
           <button mat-stroked-button color="accent" class="full-width mb-2" (click)="openChangePasswordDialog()">
-            修改密码
+            {{ 'changePassword' | translate }}
           </button>
         }
         @if (state.openSettings().enableUserDeleteEmail) {
           <button mat-stroked-button color="warn" class="full-width mb-2" (click)="openClearInboxDialog()">
-            清空收件箱
+            {{ 'clearInbox' | translate }}
           </button>
           <button mat-stroked-button color="warn" class="full-width mb-2" (click)="openClearSentItemsDialog()">
-            清空发件箱
+            {{ 'clearSendbox' | translate }}
           </button>
         }
         <button mat-stroked-button class="full-width mb-2" (click)="openLogoutDialog()">
-          退出登录
+          {{ 'logout' | translate }}
         </button>
         @if (state.openSettings().enableUserDeleteEmail) {
           <button mat-stroked-button color="warn" class="full-width" (click)="openDeleteAccountDialog()">
-            删除账户
+            {{ 'deleteAccount' | translate }}
           </button>
         }
       </div>
@@ -60,11 +61,12 @@ export class AccountSettingsComponent {
   private router = inject(Router);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   openLogoutDialog() {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '退出登录', message: '确定要退出登录吗？', confirmText: '退出登录', confirmColor: 'warn' }
+      data: { title: this.translate.instant('logout'), message: this.translate.instant('logoutConfirm'), confirmText: this.translate.instant('logout'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.logout(); });
   }
@@ -72,7 +74,7 @@ export class AccountSettingsComponent {
   openDeleteAccountDialog() {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '删除账户', message: '确定要删除你的账户和其中的所有邮件吗?', confirmText: '删除账户', confirmColor: 'warn' }
+      data: { title: this.translate.instant('deleteAccount'), message: this.translate.instant('deleteAccountConfirm'), confirmText: this.translate.instant('deleteAccount'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.deleteAccount(); });
   }
@@ -80,7 +82,7 @@ export class AccountSettingsComponent {
   openClearInboxDialog() {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '清空收件箱', message: '确定要清空你收件箱中的所有邮件吗？', confirmText: '清空收件箱', confirmColor: 'warn' }
+      data: { title: this.translate.instant('clearInbox'), message: this.translate.instant('clearInboxConfirm'), confirmText: this.translate.instant('clearInbox'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.clearInbox(); });
   }
@@ -88,7 +90,7 @@ export class AccountSettingsComponent {
   openClearSentItemsDialog() {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '清空发件箱', message: '确定要清空你发件箱中的所有邮件吗？', confirmText: '清空发件箱', confirmColor: 'warn' }
+      data: { title: this.translate.instant('clearSendbox'), message: this.translate.instant('clearSendboxConfirm'), confirmText: this.translate.instant('clearSendbox'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => { if (result) this.clearSentItems(); });
   }
@@ -102,9 +104,9 @@ export class AccountSettingsComponent {
             method: 'POST',
             body: { new_password: await hashPassword(result) }
           });
-          this.snackbar.success('密码修改成功');
+          this.snackbar.success(this.translate.instant('successTip'));
         } catch (e: any) {
-          this.snackbar.error(e.message || '修改失败');
+          this.snackbar.error(e.message || this.translate.instant('error'));
         }
       }
     });
@@ -123,25 +125,25 @@ export class AccountSettingsComponent {
       await this.router.navigate(['/']);
       location.reload();
     } catch (e: any) {
-      this.snackbar.error(e.message || '删除失败');
+      this.snackbar.error(e.message || this.translate.instant('error'));
     }
   }
 
   async clearInbox() {
     try {
       await this.api.fetch('/api/clear_inbox', { method: 'DELETE' });
-      this.snackbar.success('清空成功');
+      this.snackbar.success(this.translate.instant('successTip'));
     } catch (e: any) {
-      this.snackbar.error(e.message || '清空失败');
+      this.snackbar.error(e.message || this.translate.instant('error'));
     }
   }
 
   async clearSentItems() {
     try {
       await this.api.fetch('/api/clear_sent_items', { method: 'DELETE' });
-      this.snackbar.success('清空成功');
+      this.snackbar.success(this.translate.instant('successTip'));
     } catch (e: any) {
-      this.snackbar.error(e.message || '清空失败');
+      this.snackbar.error(e.message || this.translate.instant('error'));
     }
   }
 }
@@ -150,12 +152,12 @@ export class AccountSettingsComponent {
 @Component({
   selector: 'app-account-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       <button mat-raised-button [color]="data.confirmColor || 'primary'" [mat-dialog-close]="true">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `
@@ -168,22 +170,22 @@ export class AccountConfirmDialogComponent {
 @Component({
   selector: 'app-change-password-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>修改密码</h2>
+    <h2 mat-dialog-title>{{ 'changePassword' | translate }}</h2>
     <mat-dialog-content>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>新密码</mat-label>
+        <mat-label>{{ 'newPassword' | translate }}</mat-label>
         <input matInput type="password" [(ngModel)]="newPassword">
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>确认密码</mat-label>
+        <mat-label>{{ 'confirmPassword' | translate }}</mat-label>
         <input matInput type="password" [(ngModel)]="confirmPassword">
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
-      <button mat-raised-button color="primary" (click)="submit()">修改密码</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
+      <button mat-raised-button color="primary" (click)="submit()">{{ 'changePassword' | translate }}</button>
     </mat-dialog-actions>
   `,
   styles: [`.full-width { width: 100%; }`]
@@ -191,12 +193,13 @@ export class AccountConfirmDialogComponent {
 export class ChangePasswordDialogComponent {
   private dialogRef = inject(MatDialogRef<ChangePasswordDialogComponent>);
   private snackbar = inject(SnackbarService);
+  private translate = inject(TranslateService);
   newPassword = '';
   confirmPassword = '';
 
   submit() {
     if (this.newPassword !== this.confirmPassword) {
-      this.snackbar.error('密码不匹配');
+      this.snackbar.error(this.translate.instant('passwordNotMatch'));
       return;
     }
     this.dialogRef.close(this.newPassword);
