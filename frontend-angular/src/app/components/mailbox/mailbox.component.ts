@@ -16,6 +16,8 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 
+import { TranslateModule } from '@ngx-translate/core';
+
 import { GlobalStateService } from '../../services/global-state.service';
 import { ApiService } from '../../services/api.service';
 import { SnackbarService } from '../../services/snackbar.service';
@@ -43,6 +45,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
     MatChipsModule,
     MatBottomSheetModule,
     MatDividerModule,
+    TranslateModule,
     MailContentRendererComponent,
   ],
   template: `
@@ -53,15 +56,15 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
         <div class="toolbar">
           <button mat-button (click)="refresh()">
             <mat-icon>refresh</mat-icon>
-            刷新
+            {{ 'refresh' | translate }}
           </button>
           <mat-slide-toggle [(ngModel)]="autoRefresh" (change)="setupAutoRefresh()">
-            {{ autoRefresh ? '自动刷新 ' + autoRefreshCountdown + 's' : '自动刷新' }}
+            {{ autoRefresh ? ('autoRefresh' | translate) + ' ' + autoRefreshCountdown + 's' : ('autoRefresh' | translate) }}
           </mat-slide-toggle>
           @if (showFilterInput) {
             <mat-form-field appearance="outline" class="filter-field" subscriptSizing="dynamic">
-              <mat-label>过滤</mat-label>
-              <input matInput [(ngModel)]="filterKeyword" placeholder="搜索邮件...">
+              <mat-label>{{ 'filter' | translate }}</mat-label>
+              <input matInput [(ngModel)]="filterKeyword" [placeholder]="'searchMails' | translate">
             </mat-form-field>
           }
         </div>
@@ -77,7 +80,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
             } @else if (filteredData().length === 0) {
               <div class="empty-state">
                 <mat-icon>inbox</mat-icon>
-                <p>暂无邮件</p>
+                <p>{{ 'noMails' | translate }}</p>
               </div>
             } @else {
               <mat-nav-list>
@@ -115,10 +118,10 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
                 <div class="mail-actions">
                   <button mat-button (click)="prevMail()" [disabled]="!canGoPrev()">
                     <mat-icon>chevron_left</mat-icon>
-                    上一封
+                    {{ 'prevMail' | translate }}
                   </button>
                   <button mat-button (click)="nextMail()" [disabled]="!canGoNext()">
-                    下一封
+                    {{ 'nextMail' | translate }}
                     <mat-icon>chevron_right</mat-icon>
                   </button>
                 </div>
@@ -135,7 +138,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
             } @else {
               <div class="empty-content">
                 <mat-icon>email</mat-icon>
-                <p>请选择邮件</p>
+                <p>{{ 'selectMail' | translate }}</p>
               </div>
             }
           </div>
@@ -144,14 +147,14 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
         <!-- Mobile View -->
         <div class="mobile-toolbar">
           <mat-slide-toggle [(ngModel)]="autoRefresh" (change)="setupAutoRefresh()">
-            {{ autoRefresh ? autoRefreshCountdown + 's' : '自动刷新' }}
+            {{ autoRefresh ? autoRefreshCountdown + 's' : ('autoRefresh' | translate) }}
           </mat-slide-toggle>
-          <button mat-button (click)="refresh()">刷新</button>
+          <button mat-button (click)="refresh()">{{ 'refresh' | translate }}</button>
         </div>
         
         @if (showFilterInput) {
           <mat-form-field appearance="outline" class="mobile-filter-field" subscriptSizing="dynamic">
-            <mat-label>过滤</mat-label>
+            <mat-label>{{ 'filter' | translate }}</mat-label>
             <input matInput [(ngModel)]="filterKeyword">
           </mat-form-field>
         }
@@ -163,7 +166,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
         } @else if (filteredData().length === 0) {
           <div class="empty-state">
             <mat-icon>inbox</mat-icon>
-            <p>暂无邮件</p>
+            <p>{{ 'noMails' | translate }}</p>
           </div>
         } @else {
           <mat-nav-list class="mobile-mail-list">
