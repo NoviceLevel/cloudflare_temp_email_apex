@@ -264,7 +264,7 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       justify-content: space-between;
       align-items: center;
       padding: 16px;
-      background: #f5f5f5;
+      background: #fff;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       margin-bottom: 16px;
