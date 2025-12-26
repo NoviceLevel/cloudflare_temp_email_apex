@@ -264,7 +264,8 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       justify-content: space-between;
       align-items: center;
       padding: 16px;
-      background: #e3f2fd;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
       border-radius: 8px;
       margin-bottom: 16px;
       flex-wrap: wrap;
@@ -325,8 +326,9 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       flex-wrap: wrap;
     }
     .prefix-chip {
-      background: #e3f2fd;
-      color: #1976d2;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      color: #424242;
       padding: 8px 12px;
       border-radius: 16px;
       font-size: 14px;
@@ -366,12 +368,14 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background-color: #e3f2fd;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
       border-radius: 4px;
-      color: #1976d2;
+      color: #424242;
     }
     :host-context(.dark-theme) .address-display {
       background: #303134;
+      border-color: #5f6368;
     }
     :host-context(.dark-theme) .warning-alert {
       background-color: #3c3000;
@@ -379,14 +383,16 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
     }
     :host-context(.dark-theme) .info-alert {
       background-color: #303134;
-      color: #8ab4f8;
+      border-color: #5f6368;
+      color: #e8eaed;
     }
     :host-context(.dark-theme) .hint-text {
       color: #9aa0a6;
     }
     :host-context(.dark-theme) .prefix-chip {
       background: #303134;
-      color: #8ab4f8;
+      border-color: #5f6368;
+      color: #e8eaed;
     }
   `],
 })
