@@ -257,14 +257,8 @@ export class MailContentRendererComponent {
   }
 
   openDeleteDialog() {
-    const dialogRef = this.dialog.open(MailDeleteDialogComponent, {
-      width: '320px',
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.onDelete.emit();
-      }
-    });
+    // 直接删除，不需要确认
+    this.onDelete.emit();
   }
 }
 

@@ -9,6 +9,7 @@ export class SnackbarService {
     this.snackBar.open(message, '关闭', {
       duration,
       panelClass: ['snackbar-success'],
+      verticalPosition: 'top',
     });
   }
 
@@ -16,6 +17,7 @@ export class SnackbarService {
     this.snackBar.open(message, '关闭', {
       duration,
       panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
     });
   }
 
@@ -23,6 +25,7 @@ export class SnackbarService {
     this.snackBar.open(message, '关闭', {
       duration,
       panelClass: ['snackbar-info'],
+      verticalPosition: 'top',
     });
   }
 }
