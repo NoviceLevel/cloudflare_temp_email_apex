@@ -111,6 +111,35 @@ export class AppComponent implements OnInit {
       .fullscreen-dialog .mat-mdc-dialog-surface {
         border-radius: 0 !important;
       }
+      /* Custom scrollbar - WebKit (Chrome, Safari, Edge) */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.35);
+      }
+      body.dark-theme ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      body.dark-theme ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.35);
+      }
+      /* Custom scrollbar - Firefox */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+      }
+      body.dark-theme * {
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      }
     `;
     this.document.head.appendChild(style);
   }
