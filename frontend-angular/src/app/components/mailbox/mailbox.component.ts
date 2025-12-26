@@ -156,18 +156,29 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
           </mat-form-field>
         }
 
-        <mat-nav-list class="mobile-mail-list">
-          @for (mail of filteredData(); track mail.id) {
-            <mat-list-item (click)="selectMailMobile(mail)">
-              <div matListItemTitle class="mail-subject">{{ mail.subject }}</div>
-              <div matListItemLine class="mobile-mail-meta">
-                ID: {{ mail.id }} · {{ formatDate(mail.created_at) }}
-              </div>
-              <div matListItemLine class="mobile-mail-from">{{ mail.source }}</div>
-            </mat-list-item>
-            <mat-divider></mat-divider>
-          }
-        </mat-nav-list>
+        @if (state.loading()) {
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        } @else if (filteredData().length === 0) {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>暂无邮件</p>
+          </div>
+        } @else {
+          <mat-nav-list class="mobile-mail-list">
+            @for (mail of filteredData(); track mail.id) {
+              <mat-list-item (click)="selectMailMobile(mail)">
+                <div matListItemTitle class="mail-subject">{{ mail.subject }}</div>
+                <div matListItemLine class="mobile-mail-meta">
+                  ID: {{ mail.id }} · {{ formatDate(mail.created_at) }}
+                </div>
+                <div matListItemLine class="mobile-mail-from">{{ mail.source }}</div>
+              </mat-list-item>
+              <mat-divider></mat-divider>
+            }
+          </mat-nav-list>
+        }
 
         <mat-paginator
           [length]="totalCount()"
