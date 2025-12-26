@@ -124,8 +124,9 @@ import { processItem } from '../../../utils/email-parser';
   `,
   styles: [`
     .simple-index-container {
-      max-width: 800px;
+      max-width: 600px;
       margin: 0 auto;
+      padding: 24px 16px;
     }
     .mb-4 {
       margin-bottom: 16px;
