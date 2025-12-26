@@ -88,9 +88,22 @@ export class AppComponent implements OnInit {
     style.textContent = `
       html, body { height: 100%; margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
       body { transition: background-color 0.3s, color 0.3s; }
+      /* Force white background for cards and dialogs */
+      .mat-mdc-card,
+      .mdc-card {
+        background-color: #fff !important;
+      }
+      .mat-mdc-dialog-container,
+      .mat-mdc-dialog-surface,
+      .mdc-dialog__surface {
+        background-color: #fff !important;
+      }
       /* Google dark mode overrides */
       body.dark-theme .mat-mdc-card,
+      body.dark-theme .mdc-card,
       body.dark-theme .mat-mdc-dialog-container,
+      body.dark-theme .mat-mdc-dialog-surface,
+      body.dark-theme .mdc-dialog__surface,
       body.dark-theme .mat-mdc-menu-panel,
       body.dark-theme .mat-mdc-select-panel,
       body.dark-theme .mat-mdc-autocomplete-panel,
