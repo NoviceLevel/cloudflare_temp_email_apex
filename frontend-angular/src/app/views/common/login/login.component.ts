@@ -169,12 +169,15 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
     }
     .info-alert {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       padding: 12px 16px;
       background-color: #e3f2fd;
       border-radius: 4px;
       color: #1976d2;
+    }
+    .info-alert mat-icon {
+      flex-shrink: 0;
     }
     .email-row {
       display: flex;

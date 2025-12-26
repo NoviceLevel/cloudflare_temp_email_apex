@@ -144,3 +144,5 @@ pnpm-lock.yaml
 # Flutter
 flutter_frontend/
 *.zip
+
+push.js

@@ -365,13 +365,16 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
     }
     .info-alert {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       padding: 12px 16px;
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
+      background-color: #e3f2fd;
       border-radius: 4px;
-      color: #424242;
+      color: #1976d2;
+    }
+    .info-alert mat-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
     }
     :host-context(.dark-theme) .address-display {
       background: #303134;
@@ -382,9 +385,8 @@ import { LocalAddressComponent } from '../../views/index/local-address/local-add
       color: #fdd663;
     }
     :host-context(.dark-theme) .info-alert {
-      background-color: #303134;
-      border-color: #5f6368;
-      color: #e8eaed;
+      background-color: #1e3a5f;
+      color: #90caf9;
     }
     :host-context(.dark-theme) .hint-text {
       color: #9aa0a6;
