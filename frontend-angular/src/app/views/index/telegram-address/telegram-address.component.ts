@@ -4,6 +4,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -17,12 +18,12 @@ interface TelegramAddressRow {
 @Component({
   selector: 'app-telegram-address',
   standalone: true,
-  imports: [CommonModule, MatTabsModule, MatTableModule, MatButtonModule, MatDialogModule, LoginComponent],
+  imports: [CommonModule, MatTabsModule, MatTableModule, MatButtonModule, MatDialogModule, TranslateModule, LoginComponent],
   template: `
     <div class="telegram-address">
       <mat-tab-group [(selectedIndex)]="selectedTab" color="primary" animationDuration="0ms">
-        <mat-tab label="地址"></mat-tab>
-        <mat-tab label="绑定"></mat-tab>
+        <mat-tab [label]="'address' | translate"></mat-tab>
+        <mat-tab [label]="'bind' | translate"></mat-tab>
       </mat-tab-group>
 
       <div class="tab-content">
@@ -30,14 +31,14 @@ interface TelegramAddressRow {
           <div class="table-container">
             <table mat-table [dataSource]="data()" class="full-width">
               <ng-container matColumnDef="address">
-                <th mat-header-cell *matHeaderCellDef>地址</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'address' | translate }}</th>
                 <td mat-cell *matCellDef="let row">{{ row.address }}</td>
               </ng-container>
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>操作</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'actions' | translate }}</th>
                 <td mat-cell *matCellDef="let row">
-                  <button mat-button color="primary" (click)="confirmChange(row)">切换邮箱地址</button>
-                  <button mat-button color="warn" (click)="confirmUnbind(row)">解绑邮箱地址</button>
+                  <button mat-button color="primary" (click)="confirmChange(row)">{{ 'switchEmailAddress' | translate }}</button>
+                  <button mat-button color="warn" (click)="confirmUnbind(row)">{{ 'unbindEmailAddress' | translate }}</button>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -63,6 +64,7 @@ export class TelegramAddressComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   selectedTab = 0;
   displayedColumns = ['address', 'actions'];
@@ -92,7 +94,7 @@ export class TelegramAddressComponent implements OnInit {
     this.selectedRow.set(row);
     const dialogRef = this.dialog.open(TelegramConfirmDialogComponent, {
       width: '320px',
-      data: { message: '切换邮箱地址?', confirmText: '切换邮箱地址', confirmColor: 'primary' }
+      data: { message: this.translate.instant('switchEmailAddressConfirm'), confirmText: this.translate.instant('switchEmailAddress'), confirmColor: 'primary' }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.changeAddress();
@@ -103,7 +105,7 @@ export class TelegramAddressComponent implements OnInit {
     this.selectedRow.set(row);
     const dialogRef = this.dialog.open(TelegramConfirmDialogComponent, {
       width: '320px',
-      data: { message: '解绑邮箱地址?', confirmText: '解绑邮箱地址', confirmColor: 'warn' }
+      data: { message: this.translate.instant('unbindEmailAddressConfirm'), confirmText: this.translate.instant('unbindEmailAddress'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.unbindAddress();
@@ -136,15 +138,14 @@ export class TelegramAddressComponent implements OnInit {
   }
 }
 
-// Confirm Dialog Component
 @Component({
   selector: 'app-telegram-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       <button mat-raised-button [color]="data.confirmColor || 'primary'" [mat-dialog-close]="true">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `

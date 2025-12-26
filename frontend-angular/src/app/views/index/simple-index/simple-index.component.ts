@@ -239,7 +239,7 @@ export class SimpleIndexComponent implements OnInit, OnDestroy {
       this.currentMail.set(rawMail ? await processItem(rawMail) : null);
     } catch (error: any) {
       console.error('Failed to fetch mails:', error);
-      this.snackbar.error('获取邮件失败');
+      this.snackbar.error(this.translate.instant('fetchMailsFailed'));
     }
   }
 
@@ -253,7 +253,7 @@ export class SimpleIndexComponent implements OnInit, OnDestroy {
       await this.refreshMails();
     } catch (error: any) {
       console.error('Failed to delete mail:', error);
-      this.snackbar.error('删除邮件失败');
+      this.snackbar.error(this.translate.instant('deleteMailFailed'));
     }
   }
 
@@ -271,7 +271,7 @@ export class SimpleIndexComponent implements OnInit, OnDestroy {
       await navigator.clipboard.writeText(this.state.settings().address);
       this.snackbar.success(this.translate.instant('addressCopied'));
     } catch (error) {
-      this.snackbar.error('复制失败');
+      this.snackbar.error(this.translate.instant('copyFailed'));
     }
   }
 

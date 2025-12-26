@@ -13,6 +13,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -33,24 +34,24 @@ interface AccountRow {
   imports: [
     CommonModule, FormsModule, MatTableModule, MatButtonModule, MatFormFieldModule, MatInputModule,
     MatSelectModule, MatPaginatorModule, MatCheckboxModule, MatChipsModule, MatMenuModule,
-    MatIconModule, MatProgressBarModule, MatDialogModule
+    MatIconModule, MatProgressBarModule, MatDialogModule, TranslateModule
   ],
   template: `
     <div class="account-container">
       <div class="search-row">
         <mat-form-field appearance="outline" class="flex-1">
-          <mat-label>留空查询所有地址</mat-label>
+          <mat-label>{{ 'leaveEmptyQueryAll' | translate }}</mat-label>
           <input matInput [(ngModel)]="addressQuery" (keydown.enter)="fetchData()">
         </mat-form-field>
-        <button mat-stroked-button color="primary" (click)="fetchData()">查询</button>
+        <button mat-stroked-button color="primary" (click)="fetchData()">{{ 'query' | translate }}</button>
       </div>
       @if (checkedRowKeys().length > 0) {
         <div class="multi-action-bar">
-          <button mat-stroked-button (click)="selectAll()">全选本页</button>
-          <button mat-stroked-button (click)="unselectAll()">取消全选</button>
-          <button mat-stroked-button color="warn" (click)="openMultiDeleteDialog()">批量删除</button>
-          <button mat-stroked-button color="accent" (click)="openMultiClearInboxDialog()">批量清空收件箱</button>
-          <mat-chip color="primary" highlighted>已选择: {{ checkedRowKeys().length }}</mat-chip>
+          <button mat-stroked-button (click)="selectAll()">{{ 'selectAllPage' | translate }}</button>
+          <button mat-stroked-button (click)="unselectAll()">{{ 'unselectAll' | translate }}</button>
+          <button mat-stroked-button color="warn" (click)="openMultiDeleteDialog()">{{ 'batchDelete' | translate }}</button>
+          <button mat-stroked-button color="accent" (click)="openMultiClearInboxDialog()">{{ 'batchClearInbox' | translate }}</button>
+          <mat-chip color="primary" highlighted>{{ 'selected' | translate }}: {{ checkedRowKeys().length }}</mat-chip>
         </div>
       }
       <mat-paginator [length]="count()" [pageSize]="pageSize()" [pageSizeOptions]="[20, 50, 100]"
@@ -62,28 +63,28 @@ interface AccountRow {
             <td mat-cell *matCellDef="let row"><mat-checkbox [(ngModel)]="row.checked" (change)="updateCheckedKeys()"></mat-checkbox></td>
           </ng-container>
           <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>ID</th><td mat-cell *matCellDef="let row">{{ row.id }}</td></ng-container>
-          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef>名称</th><td mat-cell *matCellDef="let row">{{ row.name }}</td></ng-container>
-          <ng-container matColumnDef="created_at"><th mat-header-cell *matHeaderCellDef>创建时间</th><td mat-cell *matCellDef="let row">{{ row.created_at }}</td></ng-container>
+          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef>{{ 'name' | translate }}</th><td mat-cell *matCellDef="let row">{{ row.name }}</td></ng-container>
+          <ng-container matColumnDef="created_at"><th mat-header-cell *matHeaderCellDef>{{ 'createdAt' | translate }}</th><td mat-cell *matCellDef="let row">{{ row.created_at }}</td></ng-container>
           <ng-container matColumnDef="mail_count">
-            <th mat-header-cell *matHeaderCellDef>邮件数量</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'mail_count' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               @if (row.mail_count > 0) {
-                <button mat-button color="primary" (click)="viewMails(row)"><mat-chip color="primary" highlighted>{{ row.mail_count }}</mat-chip>查看邮件</button>
+                <button mat-button color="primary" (click)="viewMails(row)"><mat-chip color="primary" highlighted>{{ row.mail_count }}</mat-chip>{{ 'viewMails' | translate }}</button>
               } @else { <mat-chip>{{ row.mail_count }}</mat-chip> }
             </td>
           </ng-container>
-          <ng-container matColumnDef="send_count"><th mat-header-cell *matHeaderCellDef>发送数量</th><td mat-cell *matCellDef="let row"><mat-chip>{{ row.send_count }}</mat-chip></td></ng-container>
+          <ng-container matColumnDef="send_count"><th mat-header-cell *matHeaderCellDef>{{ 'send_count' | translate }}</th><td mat-cell *matCellDef="let row"><mat-chip>{{ row.send_count }}</mat-chip></td></ng-container>
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>操作</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'actions' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
               <mat-menu #menu="matMenu">
-                <button mat-menu-item (click)="showCredentialDialog(row.id)">查看凭证</button>
+                <button mat-menu-item (click)="showCredentialDialog(row.id)">{{ 'viewCredential' | translate }}</button>
                 @if (row.mail_count > 0) {
-                  <button mat-menu-item (click)="viewMails(row)">查看邮件</button>
-                  <button mat-menu-item (click)="openClearInboxDialog(row)">清空收件箱</button>
+                  <button mat-menu-item (click)="viewMails(row)">{{ 'viewMails' | translate }}</button>
+                  <button mat-menu-item (click)="openClearInboxDialog(row)">{{ 'clearInbox' | translate }}</button>
                 }
-                <button mat-menu-item (click)="openDeleteDialog(row)">删除</button>
+                <button mat-menu-item (click)="openDeleteDialog(row)">{{ 'delete' | translate }}</button>
               </mat-menu>
             </td>
           </ng-container>
@@ -107,6 +108,7 @@ export class AdminAccountComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   displayedColumns = ['select', 'id', 'name', 'created_at', 'mail_count', 'send_count', 'actions'];
   data = signal<AccountRow[]>([]);
@@ -160,13 +162,13 @@ export class AdminAccountComponent implements OnInit {
   openDeleteDialog(row: AccountRow) {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '删除邮箱', message: '确定要删除这个邮箱吗？', confirmText: '删除', confirmColor: 'warn' }
+      data: { title: this.translate.instant('deleteEmail'), message: this.translate.instant('deleteEmailConfirm'), confirmText: this.translate.instant('delete'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
         try {
           await this.api.adminDeleteAddress(row.id);
-          this.snackbar.success('成功');
+          this.snackbar.success(this.translate.instant('success'));
           await this.fetchData();
         } catch (error: any) {
           this.snackbar.error(error.message || 'error');
@@ -178,13 +180,13 @@ export class AdminAccountComponent implements OnInit {
   openClearInboxDialog(row: AccountRow) {
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '清空收件箱', message: '确定要清空这个邮箱的收件箱吗？', confirmText: '清空', confirmColor: 'warn' }
+      data: { title: this.translate.instant('clearInbox'), message: this.translate.instant('clearInboxConfirm'), confirmText: this.translate.instant('clear'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
         try {
           await this.api.fetch(`/admin/clear_inbox/${row.id}`, { method: 'DELETE' });
-          this.snackbar.success('成功');
+          this.snackbar.success(this.translate.instant('success'));
           await this.fetchData();
         } catch (error: any) {
           this.snackbar.error(error.message || 'error');
@@ -195,10 +197,10 @@ export class AdminAccountComponent implements OnInit {
 
   openMultiDeleteDialog() {
     const selectedIds = this.checkedRowKeys();
-    if (selectedIds.length === 0) { this.snackbar.error('请选择地址'); return; }
+    if (selectedIds.length === 0) { this.snackbar.error(this.translate.instant('pleaseSelectAddress')); return; }
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '批量删除', message: '确定要删除选中的邮箱吗？', confirmText: '删除', confirmColor: 'warn' }
+      data: { title: this.translate.instant('batchDelete'), message: this.translate.instant('batchDeleteConfirm'), confirmText: this.translate.instant('delete'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) await this.multiDeleteAccounts(selectedIds);
@@ -207,10 +209,10 @@ export class AdminAccountComponent implements OnInit {
 
   openMultiClearInboxDialog() {
     const selectedRows = this.data().filter(row => this.checkedRowKeys().includes(row.id) && row.mail_count > 0);
-    if (selectedRows.length === 0) { this.snackbar.error('请选择有邮件的地址'); return; }
+    if (selectedRows.length === 0) { this.snackbar.error(this.translate.instant('pleaseSelectAddressWithMails')); return; }
     const dialogRef = this.dialog.open(AccountConfirmDialogComponent, {
       width: '320px',
-      data: { title: '批量清空收件箱', message: '确定要清空选中邮箱的收件箱吗？', confirmText: '清空', confirmColor: 'warn' }
+      data: { title: this.translate.instant('batchClearInbox'), message: this.translate.instant('batchClearInboxConfirm'), confirmText: this.translate.instant('clear'), confirmColor: 'warn' }
     });
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) await this.multiClearInbox(selectedRows);
@@ -218,25 +220,25 @@ export class AdminAccountComponent implements OnInit {
   }
 
   async multiDeleteAccounts(selectedIds: number[]) {
-    const progressRef = this.dialog.open(ProgressDialogComponent, { width: '400px', disableClose: true, data: { title: '批量删除', total: selectedIds.length } });
+    const progressRef = this.dialog.open(ProgressDialogComponent, { width: '400px', disableClose: true, data: { title: this.translate.instant('batchDelete'), total: selectedIds.length } });
     for (let i = 0; i < selectedIds.length; i++) {
       try { await this.api.adminDeleteAddress(selectedIds[i]); } catch (error) { console.error(error); }
       progressRef.componentInstance.updateProgress(i + 1);
     }
     progressRef.close();
-    this.snackbar.success('成功');
+    this.snackbar.success(this.translate.instant('success'));
     this.checkedRowKeys.set([]);
     await this.fetchData();
   }
 
   async multiClearInbox(selectedRows: AccountRow[]) {
-    const progressRef = this.dialog.open(ProgressDialogComponent, { width: '400px', disableClose: true, data: { title: '批量清空收件箱', total: selectedRows.length } });
+    const progressRef = this.dialog.open(ProgressDialogComponent, { width: '400px', disableClose: true, data: { title: this.translate.instant('batchClearInbox'), total: selectedRows.length } });
     for (let i = 0; i < selectedRows.length; i++) {
       try { await this.api.fetch(`/admin/clear_inbox/${selectedRows[i].id}`, { method: 'DELETE' }); } catch (error) { console.error(error); }
       progressRef.componentInstance.updateProgress(i + 1);
     }
     progressRef.close();
-    this.snackbar.success('成功');
+    this.snackbar.success(this.translate.instant('success'));
     this.checkedRowKeys.set([]);
     await this.fetchData();
   }
@@ -246,12 +248,12 @@ export class AdminAccountComponent implements OnInit {
 @Component({
   selector: 'app-account-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       <button mat-raised-button [color]="data.confirmColor || 'primary'" [mat-dialog-close]="true">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `
@@ -264,14 +266,14 @@ export class AccountConfirmDialogComponent {
 @Component({
   selector: 'app-account-credential-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>邮箱地址凭证</h2>
+    <h2 mat-dialog-title>{{ 'addressCredential' | translate }}</h2>
     <mat-dialog-content>
-      <p class="mb-3">请复制邮箱地址凭证，你可以使用它登录你的邮箱。</p>
+      <p class="mb-3">{{ 'addressCredentialTip' | translate }}</p>
       <div class="credential-box"><strong>{{ data.jwt }}</strong></div>
     </mat-dialog-content>
-    <mat-dialog-actions align="end"><button mat-button mat-dialog-close>关闭</button></mat-dialog-actions>
+    <mat-dialog-actions align="end"><button mat-button mat-dialog-close>{{ 'close' | translate }}</button></mat-dialog-actions>
   `,
   styles: [`.mb-3 { margin-bottom: 12px; } .credential-box { background: #f5f5f5; padding: 16px; border-radius: 4px; word-break: break-all; }`]
 })

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { TranslateModule } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SendboxComponent as SendboxListComponent } from '../../../components/sendbox/sendbox.component';
@@ -11,15 +12,15 @@ import { SendboxComponent as SendboxListComponent } from '../../../components/se
 @Component({
   selector: 'app-admin-sendbox',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, SendboxListComponent],
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, TranslateModule, SendboxListComponent],
   template: `
     <div class="container">
       <div class="search-row mb-3">
         <mat-form-field appearance="outline" class="search-field">
-          <mat-label>请输入地址查询, 留空则查询所有</mat-label>
+          <mat-label>{{ 'enterAddressQuery' | translate }}</mat-label>
           <input matInput [(ngModel)]="addressQuery" (keydown.enter)="refresh()">
         </mat-form-field>
-        <button mat-stroked-button color="primary" (click)="refresh()">查询</button>
+        <button mat-stroked-button color="primary" (click)="refresh()">{{ 'query' | translate }}</button>
       </div>
       
       <app-sendbox

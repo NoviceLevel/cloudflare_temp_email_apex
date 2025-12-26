@@ -204,7 +204,7 @@ export class HeaderComponent implements OnInit {
       this.logoClickCount = 0;
       this.router.navigate(['/admin']);
     } else {
-      this.snackbar.info(`再点击 ${5 - this.logoClickCount} 次进入管理页面`);
+      this.snackbar.info(this.translate.instant('clickMoreToAdmin', { count: 5 - this.logoClickCount }));
     }
   }
 }
@@ -213,18 +213,18 @@ export class HeaderComponent implements OnInit {
 @Component({
   selector: 'app-auth-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>访问密码</h2>
+    <h2 mat-dialog-title>{{ 'accessPassword' | translate }}</h2>
     <mat-dialog-content>
-      <p>请输入站点访问密码</p>
+      <p>{{ 'enterSitePassword' | translate }}</p>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>密码</mat-label>
+        <mat-label>{{ 'password' | translate }}</mat-label>
         <input matInput type="password" [(ngModel)]="password" (keyup.enter)="submit()">
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button color="primary" (click)="submit()">确定</button>
+      <button mat-raised-button color="primary" (click)="submit()">{{ 'ok' | translate }}</button>
     </mat-dialog-actions>
   `,
   styles: [`.full-width { width: 100%; }`]

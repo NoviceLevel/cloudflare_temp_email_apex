@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { TranslateModule } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { MailboxComponent } from '../../../components/mailbox/mailbox.component';
@@ -17,16 +18,17 @@ import { MailboxComponent } from '../../../components/mailbox/mailbox.component'
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    TranslateModule,
     MailboxComponent,
   ],
   template: `
     <div class="admin-mails">
       <div class="filter-row">
         <mat-form-field appearance="outline" class="address-input">
-          <mat-label>留空查询所有地址</mat-label>
+          <mat-label>{{ 'leaveEmptyQueryAll' | translate }}</mat-label>
           <input matInput [(ngModel)]="addressFilter" (keydown.enter)="queryMail()">
         </mat-form-field>
-        <button mat-stroked-button color="primary" (click)="queryMail()">查询</button>
+        <button mat-stroked-button color="primary" (click)="queryMail()">{{ 'query' | translate }}</button>
       </div>
 
       <app-mailbox

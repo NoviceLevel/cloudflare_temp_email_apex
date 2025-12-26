@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
@@ -16,37 +17,37 @@ import { SnackbarService } from '../../../services/snackbar.service';
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule, MatSlideToggleModule
+    MatFormFieldModule, MatInputModule, MatSlideToggleModule, TranslateModule
   ],
   template: `
     @if (state.settings().address) {
       <div class="auto-reply-container">
         <div class="header">
-          <h3>设置</h3>
-          <button mat-raised-button color="primary" (click)="saveData()">保存</button>
+          <h3>{{ 'settings' | translate }}</h3>
+          <button mat-raised-button color="primary" (click)="saveData()">{{ 'save' | translate }}</button>
         </div>
 
         <mat-slide-toggle [(ngModel)]="enableAutoReply" class="mb-3">
-          启用自动回复
+          {{ 'enableAutoReply' | translate }}
         </mat-slide-toggle>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>名称</mat-label>
+          <mat-label>{{ 'name' | translate }}</mat-label>
           <input matInput [(ngModel)]="name" [disabled]="!enableAutoReply">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>来源邮件前缀</mat-label>
+          <mat-label>{{ 'sourcePrefixLabel' | translate }}</mat-label>
           <input matInput [(ngModel)]="sourcePrefix" [disabled]="!enableAutoReply">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>主题</mat-label>
+          <mat-label>{{ 'subject' | translate }}</mat-label>
           <input matInput [(ngModel)]="subject" [disabled]="!enableAutoReply">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>自动回复内容</mat-label>
+          <mat-label>{{ 'autoReplyContent' | translate }}</mat-label>
           <textarea matInput [(ngModel)]="autoReplyMessage" rows="4" [disabled]="!enableAutoReply"></textarea>
         </mat-form-field>
       </div>
@@ -63,6 +64,7 @@ export class AutoReplyComponent implements OnInit {
   state = inject(GlobalStateService);
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
+  private translate = inject(TranslateService);
 
   sourcePrefix = '';
   enableAutoReply = false;
@@ -83,7 +85,7 @@ export class AutoReplyComponent implements OnInit {
       this.autoReplyMessage = res.message || '';
       this.subject = res.subject || '';
     } catch (e: any) {
-      this.snackbar.error(e.message || '加载失败');
+      this.snackbar.error(e.message || this.translate.instant('loadFailed'));
     }
   }
 
@@ -101,9 +103,9 @@ export class AutoReplyComponent implements OnInit {
           }
         }
       });
-      this.snackbar.success('保存成功');
+      this.snackbar.success(this.translate.instant('successTip'));
     } catch (e: any) {
-      this.snackbar.error(e.message || '保存失败');
+      this.snackbar.error(e.message || this.translate.instant('error'));
     }
   }
 }

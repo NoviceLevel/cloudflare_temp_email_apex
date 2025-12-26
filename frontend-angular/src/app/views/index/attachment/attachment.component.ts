@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 
@@ -15,19 +16,19 @@ interface AttachmentRow {
 @Component({
   selector: 'app-attachment',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatDialogModule, MatChipsModule, MatIconModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule, MatDialogModule, MatChipsModule, MatIconModule, TranslateModule],
   template: `
     <div class="attachment-container">
       <table mat-table [dataSource]="data()" class="full-width">
         <ng-container matColumnDef="key">
-          <th mat-header-cell *matHeaderCellDef>键</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'key' | translate }}</th>
           <td mat-cell *matCellDef="let row">{{ row.key }}</td>
         </ng-container>
         <ng-container matColumnDef="action">
-          <th mat-header-cell *matHeaderCellDef>操作</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'actions' | translate }}</th>
           <td mat-cell *matCellDef="let row">
-            <button mat-button color="primary" (click)="downloadAttachment(row)">下载</button>
-            <button mat-button color="warn" (click)="confirmDelete(row)">删除</button>
+            <button mat-button color="primary" (click)="downloadAttachment(row)">{{ 'download' | translate }}</button>
+            <button mat-button color="warn" (click)="confirmDelete(row)">{{ 'delete' | translate }}</button>
           </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -44,6 +45,7 @@ export class AttachmentComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   displayedColumns = ['key', 'action'];
   data = signal<AttachmentRow[]>([]);
@@ -91,7 +93,7 @@ export class AttachmentComponent implements OnInit {
         method: 'POST',
         body: { key: this.curRow()?.key },
       });
-      this.snackbar.success('删除成功');
+      this.snackbar.success(this.translate.instant('deleteSuccess'));
       await this.fetchData();
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');
@@ -103,15 +105,15 @@ export class AttachmentComponent implements OnInit {
 @Component({
   selector: 'app-attachment-download-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatChipsModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatChipsModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>下载</h2>
+    <h2 mat-dialog-title>{{ 'download' | translate }}</h2>
     <mat-dialog-content>
       <mat-chip color="primary" highlighted class="mb-3">{{ data.key }}</mat-chip>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>关闭</button>
-      <a mat-raised-button color="primary" [href]="data.url" target="_blank" [download]="data.key?.replace('/', '_')">下载</a>
+      <button mat-button mat-dialog-close>{{ 'close' | translate }}</button>
+      <a mat-raised-button color="primary" [href]="data.url" target="_blank" [download]="data.key?.replace('/', '_')">{{ 'download' | translate }}</a>
     </mat-dialog-actions>
   `,
   styles: [`.mb-3 { margin-bottom: 12px; }`]
@@ -124,13 +126,13 @@ export class AttachmentDownloadDialogComponent {
 @Component({
   selector: 'app-attachment-delete-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>删除</h2>
-    <mat-dialog-content>确定要删除此附件吗？</mat-dialog-content>
+    <h2 mat-dialog-title>{{ 'delete' | translate }}</h2>
+    <mat-dialog-content>{{ 'deleteAttachmentConfirm' | translate }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
-      <button mat-raised-button color="warn" [mat-dialog-close]="true">删除</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="true">{{ 'delete' | translate }}</button>
     </mat-dialog-actions>
   `
 })

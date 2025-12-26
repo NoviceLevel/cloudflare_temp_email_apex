@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -24,6 +25,7 @@ import { AdminContactComponent } from '../../common/admin-contact/admin-contact.
     MatInputModule,
     MatButtonToggleModule,
     MatIconModule,
+    TranslateModule,
     AdminContactComponent,
   ],
   template: `
@@ -32,68 +34,68 @@ import { AdminContactComponent } from '../../common/admin-contact/admin-contact.
         <mat-card appearance="outlined">
           <mat-card-content>
             @if (!state.settings().send_balance || state.settings().send_balance <= 0) {
-              <!-- 无发送额度 -->
+              <!-- No send balance -->
               <div class="warning-alert">
                 <mat-icon>warning</mat-icon>
-                <span>您需要申请权限才能发送邮件, 如果已经申请过, 请联系管理员提升额度。</span>
+                <span>{{ 'noSendBalance' | translate }}</span>
                 <button mat-stroked-button color="primary" (click)="requestAccess()">
-                  申请权限
+                  {{ 'requestAccess' | translate }}
                 </button>
               </div>
               <app-admin-contact></app-admin-contact>
             } @else {
-              <!-- 有发送额度 -->
+              <!-- Has send balance -->
               <div class="info-alert">
                 <mat-icon>info</mat-icon>
-                <span>剩余发送邮件额度: {{ state.settings().send_balance }}</span>
+                <span>{{ 'remainingSendBalance' | translate:{ balance: state.settings().send_balance } }}</span>
               </div>
 
               <div class="actions-row">
-                <button mat-raised-button color="primary" (click)="send()">发送</button>
+                <button mat-raised-button color="primary" (click)="send()">{{ 'send' | translate }}</button>
               </div>
 
-              <!-- 发件人 -->
+              <!-- Sender -->
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>你的名称和地址，名称不填写则使用邮箱地址</mat-label>
-                <input matInput [(ngModel)]="sendMailModel.fromName" placeholder="名称">
+                <mat-label>{{ 'yourNameAndAddress' | translate }}</mat-label>
+                <input matInput [(ngModel)]="sendMailModel.fromName" [placeholder]="'name' | translate">
                 <span matSuffix class="address-suffix">{{ state.settings().address }}</span>
               </mat-form-field>
 
-              <!-- 收件人 -->
+              <!-- Recipient -->
               <div class="row-fields">
                 <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>收件人名称</mat-label>
+                  <mat-label>{{ 'recipientName' | translate }}</mat-label>
                   <input matInput [(ngModel)]="sendMailModel.toName">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="flex-1">
-                  <mat-label>Email</mat-label>
+                  <mat-label>{{ 'email' | translate }}</mat-label>
                   <input matInput [(ngModel)]="sendMailModel.toMail" type="email">
                 </mat-form-field>
               </div>
 
-              <!-- 主题 -->
+              <!-- Subject -->
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>主题</mat-label>
+                <mat-label>{{ 'subject' | translate }}</mat-label>
                 <input matInput [(ngModel)]="sendMailModel.subject">
               </mat-form-field>
 
-              <!-- 选项 -->
+              <!-- Options -->
               <div class="options-row">
-                <span class="options-label">选项:</span>
+                <span class="options-label">{{ 'options' | translate }}:</span>
                 <mat-button-toggle-group [(ngModel)]="sendMailModel.contentType">
-                  <mat-button-toggle value="text">文本</mat-button-toggle>
-                  <mat-button-toggle value="html">HTML</mat-button-toggle>
+                  <mat-button-toggle value="text">{{ 'text' | translate }}</mat-button-toggle>
+                  <mat-button-toggle value="html">{{ 'html' | translate }}</mat-button-toggle>
                 </mat-button-toggle-group>
                 @if (sendMailModel.contentType !== 'text') {
                   <button mat-stroked-button (click)="isPreview.set(!isPreview())">
-                    {{ isPreview() ? '编辑' : '预览' }}
+                    {{ isPreview() ? ('edit' | translate) : ('preview' | translate) }}
                   </button>
                 }
               </div>
 
-              <!-- 内容 -->
+              <!-- Content -->
               <div class="content-section">
-                <label class="content-label">内容</label>
+                <label class="content-label">{{ 'content' | translate }}</label>
                 @if (isPreview()) {
                   <mat-card appearance="outlined" class="preview-card">
                     <mat-card-content [innerHTML]="sendMailModel.content"></mat-card-content>
@@ -197,6 +199,7 @@ export class SendMailComponent implements OnInit {
   state = inject(GlobalStateService);
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
+  private translate = inject(TranslateService);
 
   isPreview = signal(false);
 
@@ -235,8 +238,8 @@ export class SendMailComponent implements OnInit {
         contentType: 'text',
         content: '',
       };
-      this.snackbar.success('请查看您的发件箱, 如果失败, 请检查您的余额或稍后重试。');
-      // 切换到发件箱 tab
+      this.snackbar.success(this.translate.instant('sendMailSuccess'));
+      // Switch to sendbox tab
       this.state.indexTab.set('sendbox');
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');
@@ -249,7 +252,7 @@ export class SendMailComponent implements OnInit {
         method: 'POST',
         body: {},
       });
-      this.snackbar.success('成功');
+      this.snackbar.success(this.translate.instant('success'));
       await this.api.getSettings();
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');

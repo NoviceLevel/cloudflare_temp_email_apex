@@ -1,15 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { GlobalStateService } from '../../services/global-state.service';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <footer class="footer">
       <div class="footer-content">
-        <span>版权所有 © 2023-{{ currentYear }}</span>
+        <span>{{ 'copyright' | translate }} © 2023-{{ currentYear }}</span>
         <span [innerHTML]="state.openSettings().copyright"></span>
       </div>
     </footer>

@@ -11,6 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -21,37 +22,37 @@ import { SnackbarService } from '../../../services/snackbar.service';
   imports: [
     CommonModule, FormsModule, MatCardModule, MatButtonModule,
     MatInputModule, MatFormFieldModule, MatSlideToggleModule,
-    MatCheckboxModule, MatChipsModule, MatIconModule
+    MatCheckboxModule, MatChipsModule, MatIconModule, TranslateModule
   ],
   template: `
     <div class="container">
       <mat-card class="form-card">
         <mat-card-actions align="end">
           <button mat-raised-button color="primary" (click)="save()" [disabled]="state.loading()">
-            保存
+            {{ 'save' | translate }}
           </button>
         </mat-card-actions>
         <mat-card-content>
           <mat-slide-toggle [(ngModel)]="userSettings.enable" class="mb-3">
-            允许用户注册
+            {{ 'allowUserRegister' | translate }}
           </mat-slide-toggle>
 
           <div class="setting-row mb-3">
-            <mat-checkbox [(ngModel)]="userSettings.enableMailVerify">启用</mat-checkbox>
+            <mat-checkbox [(ngModel)]="userSettings.enableMailVerify">{{ 'enable' | translate }}</mat-checkbox>
             @if (userSettings.enableMailVerify) {
               <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>验证邮件发送地址</mat-label>
+                <mat-label>{{ 'verifyMailSender' | translate }}</mat-label>
                 <input matInput [(ngModel)]="userSettings.verifyMailSender">
               </mat-form-field>
             }
           </div>
-          <p class="hint-text mb-3">启用邮件验证(发送地址必须是系统中能有余额且能正常发送邮件的地址)</p>
+          <p class="hint-text mb-3">{{ 'enableMailVerifyHint' | translate }}</p>
 
           <div class="setting-row mb-3">
-            <mat-checkbox [(ngModel)]="userSettings.enableMailAllowList">启用</mat-checkbox>
+            <mat-checkbox [(ngModel)]="userSettings.enableMailAllowList">{{ 'enable' | translate }}</mat-checkbox>
             @if (userSettings.enableMailAllowList) {
               <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>邮件地址白名单</mat-label>
+                <mat-label>{{ 'mailAllowList' | translate }}</mat-label>
                 <mat-chip-grid #chipGrid>
                   @for (item of userSettings.mailAllowList; track item) {
                     <mat-chip-row (removed)="removeAllowItem(item)">
@@ -65,10 +66,10 @@ import { SnackbarService } from '../../../services/snackbar.service';
               </mat-form-field>
             }
           </div>
-          <p class="hint-text mb-3">启用邮件地址白名单(可手动输入, 回车增加)</p>
+          <p class="hint-text mb-3">{{ 'mailAllowListHint' | translate }}</p>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>可绑定最大邮箱地址数量</mat-label>
+            <mat-label>{{ 'maxBindAddressCount' | translate }}</mat-label>
             <input matInput type="number" [(ngModel)]="userSettings.maxAddressCount">
           </mat-form-field>
         </mat-card-content>
@@ -89,6 +90,7 @@ export class AdminUserSettingsComponent implements OnInit {
   state = inject(GlobalStateService);
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
+  private translate = inject(TranslateService);
 
   separatorKeyCodes = [ENTER, COMMA];
   userSettings = {
@@ -109,7 +111,7 @@ export class AdminUserSettingsComponent implements OnInit {
       const res = await this.api.fetch<any>('/admin/user_settings');
       Object.assign(this.userSettings, res);
     } catch (error: any) {
-      this.snackbar.error(error.message || '获取设置失败');
+      this.snackbar.error(error.message || this.translate.instant('fetchSettingsFailed'));
     }
   }
 
@@ -130,9 +132,9 @@ export class AdminUserSettingsComponent implements OnInit {
         method: 'POST',
         body: this.userSettings
       });
-      this.snackbar.success('保存成功');
+      this.snackbar.success(this.translate.instant('successTip'));
     } catch (error: any) {
-      this.snackbar.error(error.message || '保存失败');
+      this.snackbar.error(error.message || this.translate.instant('saveFailed'));
     }
   }
 }

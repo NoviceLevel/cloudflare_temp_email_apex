@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
@@ -30,6 +31,7 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
     MatSelectModule,
     MatChipsModule,
     MatIconModule,
+    TranslateModule,
     AdminContactComponent,
   ],
   template: `
@@ -37,7 +39,7 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
       @if (state.userSettings().user_email) {
         <div class="info-alert mb-3">
           <mat-icon>info</mat-icon>
-          <span>已登录用户, 登录未绑定邮箱或创建新邮箱地址将绑定到当前用户</span>
+          <span>{{ 'loggedInUserBindTip' | translate }}</span>
         </div>
       }
 
@@ -45,26 +47,26 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
         <mat-tab-group [(selectedIndex)]="selectedTab" color="primary">
           <mat-tab [label]="loginAndBindTag()"></mat-tab>
           @if (showNewAddressTab()) {
-            <mat-tab label="创建新邮箱"></mat-tab>
+            <mat-tab [label]="'createNewEmail' | translate"></mat-tab>
           }
-          <mat-tab label="帮助"></mat-tab>
+          <mat-tab [label]="'help' | translate"></mat-tab>
         </mat-tab-group>
 
         <div class="tab-content">
           @if (selectedTab === 0) {
-            <!-- 登录 -->
+            <!-- Login -->
             @if (loginMethod === 'password') {
               <mat-form-field appearance="outline" class="full-width mb-2">
-                <mat-label>邮箱</mat-label>
+                <mat-label>{{ 'email' | translate }}</mat-label>
                 <input matInput [(ngModel)]="loginAddress" type="email">
               </mat-form-field>
               <mat-form-field appearance="outline" class="full-width mb-2">
-                <mat-label>密码</mat-label>
+                <mat-label>{{ 'password' | translate }}</mat-label>
                 <input matInput [(ngModel)]="loginPassword" type="password">
               </mat-form-field>
             } @else {
               <mat-form-field appearance="outline" class="full-width mb-2">
-                <mat-label>邮箱地址凭据</mat-label>
+                <mat-label>{{ 'addressCredential' | translate }}</mat-label>
                 <textarea matInput [(ngModel)]="credential" rows="3"></textarea>
               </mat-form-field>
             }
@@ -72,7 +74,7 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
             @if (state.openSettings().enableAddressPassword) {
               <div class="text-center mb-2">
                 <button mat-button color="primary" (click)="toggleLoginMethod()">
-                  {{ loginMethod === 'password' ? '凭据登录' : '密码登录' }}
+                  {{ loginMethod === 'password' ? ('credentialLogin' | translate) : ('passwordLogin' | translate) }}
                 </button>
               </div>
             }
@@ -85,21 +87,21 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
             @if (showNewAddressTab()) {
               <button mat-stroked-button class="full-width" (click)="selectedTab = 1">
                 <mat-icon>add</mat-icon>
-                创建新邮箱
+                {{ 'createNewEmail' | translate }}
               </button>
             }
           } @else if (selectedTab === 1 && showNewAddressTab()) {
-            <!-- 创建新邮箱 -->
+            <!-- Create new email -->
             @if (!state.openSettings().disableCustomAddressName) {
-              <p class="mb-2">请输入你想要使用的邮箱地址, 只允许: {{ addressRegex().source }}</p>
-              <p class="mb-2">留空将会生成一个随机的邮箱地址。</p>
+              <p class="mb-2">{{ 'addressNameHintText' | translate:{ regex: addressRegex().source } }}</p>
+              <p class="mb-2">{{ 'leaveEmptyForRandom' | translate }}</p>
             }
-            <p class="mb-3">你可以从下拉列表中选择一个域名。</p>
+            <p class="mb-3">{{ 'selectDomainFromList' | translate }}</p>
 
             @if (!state.openSettings().disableCustomAddressName) {
               <button mat-button color="primary" class="mb-3" (click)="generateName()">
                 <mat-icon>refresh</mat-icon>
-                生成随机名字
+                {{ 'generateRandomName' | translate }}
               </button>
             }
 
@@ -115,7 +117,7 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
                 </mat-form-field>
               } @else {
                 <mat-form-field appearance="outline" class="flex-1">
-                  <input matInput value="自动生成名称" disabled>
+                  <input matInput [value]="'autoGenerateName' | translate" disabled>
                 </mat-form-field>
               }
               <mat-chip>&#64;</mat-chip>
@@ -130,13 +132,13 @@ import { AdminContactComponent } from '../admin-contact/admin-contact.component'
 
             <button mat-stroked-button color="primary" class="full-width mt-3" (click)="newEmail()">
               <mat-icon>add</mat-icon>
-              创建新邮箱
+              {{ 'createNewEmail' | translate }}
             </button>
           } @else {
-            <!-- 帮助 -->
+            <!-- Help -->
             <div class="info-alert mb-3">
               <mat-icon>info</mat-icon>
-              <span>请"登录"或点击 "注册新邮箱" 按钮来获取一个新的邮箱地址</span>
+              <span>{{ 'registerNewEmailHint' | translate }}</span>
             </div>
             <app-admin-contact></app-admin-contact>
           }
@@ -204,6 +206,7 @@ export class LoginComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   selectedTab = 0;
   loginMethod = 'credential';
@@ -215,7 +218,7 @@ export class LoginComponent implements OnInit {
   cfToken = '';
 
   loginAndBindTag = computed(() => {
-    return this.state.userSettings().user_email ? '登录并绑定' : '登录';
+    return this.state.userSettings().user_email ? this.translate.instant('loginAndBind') : this.translate.instant('login');
   });
 
   addressRegex = computed(() => {
@@ -281,7 +284,7 @@ export class LoginComponent implements OnInit {
   async login() {
     if (this.loginMethod === 'password') {
       if (!this.loginAddress || !this.loginPassword) {
-        this.snackbar.error('邮箱和密码不能为空');
+        this.snackbar.error(this.translate.instant('emailAndPasswordRequired'));
         return;
       }
       try {
@@ -292,7 +295,7 @@ export class LoginComponent implements OnInit {
         try {
           await this.bindUserAddress();
         } catch (error: any) {
-          this.snackbar.error(`绑定邮箱地址到用户时错误: ${error.message}`);
+          this.snackbar.error(`${this.translate.instant('bindAddressToUserError')}: ${error.message}`);
         }
         await this.router.navigate(['/']);
       } catch (error: any) {
@@ -302,7 +305,7 @@ export class LoginComponent implements OnInit {
     }
 
     if (!this.credential) {
-      this.snackbar.error('请输入邮箱地址凭据');
+      this.snackbar.error(this.translate.instant('pleaseEnterCredential'));
       return;
     }
     try {
@@ -311,7 +314,7 @@ export class LoginComponent implements OnInit {
       try {
         await this.bindUserAddress();
       } catch (error: any) {
-        this.snackbar.error(`绑定邮箱地址到用户时错误: ${error.message}`);
+        this.snackbar.error(`${this.translate.instant('bindAddressToUserError')}: ${error.message}`);
       }
       await this.router.navigate(['/']);
     } catch (error: any) {
@@ -349,7 +352,7 @@ export class LoginComponent implements OnInit {
       try {
         await this.bindUserAddress();
       } catch (error: any) {
-        this.snackbar.error(`绑定邮箱地址到用户时错误: ${error.message}`);
+        this.snackbar.error(`${this.translate.instant('bindAddressToUserError')}: ${error.message}`);
       }
     } catch (error: any) {
       this.snackbar.error(error.message || 'error');

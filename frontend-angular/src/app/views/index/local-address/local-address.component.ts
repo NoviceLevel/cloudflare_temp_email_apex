@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalStateService } from '../../../services/global-state.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 import { LoginComponent } from '../../common/login/login.component';
@@ -23,17 +24,18 @@ interface LocalAddressRow {
     MatTableModule,
     MatButtonModule,
     MatDialogModule,
+    TranslateModule,
     LoginComponent,
   ],
   template: `
     <div class="local-address">
       <div class="warning-alert mb-3">
-        这些地址存储在您的浏览器中，如果您清除浏览器缓存，可能会丢失。
+        {{ 'localAddressWarning' | translate }}
       </div>
 
       <mat-tab-group [(selectedIndex)]="selectedTab" color="primary" animationDuration="0ms">
-        <mat-tab label="地址"></mat-tab>
-        <mat-tab label="创建或绑定"></mat-tab>
+        <mat-tab [label]="'address' | translate"></mat-tab>
+        <mat-tab [label]="'createOrBind' | translate"></mat-tab>
       </mat-tab-group>
 
       <div class="tab-content">
@@ -41,16 +43,16 @@ interface LocalAddressRow {
           <div class="table-container">
             <table mat-table [dataSource]="data()" class="full-width">
               <ng-container matColumnDef="address">
-                <th mat-header-cell *matHeaderCellDef>地址</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'address' | translate }}</th>
                 <td mat-cell *matCellDef="let row">{{ row.address }}</td>
               </ng-container>
 
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>操作</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'actions' | translate }}</th>
                 <td mat-cell *matCellDef="let row">
-                  <button mat-button color="primary" (click)="confirmChange(row)">切换邮箱地址</button>
+                  <button mat-button color="primary" (click)="confirmChange(row)">{{ 'switchEmailAddress' | translate }}</button>
                   <button mat-button color="warn" [disabled]="state.jwt() === row.jwt" (click)="confirmUnbind(row)">
-                    解绑邮箱地址
+                    {{ 'unbindEmailAddress' | translate }}
                   </button>
                 </td>
               </ng-container>
@@ -85,6 +87,7 @@ export class LocalAddressComponent implements OnInit {
   state = inject(GlobalStateService);
   private snackbar = inject(SnackbarService);
   private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   selectedTab = 0;
   displayedColumns = ['address', 'actions'];
@@ -128,7 +131,12 @@ export class LocalAddressComponent implements OnInit {
     this.selectedRow.set(row);
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '320px',
-      data: { title: '切换邮箱地址', message: '切换邮箱地址?', confirmText: '切换邮箱地址', confirmColor: 'primary' }
+      data: { 
+        title: this.translate.instant('switchEmailAddress'), 
+        message: this.translate.instant('switchAddressConfirm'), 
+        confirmText: this.translate.instant('switchEmailAddress'), 
+        confirmColor: 'primary' 
+      }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.changeAddress();
@@ -139,7 +147,12 @@ export class LocalAddressComponent implements OnInit {
     this.selectedRow.set(row);
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '320px',
-      data: { title: '解绑邮箱地址', message: '解绑邮箱地址?', confirmText: '解绑邮箱地址', confirmColor: 'warn' }
+      data: { 
+        title: this.translate.instant('unbindEmailAddress'), 
+        message: this.translate.instant('unbindAddressTip'), 
+        confirmText: this.translate.instant('unbindEmailAddress'), 
+        confirmColor: 'warn' 
+      }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.unbindAddress();
@@ -173,7 +186,7 @@ export class LocalAddressComponent implements OnInit {
         localStorage.setItem('LocalAddressCache', JSON.stringify(newCache));
       }
       this.selectedTab = 0;
-      this.snackbar.success('绑定地址成功');
+      this.snackbar.success(this.translate.instant('bindAddressSuccess'));
     }
   }
 }
@@ -182,12 +195,12 @@ export class LocalAddressComponent implements OnInit {
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
+      <button mat-button mat-dialog-close>{{ 'cancel' | translate }}</button>
       <button mat-raised-button [color]="data.confirmColor || 'primary'" [mat-dialog-close]="true">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `
