@@ -60,6 +60,19 @@ $dark-theme: mat.m2-define-dark-theme((
 // Apply light theme by default
 @include mat.all-component-themes($light-theme);
 
+// Override card and dialog background to white
+.mat-mdc-card {
+  background-color: #fff !important;
+}
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #fff;
+}
+
+.mat-mdc-dialog-surface {
+  background-color: #fff !important;
+}
+
 // Dark mode support
 .dark-theme {
   @include mat.all-component-colors($dark-theme);
