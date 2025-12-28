@@ -164,7 +164,6 @@ interface NavItem {
           </main>
         </div>
       </div>
-      </div>
     }
   `,
   styles: [`
