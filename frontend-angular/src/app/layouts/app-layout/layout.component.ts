@@ -468,6 +468,11 @@ export class AppLayoutComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadMails();
+    // Auto-load user settings if userJwt exists (for page refresh)
+    if (this.state.userJwt()) {
+      await this.api.getUserOpenSettings();
+      await this.api.getUserSettings();
+    }
   }
 
   async loadMails() {
@@ -489,7 +494,8 @@ export class AppLayoutComponent implements OnInit {
 
   async loadUserSettings() {
     await this.api.getUserOpenSettings();
-    if (!this.state.userSettings().user_id) {
+    // Always try to get user settings if userJwt exists
+    if (this.state.userJwt() && !this.state.userSettings().user_email) {
       await this.api.getUserSettings();
     }
   }
