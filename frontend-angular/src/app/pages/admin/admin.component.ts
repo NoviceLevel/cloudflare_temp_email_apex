@@ -83,8 +83,14 @@ interface NavItem {
       </div>
     } @else {
       <div class="admin-page">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" [class.show]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
         <!-- Header -->
         <header class="admin-header">
+          <button class="menu-btn" (click)="sidebarOpen.set(true)">
+            <mat-icon>menu</mat-icon>
+          </button>
           <div class="header-title">管理控制台</div>
           <div class="header-actions">
             <button class="header-btn" (click)="goHome()" matTooltip="返回首页">
@@ -95,9 +101,15 @@ interface NavItem {
 
         <div class="admin-body">
           <!-- Left Sidebar -->
-          <nav class="sidebar">
+          <nav class="sidebar" [class.open]="sidebarOpen()">
+            <div class="sidebar-header">
+              <span>导航菜单</span>
+              <button class="close-btn" (click)="sidebarOpen.set(false)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
             @for (item of navItems; track item.id) {
-              <button class="nav-item" [class.active]="currentView() === item.id" (click)="currentView.set(item.id)">
+              <button class="nav-item" [class.active]="currentView() === item.id" (click)="currentView.set(item.id); sidebarOpen.set(false)">
                 <span class="nav-icon" [style.background]="item.color">
                   <mat-icon>{{ item.icon }}</mat-icon>
                 </span>
@@ -169,18 +181,27 @@ interface NavItem {
   styles: [`
     .admin-page { min-height: 100vh; background: #f8f9fa; }
 
+    /* Sidebar Overlay */
+    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s; }
+    .sidebar-overlay.show { opacity: 1; }
+
     /* Header */
-    .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e0e0e0; }
-    .header-title { font-size: 22px; color: #5f6368; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; }
+    .menu-btn { display: none; width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; color: #5f6368; align-items: center; justify-content: center; margin-right: 8px; }
+    .menu-btn:hover { background: rgba(0,0,0,0.04); }
+    .header-title { font-size: 20px; color: #5f6368; flex: 1; }
     .header-actions { display: flex; gap: 8px; }
     .header-btn { width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
     .header-btn:hover { background: rgba(0,0,0,0.04); }
 
     /* Body */
-    .admin-body { display: flex; min-height: calc(100vh - 73px); }
+    .admin-body { display: flex; min-height: calc(100vh - 57px); }
 
     /* Sidebar */
-    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; }
+    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; border-right: 1px solid #e0e0e0; overflow-y: auto; }
+    .sidebar-header { display: none; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e0e0e0; margin: -8px -12px 8px; font-weight: 500; color: #202124; }
+    .close-btn { width: 36px; height: 36px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
+    .close-btn:hover { background: rgba(0,0,0,0.04); }
     .nav-item { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: none; background: none; border-radius: 28px; cursor: pointer; gap: 16px; margin-bottom: 4px; transition: background 0.2s; }
     .nav-item:hover { background: #f1f3f4; }
     .nav-item.active { background: #e8f0fe; }
@@ -225,11 +246,49 @@ interface NavItem {
     .submit-btn { width: 100%; margin-top: 8px; }
     .back-btn { width: 100%; margin-top: 8px; }
 
+    /* Tablet */
     @media (max-width: 900px) {
       .sidebar { width: 72px; padding: 8px; }
+      .sidebar-header { display: none; }
       .nav-label { display: none; }
       .nav-item { justify-content: center; padding: 12px; }
+      .main-content { padding: 20px; }
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .menu-btn { display: flex; }
+      .sidebar-overlay { display: block; }
+      .sidebar { 
+        position: fixed; top: 0; left: 0; bottom: 0; width: 280px; z-index: 999; 
+        transform: translateX(-100%); transition: transform 0.3s ease;
+        padding-top: 0;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-header { display: flex; }
+      .nav-label { display: block; }
+      .nav-item { justify-content: flex-start; padding: 12px 16px; }
       .main-content { padding: 16px; }
+      
+      .home-view { padding-top: 20px; }
+      .welcome-icons { gap: 4px; }
+      .welcome-icon { width: 36px; height: 36px; }
+      .welcome-icon.large { width: 56px; height: 56px; }
+      .welcome-icon mat-icon { font-size: 18px; width: 18px; height: 18px; }
+      .welcome-icon.large mat-icon { font-size: 28px; width: 28px; height: 28px; }
+      .welcome-title { font-size: 24px; }
+      .welcome-subtitle { font-size: 14px; }
+      
+      .search-box { padding: 10px 16px; margin-bottom: 24px; }
+      .search-input { font-size: 14px; }
+      
+      .quick-actions { gap: 8px; }
+      .quick-btn { padding: 8px 12px; font-size: 12px; }
+      
+      .password-card { padding: 32px 24px; }
+      .password-icon { width: 64px; height: 64px; }
+      .password-icon mat-icon { font-size: 32px; width: 32px; height: 32px; }
+      .password-card h1 { font-size: 20px; }
     }
   `]
 })
@@ -239,6 +298,7 @@ export class AdminComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   currentView = signal('home');
+  sidebarOpen = signal(false);
   adminPassword = '';
   showPassword = false;
 

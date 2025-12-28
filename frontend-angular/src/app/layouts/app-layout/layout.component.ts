@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -45,8 +45,14 @@ interface NavItem {
   ],
   template: `
     <div class="app-page">
+      <!-- Mobile Sidebar Overlay -->
+      <div class="sidebar-overlay" [class.show]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
       <!-- Header -->
       <header class="app-header">
+        <button class="menu-btn" (click)="sidebarOpen.set(true)">
+          <mat-icon>menu</mat-icon>
+        </button>
         <div class="header-title">临时邮箱</div>
         <div class="header-actions">
           <button class="header-btn" (click)="toggleTheme()" [matTooltip]="state.isDark() ? '浅色模式' : '深色模式'">
@@ -63,9 +69,15 @@ interface NavItem {
 
       <div class="app-body">
         <!-- Left Sidebar -->
-        <nav class="sidebar">
+        <nav class="sidebar" [class.open]="sidebarOpen()">
+          <div class="sidebar-header">
+            <span>导航菜单</span>
+            <button class="close-btn" (click)="sidebarOpen.set(false)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
           @for (item of navItems; track item.id) {
-            <button class="nav-item" [class.active]="currentView() === item.id" (click)="selectNav(item)">
+            <button class="nav-item" [class.active]="currentView() === item.id" (click)="selectNav(item); sidebarOpen.set(false)">
               <span class="nav-icon" [style.background]="item.color">
                 <mat-icon>{{ item.icon }}</mat-icon>
               </span>
@@ -260,23 +272,42 @@ interface NavItem {
           </div>
         </main>
       </div>
+
+      <!-- Mobile Bottom Navigation -->
+      <nav class="bottom-nav">
+        @for (item of navItems.slice(0, 4); track item.id) {
+          <button class="bottom-nav-item" [class.active]="currentView() === item.id" (click)="selectNav(item)">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            <span>{{ item.label }}</span>
+          </button>
+        }
+      </nav>
     </div>
   `,
   styles: [`
     .app-page { min-height: 100vh; background: #f8f9fa; }
 
+    /* Sidebar Overlay */
+    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s; }
+    .sidebar-overlay.show { opacity: 1; }
+
     /* Header */
-    .app-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e0e0e0; }
-    .header-title { font-size: 22px; color: #5f6368; }
-    .header-actions { display: flex; gap: 8px; }
+    .app-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; }
+    .menu-btn { display: none; width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; color: #5f6368; align-items: center; justify-content: center; margin-right: 8px; }
+    .menu-btn:hover { background: rgba(0,0,0,0.04); }
+    .header-title { font-size: 20px; color: #5f6368; flex: 1; }
+    .header-actions { display: flex; gap: 4px; }
     .header-btn { width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
     .header-btn:hover { background: rgba(0,0,0,0.04); }
 
     /* Body */
-    .app-body { display: flex; min-height: calc(100vh - 73px); }
+    .app-body { display: flex; min-height: calc(100vh - 57px); }
 
     /* Sidebar */
-    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; }
+    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; border-right: 1px solid #e0e0e0; }
+    .sidebar-header { display: none; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e0e0e0; margin: -8px -12px 8px; font-weight: 500; color: #202124; }
+    .close-btn { width: 36px; height: 36px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
+    .close-btn:hover { background: rgba(0,0,0,0.04); }
     .nav-item { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: none; background: none; border-radius: 28px; cursor: pointer; gap: 16px; margin-bottom: 4px; transition: background 0.2s; }
     .nav-item:hover { background: #f1f3f4; }
     .nav-item.active { background: #e8f0fe; }
@@ -284,6 +315,13 @@ interface NavItem {
     .nav-icon mat-icon { font-size: 18px; width: 18px; height: 18px; color: white; }
     .nav-label { font-size: 14px; color: #202124; font-weight: 500; }
     .nav-item.active .nav-label { color: #1a73e8; }
+
+    /* Bottom Navigation */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e0e0e0; padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom)); z-index: 100; }
+    .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: none; background: none; cursor: pointer; color: #5f6368; font-size: 11px; }
+    .bottom-nav-item mat-icon { font-size: 22px; width: 22px; height: 22px; }
+    .bottom-nav-item.active { color: #1a73e8; }
+    .bottom-nav-item span { font-weight: 500; }
 
     /* Main Content */
     .main-content { flex: 1; padding: 24px 48px; overflow-y: auto; }
@@ -333,7 +371,7 @@ interface NavItem {
 
     /* Addresses View */
     .addresses-view { }
-    .view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .view-header h2 { font-size: 24px; font-weight: 400; color: #202124; margin: 0; }
     .address-grid { display: grid; gap: 16px; }
     .address-card { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #fff; border: 1px solid #dadce0; border-radius: 12px; transition: all 0.2s; }
@@ -344,12 +382,12 @@ interface NavItem {
     .address-text { font-size: 16px; font-weight: 500; color: #202124; word-break: break-all; }
     .address-status { font-size: 13px; color: #5f6368; margin-top: 2px; }
     .address-card.active .address-status { color: #1a73e8; }
-    .address-actions { display: flex; gap: 4px; }
+    .address-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
     /* Settings View */
     .settings-view h2 { font-size: 24px; font-weight: 400; color: #202124; margin: 0 0 24px; }
     .setting-card { background: #fff; border: 1px solid #dadce0; border-radius: 12px; overflow: hidden; }
-    .setting-item { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; }
+    .setting-item { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; gap: 16px; flex-wrap: wrap; }
     .setting-title { font-size: 14px; font-weight: 500; color: #202124; }
     .setting-desc { font-size: 13px; color: #5f6368; margin-top: 2px; }
 
@@ -357,10 +395,10 @@ interface NavItem {
     .user-view { }
     .loading-box { display: flex; justify-content: center; padding: 48px; }
     .user-logged-in { }
-    .user-info-card { display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: #e8f0fe; border-radius: 12px; margin-bottom: 24px; }
-    .user-avatar { width: 56px; height: 56px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 500; }
-    .user-details { }
-    .user-email { font-size: 18px; font-weight: 500; color: #202124; }
+    .user-info-card { display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: #e8f0fe; border-radius: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .user-avatar { width: 56px; height: 56px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 500; flex-shrink: 0; }
+    .user-details { min-width: 0; }
+    .user-email { font-size: 18px; font-weight: 500; color: #202124; word-break: break-all; }
     .user-status { font-size: 14px; color: #1a73e8; margin-top: 2px; }
     .tab-content { padding: 16px 0; }
     .login-section { text-align: center; max-width: 500px; margin: 0 auto; }
@@ -371,22 +409,76 @@ interface NavItem {
 
     .loading-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
 
+    /* Tablet */
     @media (max-width: 900px) {
       .sidebar { width: 72px; padding: 8px; }
+      .sidebar-header { display: none; }
       .nav-label { display: none; }
       .nav-item { justify-content: center; padding: 12px; }
-      .main-content { padding: 16px; }
-      .stats-section { flex-direction: column; align-items: center; }
-      .stat-card { width: 100%; max-width: 300px; }
+      .main-content { padding: 20px; }
+      .stats-section { flex-direction: column; align-items: stretch; }
+      .stat-card { justify-content: center; }
     }
 
+    /* Mobile */
     @media (max-width: 600px) {
-      .sidebar { display: none; }
-      .app-body { flex-direction: column; }
+      .app-body { min-height: calc(100vh - 57px - 64px); padding-bottom: 64px; }
+      .menu-btn { display: flex; }
+      .sidebar-overlay { display: block; }
+      .sidebar { 
+        position: fixed; top: 0; left: 0; bottom: 0; width: 280px; z-index: 999; 
+        transform: translateX(-100%); transition: transform 0.3s ease;
+        padding-top: 0;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-header { display: flex; }
+      .nav-label { display: block; }
+      .nav-item { justify-content: flex-start; padding: 12px 16px; }
       .main-content { padding: 16px; }
-      .welcome-title { font-size: 20px; }
+      .content-wrapper { padding-bottom: 20px; }
+      .bottom-nav { display: flex; }
+      
+      .welcome-icons { gap: 4px; }
+      .welcome-icon { width: 36px; height: 36px; }
+      .welcome-icon.large { width: 56px; height: 56px; }
+      .welcome-icon mat-icon { font-size: 18px; width: 18px; height: 18px; }
+      .avatar-large { width: 56px; height: 56px; font-size: 24px; }
+      .welcome-title { font-size: 18px; }
+      .welcome-subtitle { font-size: 14px; }
+      
+      .search-box { padding: 10px 16px; margin-bottom: 24px; }
+      .search-box input { font-size: 14px; }
+      
       .quick-actions { gap: 8px; }
-      .quick-btn { padding: 8px 12px; font-size: 13px; }
+      .quick-btn { padding: 8px 12px; font-size: 12px; gap: 6px; }
+      .quick-btn mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      
+      .stats-section { gap: 12px; margin-bottom: 24px; }
+      .stat-card { padding: 16px; gap: 12px; }
+      .stat-icon { width: 40px; height: 40px; }
+      .stat-value { font-size: 24px; }
+      .stat-label { font-size: 12px; }
+      
+      .recent-item { padding: 12px; gap: 12px; }
+      .recent-avatar { width: 36px; height: 36px; font-size: 14px; }
+      .recent-sender { font-size: 13px; }
+      .recent-subject { font-size: 12px; }
+      
+      .view-header { margin-bottom: 16px; }
+      .view-header h2 { font-size: 20px; }
+      .address-card { padding: 12px; gap: 12px; flex-wrap: wrap; }
+      .address-avatar { width: 40px; height: 40px; font-size: 16px; }
+      .address-text { font-size: 14px; }
+      .address-actions { width: 100%; justify-content: flex-end; margin-top: 8px; }
+      
+      .user-info-card { padding: 16px; }
+      .user-avatar { width: 48px; height: 48px; font-size: 20px; }
+      .user-email { font-size: 16px; }
+      .login-section h2 { font-size: 22px; }
+      .login-hint { font-size: 14px; }
+      .login-card { padding: 16px; }
+      
+      .setting-item { padding: 16px; }
     }
   `]
 })
@@ -398,6 +490,7 @@ export class AppLayoutComponent implements OnInit {
   private snackbar = inject(SnackbarService);
 
   currentView = signal('home');
+  sidebarOpen = signal(false);
   searchQuery = '';
   mailCount = signal(0);
   recentMails = signal<any[]>([]);
