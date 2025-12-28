@@ -6,6 +6,68 @@ import { TranslateService } from '@ngx-translate/core';
 
 const API_BASE = '';
 
+// JWT 过期提前刷新时间（秒）- 在过期前 5 分钟刷新
+const JWT_REFRESH_THRESHOLD = 5 * 60;
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  private http = inject(HttpClient);
+  private state = inject(GlobalStateService);
+  private translate = inject(TranslateService);
+
+  /**
+   * 解析 JWT 获取过期时间
+   */
+  private parseJwtExpiration(token: string): number | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = JSON.parse(atob(parts[1]));
+      return payload.exp || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 检查 JWT 是否即将过期
+   */
+  private isJwtExpiringSoon(token: string): boolean {
+    const exp = this.parseJwtExpiration(token);
+    if (!exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return exp - now < JWT_REFRESH_THRESHOLD;
+  }
+
+  /**
+   * 检查 JWT 是否已过期
+   */
+  private isJwtExpired(token: string): boolean {
+    const exp = this.parseJwtExpiration(token);
+    if (!exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return exp < now;
+  }
+
+  /**
+   * 尝试刷新用户 JWT（如果即将过期）
+   */
+  private async tryRefreshUserJwt(): Promise<void> {
+    const userJwt = this.state.userJwt();
+    if (!userJwt || !this.isJwtExpiringSoon(userJwt)) return;
+
+    try {
+      console.log('User JWT expiring soon, attempting refresh...');
+      const res = await this.fetch<any>('/user_api/settings');
+      if (res.new_user_token) {
+        this.state.setUserJwt(res.new_user_token);
+        console.log('User JWT refreshed successfully');
+      }
+    } catch (error) {
+      console.warn('Failed to refresh user JWT:', error);
+    }
+  }
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
@@ -15,6 +77,20 @@ export class ApiService {
   async fetch<T = any>(path: string, options: { method?: string; body?: any; userJwt?: string } = {}): Promise<T> {
     this.state.loading.set(true);
     try {
+      // 检查用户 JWT 是否即将过期，尝试刷新
+      if (!path.includes('/user_api/settings')) {
+        await this.tryRefreshUserJwt();
+      }
+
+      // 检查邮箱地址 JWT 是否已过期
+      const jwt = this.state.jwt();
+      if (jwt && this.isJwtExpired(jwt) && path.startsWith('/api/') && !path.includes('/api/new_address') && !path.includes('/api/address_login')) {
+        console.warn('Address JWT expired, clearing...');
+        this.state.setJwt('');
+        this.state.settings.update(current => ({ ...current, fetched: false, address: '' }));
+        throw new Error('JWT expired, please login again');
+      }
+
       const headers = new HttpHeaders({
         'Content-Type': 'application/json',
         'x-lang': this.translate.currentLang || 'zh',

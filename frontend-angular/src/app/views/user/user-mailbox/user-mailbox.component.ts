@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -37,6 +37,7 @@ import { MailboxComponent } from '../../../components/mailbox/mailbox.component'
       </div>
 
       <app-mailbox
+        #mailbox
         [enableUserDeleteEmail]="true"
         [fetchMailData]="fetchMailData"
         [showFilterInput]="true">
@@ -62,6 +63,8 @@ export class UserMailboxComponent implements OnInit {
   private api = inject(ApiService);
   private snackbar = inject(SnackbarService);
 
+  @ViewChild('mailbox') mailbox!: MailboxComponent;
+
   addressFilter = '';
   addressFilterOptions = signal<{ title: string; value: string }[]>([]);
 
@@ -85,6 +88,11 @@ export class UserMailboxComponent implements OnInit {
 
   queryMail() {
     this.addressFilter = this.addressFilter?.trim() || '';
+    // 触发 MailboxComponent 刷新
+    if (this.mailbox) {
+      this.mailbox.page.set(1);
+      this.mailbox.refresh();
+    }
   }
 
   fetchMailData = async (limit: number, offset: number) => {
