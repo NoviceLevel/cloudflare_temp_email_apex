@@ -176,115 +176,51 @@ interface NavItem {
     }
   `,
   styles: [`
-    .admin-page { min-height: 100vh; background: #f8f9fa; }
-
-    /* Sidebar Overlay */
-    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s; }
-    .sidebar-overlay.show { opacity: 1; }
-
-    /* Header */
-    .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; }
-    .menu-btn { display: none; width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; color: #5f6368; align-items: center; justify-content: center; margin-right: 8px; }
-    .menu-btn:hover { background: rgba(0,0,0,0.04); }
-    .header-title { font-size: 20px; color: #5f6368; flex: 1; }
-    .header-actions { display: flex; gap: 8px; }
-    .header-btn { width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
-    .header-btn:hover { background: rgba(0,0,0,0.04); }
-
-    /* Body */
-    .admin-body { display: flex; min-height: calc(100vh - 57px); }
-
-    /* Sidebar */
-    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; border-right: 1px solid #e0e0e0; overflow-y: auto; }
-    .sidebar-header { display: none; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #e0e0e0; margin: -8px -12px 8px; font-weight: 500; color: #202124; }
-    .close-btn { width: 36px; height: 36px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
-    .close-btn:hover { background: rgba(0,0,0,0.04); }
-    .nav-item { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: none; background: none; border-radius: 28px; cursor: pointer; gap: 16px; margin-bottom: 4px; transition: background 0.2s; }
-    .nav-item:hover { background: #f1f3f4; }
-    .nav-item.active { background: #e8f0fe; }
-    .nav-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .nav-icon mat-icon { font-size: 18px; width: 18px; height: 18px; color: white; }
-    .nav-label { font-size: 14px; color: #202124; font-weight: 500; }
-    .nav-item.active .nav-label { color: #1a73e8; }
-
-    /* Main Content */
-    .main-content { flex: 1; padding: 24px 48px; overflow-y: auto; }
-    .content-wrapper { max-width: 900px; margin: 0 auto; }
-
-    /* Home View */
-    .home-view { text-align: center; padding-top: 40px; }
-    .welcome-section { margin-bottom: 32px; }
-    .welcome-icons { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 24px; }
-    .welcome-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .welcome-icon.large { width: 72px; height: 72px; }
-    .welcome-icon mat-icon { color: white; font-size: 24px; width: 24px; height: 24px; }
-    .welcome-icon.large mat-icon { font-size: 36px; width: 36px; height: 36px; }
-    .welcome-title { font-size: 36px; font-weight: 400; color: #202124; margin: 0 0 8px; }
-    .welcome-subtitle { font-size: 16px; color: #5f6368; margin: 0; }
-
-    .search-box { display: flex; align-items: center; max-width: 600px; margin: 0 auto 32px; padding: 12px 20px; background: #fff; border: 1px solid #dfe1e5; border-radius: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .search-box mat-icon { color: #9aa0a6; margin-right: 12px; }
-    .search-input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
-
-    .quick-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-    .quick-btn { padding: 8px 16px; border: 1px solid #dadce0; border-radius: 8px; background: #fff; font-size: 14px; color: #3c4043; cursor: pointer; transition: all 0.2s; }
-    .quick-btn:hover { background: #f8f9fa; border-color: #1a73e8; color: #1a73e8; }
-
-    /* Password Page */
-    .password-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f8f9fa; padding: 24px; }
-    .password-card { background: #fff; border-radius: 12px; padding: 48px; text-align: center; max-width: 400px; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .password-icon { width: 80px; height: 80px; border-radius: 50%; background: #e8f0fe; color: #1a73e8; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-    .password-icon mat-icon { font-size: 40px; width: 40px; height: 40px; }
-    .password-card h1 { font-size: 24px; font-weight: 400; color: #202124; margin: 0 0 8px; }
-    .password-card p { font-size: 14px; color: #5f6368; margin: 0 0 24px; }
-    .full-width { width: 100%; }
-    .submit-btn { width: 100%; margin-top: 8px; }
-    .back-btn { width: 100%; margin-top: 8px; }
-
-    /* Tablet */
-    @media (max-width: 900px) {
-      .sidebar { width: 72px; padding: 8px; }
-      .sidebar-header { display: none; }
-      .nav-label { display: none; }
-      .nav-item { justify-content: center; padding: 12px; }
-      .main-content { padding: 20px; }
-    }
-
-    /* Mobile */
-    @media (max-width: 600px) {
-      .menu-btn { display: flex; }
-      .sidebar-overlay { display: block; }
-      .sidebar { 
-        position: fixed; top: 0; left: 0; bottom: 0; width: 280px; z-index: 999; 
-        transform: translateX(-100%); transition: transform 0.3s ease;
-        padding-top: 0;
-      }
-      .sidebar.open { transform: translateX(0); }
-      .sidebar-header { display: flex; }
-      .nav-label { display: block; }
-      .nav-item { justify-content: flex-start; padding: 12px 16px; }
-      .main-content { padding: 16px; }
-      
-      .home-view { padding-top: 20px; }
-      .welcome-icons { gap: 4px; }
-      .welcome-icon { width: 36px; height: 36px; }
-      .welcome-icon.large { width: 56px; height: 56px; }
-      .welcome-icon mat-icon { font-size: 18px; width: 18px; height: 18px; }
-      .welcome-icon.large mat-icon { font-size: 28px; width: 28px; height: 28px; }
-      .welcome-title { font-size: 24px; }
-      .welcome-subtitle { font-size: 14px; }
-      
-      .search-box { padding: 10px 16px; margin-bottom: 24px; }
-      .search-input { font-size: 14px; }
-      
-      .quick-actions { gap: 8px; }
-      .quick-btn { padding: 8px 12px; font-size: 12px; }
-      
-      .password-card { padding: 32px 24px; }
-      .password-icon { width: 64px; height: 64px; }
-      .password-icon mat-icon { font-size: 32px; width: 32px; height: 32px; }
-      .password-card h1 { font-size: 20px; }
-    }
+    .admin-page{min-height:100vh;background:#f8f9fa}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998;opacity:0;pointer-events:none}
+    .sidebar-overlay.show{opacity:1;pointer-events:auto}
+    .admin-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:100}
+    .menu-btn,.header-btn,.close-btn{width:40px;height:40px;border:none;background:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5f6368}
+    .menu-btn{display:none;margin-right:8px}
+    .header-title{font-size:20px;color:#5f6368;flex:1}
+    .header-actions{display:flex;gap:8px}
+    .admin-body{display:flex;min-height:calc(100vh - 57px)}
+    .sidebar{width:280px;background:#fff;padding:8px 12px;flex-shrink:0;border-right:1px solid #e0e0e0;overflow-y:auto}
+    .sidebar-header{display:none;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #e0e0e0;margin:-8px -12px 8px;font-weight:500;color:#202124}
+    .nav-item{display:flex;align-items:center;width:100%;padding:12px 16px;border:none;background:none;border-radius:28px;cursor:pointer;gap:16px;margin-bottom:4px}
+    .nav-item:hover{background:#f1f3f4}
+    .nav-item.active{background:#e8f0fe}
+    .nav-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .nav-icon mat-icon{font-size:18px;width:18px;height:18px;color:#fff}
+    .nav-label{font-size:14px;color:#202124;font-weight:500}
+    .nav-item.active .nav-label{color:#1a73e8}
+    .main-content{flex:1;padding:24px 48px;overflow-y:auto}
+    .content-wrapper{max-width:900px;margin:0 auto}
+    .home-view{text-align:center;padding-top:40px}
+    .welcome-section{margin-bottom:32px}
+    .welcome-icons{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:24px}
+    .welcome-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .welcome-icon.large{width:72px;height:72px}
+    .welcome-icon mat-icon{color:#fff;font-size:24px;width:24px;height:24px}
+    .welcome-icon.large mat-icon{font-size:36px;width:36px;height:36px}
+    .welcome-title{font-size:36px;font-weight:400;color:#202124;margin:0 0 8px}
+    .welcome-subtitle{font-size:16px;color:#5f6368;margin:0}
+    .search-box{display:flex;align-items:center;max-width:600px;margin:0 auto 32px;padding:12px 20px;background:#fff;border:1px solid #dfe1e5;border-radius:24px}
+    .search-box mat-icon{color:#9aa0a6;margin-right:12px}
+    .search-input{flex:1;border:none;outline:none;font-size:16px;background:transparent;color:#202124}
+    .quick-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+    .quick-btn{padding:8px 16px;border:1px solid #dadce0;border-radius:8px;background:#fff;font-size:14px;color:#3c4043;cursor:pointer}
+    .quick-btn:hover{border-color:#1a73e8;color:#1a73e8}
+    .password-page{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8f9fa;padding:24px}
+    .password-card{background:#fff;border-radius:12px;padding:48px;text-align:center;max-width:400px;width:100%;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .password-icon{width:80px;height:80px;border-radius:50%;background:#e8f0fe;color:#1a73e8;display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+    .password-icon mat-icon{font-size:40px;width:40px;height:40px}
+    .password-card h1{font-size:24px;font-weight:400;color:#202124;margin:0 0 8px}
+    .password-card p{font-size:14px;color:#5f6368;margin:0 0 24px}
+    .full-width{width:100%}
+    .submit-btn,.back-btn{width:100%;margin-top:8px}
+    @media(max-width:900px){.sidebar{width:72px;padding:8px}.sidebar-header{display:none}.nav-label{display:none}.nav-item{justify-content:center;padding:12px}.main-content{padding:20px}}
+    @media(max-width:600px){.menu-btn{display:flex}.sidebar-overlay{display:block}.sidebar{position:fixed;inset:0;right:auto;width:280px;z-index:999;transform:translateX(-100%);transition:transform .3s}.sidebar.open{transform:none}.sidebar-header{display:flex}.nav-label{display:block}.nav-item{justify-content:flex-start;padding:12px 16px}.main-content{padding:16px}.home-view{padding-top:20px}.welcome-icons{gap:4px}.welcome-icon{width:36px;height:36px}.welcome-icon.large{width:56px;height:56px}.welcome-icon mat-icon{font-size:18px;width:18px;height:18px}.welcome-icon.large mat-icon{font-size:28px;width:28px;height:28px}.welcome-title{font-size:24px}.welcome-subtitle{font-size:14px}.search-box{padding:10px 16px;margin-bottom:24px}.search-input{font-size:14px}.quick-actions{gap:8px}.quick-btn{padding:8px 12px;font-size:12px}.password-card{padding:32px 24px}.password-icon{width:64px;height:64px}.password-icon mat-icon{font-size:32px;width:32px;height:32px}.password-card h1{font-size:20px}}
   `]
 })
 export class AdminComponent implements OnInit {

@@ -73,21 +73,56 @@ $dark-theme: mat.m2-define-dark-theme((
   background-color: #fff !important;
 }
 
-// Dark mode support
-.dark-theme {
-  @include mat.all-component-colors($dark-theme);
-  
-  // Custom dark mode overrides
+// Dark mode support - Google style
+body.dark-theme {
   background-color: #202124;
   color: #e8eaed;
   
-  .mat-mdc-card {
-    background-color: #303134;
+  // Material overrides
+  .mat-mdc-card { background-color: #303134 !important; }
+  .mat-mdc-dialog-container { --mdc-dialog-container-color: #303134; }
+  .mat-mdc-dialog-surface { background-color: #303134 !important; }
+  .mat-mdc-menu-panel { background-color: #303134 !important; }
+  .mat-mdc-form-field {
+    --mdc-filled-text-field-container-color: #303134;
+    --mdc-outlined-text-field-outline-color: #5f6368;
   }
   
-  .mat-mdc-dialog-container {
-    --mdc-dialog-container-color: #303134;
-  }
+  // Layout
+  .app-page, .admin-page, .password-page { background: #202124; }
+  .app-header, .admin-header { background: #202124; border-color: #5f6368; }
+  .sidebar { background: #202124; border-color: #5f6368; }
+  .sidebar-header { border-color: #5f6368; color: #e8eaed; }
+  .menu-btn, .header-btn, .close-btn { color: #9aa0a6; }
+  .header-title { color: #e8eaed; }
+  
+  // Navigation
+  .nav-item { color: #e8eaed; }
+  .nav-item:hover { background: #3c4043; }
+  .nav-item.active { background: #394457; }
+  .nav-item.active .nav-label { color: #8ab4f8; }
+  .nav-label { color: #e8eaed; }
+  .bottom-nav { background: #202124; border-color: #5f6368; }
+  .bottom-nav-item { color: #9aa0a6; }
+  .bottom-nav-item.active { color: #8ab4f8; }
+  
+  // Content
+  .welcome-title, .view-header h2, .settings-view h2, .login-section h2, .password-card h1 { color: #e8eaed; }
+  .welcome-subtitle, .section-title, .recent-subject, .recent-time, .stat-label, .address-status, .setting-desc, .login-hint, .password-card p { color: #9aa0a6; }
+  .avatar-large { background: #8ab4f8; color: #202124; }
+  .search-box { background: #303134; border-color: #5f6368; }
+  .search-box input, .search-input { color: #e8eaed; }
+  .quick-btn, .stat-card, .recent-list, .address-card, .setting-card, .login-card, .password-card { background: #303134; border-color: #5f6368; }
+  .quick-btn:hover { border-color: #8ab4f8; color: #8ab4f8; }
+  .stat-value, .recent-sender, .address-text, .setting-title, .user-email { color: #e8eaed; }
+  .recent-item { border-color: #5f6368; }
+  .recent-avatar, .address-avatar { background: #8ab4f8; color: #202124; }
+  .view-all-btn { color: #8ab4f8; }
+  .address-card.active { background: #394457; border-color: #8ab4f8; }
+  .address-card.active .address-status { color: #8ab4f8; }
+  .user-info-card { background: #303134; }
+  .user-status { color: #8ab4f8; }
+  .password-icon { background: #303134; color: #8ab4f8; }
 }
 
 // Global styles
@@ -104,19 +139,6 @@ html, body {
 
 .gmail-dialog .mat-mdc-dialog-surface {
   border-radius: 24px !important;
-}
-
-// Dark mode for Gmail layout
-.dark {
-  .mat-mdc-dialog-container {
-    --mdc-dialog-container-color: #2d2d2d;
-  }
-  .mat-mdc-dialog-surface {
-    background-color: #2d2d2d !important;
-  }
-  .mat-mdc-menu-panel {
-    background-color: #2d2d2d !important;
-  }
 }
 
 // Responsive utilities

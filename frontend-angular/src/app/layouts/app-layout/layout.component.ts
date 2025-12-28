@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, effect, HostListener } from '@angular/core';
+import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -45,7 +45,7 @@ interface NavItem {
     UserMailboxComponent, BindAddressComponent, InboxComponent, LoadingComponent,
   ],
   template: `
-    <div class="app-page">
+    <div class="app-page" [class.dark]="state.isDark()">
       <!-- Mobile Sidebar Overlay -->
       <div class="sidebar-overlay" [class.show]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
 
@@ -287,6 +287,34 @@ interface NavItem {
   `,
   styles: [`
     .app-page{min-height:100vh;background:#f8f9fa}
+    .app-page.dark{background:#202124}
+    .app-page.dark .app-header{background:#202124;border-color:#5f6368}
+    .app-page.dark .sidebar{background:#202124;border-color:#5f6368}
+    .app-page.dark .header-title{color:#e8eaed}
+    .app-page.dark .menu-btn,.app-page.dark .header-btn,.app-page.dark .close-btn{color:#9aa0a6}
+    .app-page.dark .sidebar-header{border-color:#5f6368;color:#e8eaed}
+    .app-page.dark .nav-item{color:#e8eaed}
+    .app-page.dark .nav-item:hover{background:#3c4043}
+    .app-page.dark .nav-item.active{background:#394457}
+    .app-page.dark .nav-item.active .nav-label{color:#8ab4f8}
+    .app-page.dark .bottom-nav{background:#202124;border-color:#5f6368}
+    .app-page.dark .bottom-nav-item{color:#9aa0a6}
+    .app-page.dark .bottom-nav-item.active{color:#8ab4f8}
+    .app-page.dark .welcome-title,.app-page.dark .view-header h2,.app-page.dark .settings-view h2,.app-page.dark .login-section h2{color:#e8eaed}
+    .app-page.dark .welcome-subtitle,.app-page.dark .section-title,.app-page.dark .recent-subject,.app-page.dark .recent-time,.app-page.dark .stat-label,.app-page.dark .address-status,.app-page.dark .setting-desc,.app-page.dark .login-hint{color:#9aa0a6}
+    .app-page.dark .avatar-large{background:#8ab4f8;color:#202124}
+    .app-page.dark .search-box{background:#303134;border-color:#5f6368}
+    .app-page.dark .search-box input{color:#e8eaed}
+    .app-page.dark .quick-btn,.app-page.dark .stat-card,.app-page.dark .recent-list,.app-page.dark .address-card,.app-page.dark .setting-card,.app-page.dark .login-card{background:#303134;border-color:#5f6368}
+    .app-page.dark .quick-btn:hover{border-color:#8ab4f8;color:#8ab4f8}
+    .app-page.dark .stat-value,.app-page.dark .recent-sender,.app-page.dark .address-text,.app-page.dark .setting-title,.app-page.dark .user-email{color:#e8eaed}
+    .app-page.dark .recent-item{border-color:#5f6368}
+    .app-page.dark .recent-avatar,.app-page.dark .address-avatar{background:#8ab4f8;color:#202124}
+    .app-page.dark .view-all-btn{color:#8ab4f8}
+    .app-page.dark .address-card.active{background:#394457;border-color:#8ab4f8}
+    .app-page.dark .address-card.active .address-status{color:#8ab4f8}
+    .app-page.dark .user-info-card{background:#303134}
+    .app-page.dark .user-status{color:#8ab4f8}
     .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998;opacity:0;pointer-events:none}
     .sidebar-overlay.show{opacity:1;pointer-events:auto}
     .app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:100}
@@ -296,8 +324,8 @@ interface NavItem {
     .header-actions{display:flex;gap:4px}
     .app-body{display:flex;min-height:calc(100vh - 57px)}
     .sidebar{width:280px;background:#fff;padding:8px 12px;border-right:1px solid #e0e0e0}
-    .sidebar-header{display:none;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #e0e0e0;margin:-8px -12px 8px;font-weight:500}
-    .nav-item{display:flex;align-items:center;width:100%;padding:12px 16px;border:none;background:none;border-radius:28px;cursor:pointer;gap:16px;margin-bottom:4px}
+    .sidebar-header{display:none;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #e0e0e0;margin:-8px -12px 8px;font-weight:500;color:#202124}
+    .nav-item{display:flex;align-items:center;width:100%;padding:12px 16px;border:none;background:none;border-radius:28px;cursor:pointer;gap:16px;margin-bottom:4px;color:#202124}
     .nav-item:hover{background:#f1f3f4}
     .nav-item.active{background:#e8f0fe}
     .nav-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
@@ -316,18 +344,18 @@ interface NavItem {
     .welcome-icon.large{width:80px;height:80px}
     .welcome-icon mat-icon{color:#fff;font-size:24px;width:24px;height:24px}
     .avatar-large{width:80px;height:80px;border-radius:50%;background:#1a73e8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px}
-    .welcome-title{font-size:28px;margin:0 0 8px;word-break:break-all}
+    .welcome-title{font-size:28px;margin:0 0 8px;word-break:break-all;color:#202124}
     .welcome-subtitle{color:#5f6368;margin:0}
     .search-box{display:flex;align-items:center;max-width:600px;margin:0 auto 32px;padding:12px 20px;background:#fff;border:1px solid #dfe1e5;border-radius:24px}
     .search-box mat-icon{color:#9aa0a6;margin-right:12px}
-    .search-box input{flex:1;border:none;outline:none;font-size:16px;background:none}
+    .search-box input{flex:1;border:none;outline:none;font-size:16px;background:none;color:#202124}
     .quick-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:40px}
-    .quick-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid #dadce0;border-radius:8px;background:#fff;cursor:pointer}
+    .quick-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid #dadce0;border-radius:8px;background:#fff;cursor:pointer;color:#3c4043}
     .quick-btn:hover{border-color:#1a73e8;color:#1a73e8}
     .stats-section{display:flex;justify-content:center;gap:24px;margin-bottom:40px}
     .stat-card{display:flex;align-items:center;gap:16px;padding:20px 32px;background:#fff;border:1px solid #dadce0;border-radius:12px;cursor:pointer}
     .stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center}
-    .stat-value{font-size:32px;font-weight:500}
+    .stat-value{font-size:32px;font-weight:500;color:#202124}
     .stat-label{font-size:14px;color:#5f6368}
     .recent-section{text-align:left;max-width:600px;margin:0 auto}
     .section-title{font-size:14px;color:#5f6368;margin-bottom:12px;text-transform:uppercase}
@@ -337,32 +365,32 @@ interface NavItem {
     .recent-avatar,.address-avatar,.user-avatar{border-radius:50%;background:#1a73e8;color:#fff;display:flex;align-items:center;justify-content:center}
     .recent-avatar{width:40px;height:40px}
     .recent-content,.address-info,.user-details{flex:1;min-width:0}
-    .recent-sender{font-weight:500}
+    .recent-sender{font-weight:500;color:#202124}
     .recent-subject{font-size:13px;color:#5f6368;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .recent-time{font-size:12px;color:#5f6368}
     .view-all-btn{width:100%;padding:12px;border:none;background:none;color:#1a73e8;cursor:pointer}
     .view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-    .view-header h2,.settings-view h2{font-size:24px;margin:0}
+    .view-header h2,.settings-view h2{font-size:24px;margin:0;color:#202124}
     .settings-view h2{margin-bottom:24px}
     .address-grid{display:grid;gap:16px}
     .address-card{display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border:1px solid #dadce0;border-radius:12px}
     .address-card.active{border-color:#1a73e8;background:#e8f0fe}
     .address-avatar{width:48px;height:48px;font-size:20px}
-    .address-text{font-weight:500;word-break:break-all}
+    .address-text{font-weight:500;word-break:break-all;color:#202124}
     .address-status{font-size:13px;color:#5f6368}
     .address-card.active .address-status{color:#1a73e8}
     .address-actions{display:flex;gap:4px}
     .setting-card{background:#fff;border:1px solid #dadce0;border-radius:12px}
     .setting-item{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;gap:16px;flex-wrap:wrap}
-    .setting-title{font-weight:500}
+    .setting-title{font-weight:500;color:#202124}
     .setting-desc{font-size:13px;color:#5f6368}
     .user-info-card{display:flex;align-items:center;gap:16px;padding:20px 24px;background:#e8f0fe;border-radius:12px;margin-bottom:24px}
     .user-avatar{width:56px;height:56px;font-size:24px}
-    .user-email{font-size:18px;font-weight:500;word-break:break-all}
+    .user-email{font-size:18px;font-weight:500;word-break:break-all;color:#202124}
     .user-status{color:#1a73e8}
     .tab-content{padding:16px 0}
     .login-section{text-align:center;max-width:500px;margin:0 auto}
-    .login-section h2{font-size:28px;margin:0 0 8px}
+    .login-section h2{font-size:28px;margin:0 0 8px;color:#202124}
     .login-hint{color:#5f6368;margin:0 0 24px}
     .warning-alert{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;background:#fef7e0;border-radius:8px;color:#ea8600;margin-bottom:16px}
     .login-card{background:#fff;border:1px solid #dadce0;border-radius:12px;padding:24px;text-align:left}
