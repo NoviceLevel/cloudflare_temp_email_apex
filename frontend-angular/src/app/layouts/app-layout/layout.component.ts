@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -437,7 +437,7 @@ export class AppLayoutComponent implements OnInit {
     { id: 'settings', icon: 'settings', label: '设置', color: '#fbbc04' },
   ];
 
-  constructor() {
+  constructor(private route: ActivatedRoute) {
     effect(() => {
       const jwt = this.state.jwt();
       const address = this.state.settings().address;
@@ -446,6 +446,22 @@ export class AppLayoutComponent implements OnInit {
         if (!exists) {
           this.state.addSavedAddress(address, jwt);
         }
+      }
+    });
+    
+    // Check route data for user view
+    this.route.data.subscribe(data => {
+      if (data['view'] === 'user') {
+        this.currentView.set('user');
+        this.loadUserSettings();
+      }
+    });
+    
+    // Also check query params
+    this.route.queryParams.subscribe(params => {
+      if (params['view'] === 'user') {
+        this.currentView.set('user');
+        this.loadUserSettings();
       }
     });
   }

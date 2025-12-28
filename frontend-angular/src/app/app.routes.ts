@@ -21,7 +21,8 @@ export const routes: Routes = [
   },
   { 
     path: 'user', 
-    loadComponent: () => import('./pages/user/user.component').then(m => m.UserComponent) 
+    loadComponent: () => import('./layouts/app-layout/layout.component').then(m => m.AppLayoutComponent),
+    data: { view: 'user' }
   },
   { 
     path: 'user/oauth2/callback', 
