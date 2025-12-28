@@ -96,7 +96,7 @@ export class UserOauth2CallbackComponent implements OnInit {
           clientID: this.state.userOauth2SessionClientID()
         })
       });
-      this.state.userJwt.set(res.jwt);
+      this.state.setUserJwt(res.jwt);
       this.router.navigate(['/user']);
     } catch (error: any) {
       console.error(error);
