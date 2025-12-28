@@ -370,4 +370,41 @@ export class GlobalStateService {
       },
     });
   }
+
+  /**
+   * 获取 JWT 剩余有效时间（秒）
+   * 返回 -1 表示无法解析或无 JWT
+   */
+  getJwtRemainingTime(): number {
+    const token = this.jwt();
+    if (!token) return -1;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return -1;
+      const payload = JSON.parse(atob(parts[1]));
+      if (!payload.exp) return -1;
+      const now = Math.floor(Date.now() / 1000);
+      return Math.max(0, payload.exp - now);
+    } catch {
+      return -1;
+    }
+  }
+
+  /**
+   * 获取用户 JWT 剩余有效时间（秒）
+   */
+  getUserJwtRemainingTime(): number {
+    const token = this.userJwt();
+    if (!token) return -1;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return -1;
+      const payload = JSON.parse(atob(parts[1]));
+      if (!payload.exp) return -1;
+      const now = Math.floor(Date.now() / 1000);
+      return Math.max(0, payload.exp - now);
+    } catch {
+      return -1;
+    }
+  }
 }

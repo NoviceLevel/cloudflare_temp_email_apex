@@ -58,7 +58,7 @@ export class ApiService {
 
     try {
       console.log('User JWT expiring soon, attempting refresh...');
-      const res = await this.fetch<any>('/user_api/settings');
+      const res = await this.fetchInternal<any>('/user_api/settings', {}, true);
       if (res.new_user_token) {
         this.state.setUserJwt(res.new_user_token);
         console.log('User JWT refreshed successfully');
@@ -68,16 +68,76 @@ export class ApiService {
     }
   }
 
-@Injectable({ providedIn: 'root' })
-export class ApiService {
-  private http = inject(HttpClient);
-  private state = inject(GlobalStateService);
-  private translate = inject(TranslateService);
+  /**
+   * 内部 fetch 方法，skipJwtCheck 用于避免递归调用
+   */
+  private async fetchInternal<T = any>(
+    path: string,
+    options: { method?: string; body?: any; userJwt?: string } = {},
+    skipJwtCheck: boolean = false
+  ): Promise<T> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-lang': this.translate.currentLang || 'zh',
+      'x-user-token': options.userJwt || this.state.userJwt() || '',
+      'x-user-access-token': this.state.userSettings().access_token || '',
+      'x-custom-auth': this.state.auth() || '',
+      'x-admin-auth': this.state.adminAuth() || '',
+      'x-fingerprint': this.state.browserFingerprint() || '',
+      'Authorization': `Bearer ${this.state.jwt() || ''}`,
+    });
+
+    const url = API_BASE + path;
+    let response: any;
+
+    try {
+      if (options.method === 'POST') {
+        response = await firstValueFrom(
+          this.http.post(url, options.body, { headers, observe: 'response' })
+        );
+      } else if (options.method === 'DELETE') {
+        response = await firstValueFrom(
+          this.http.delete(url, { headers, observe: 'response' })
+        );
+      } else if (options.method === 'PUT') {
+        response = await firstValueFrom(
+          this.http.put(url, options.body, { headers, observe: 'response' })
+        );
+      } else {
+        response = await firstValueFrom(
+          this.http.get(url, { headers, observe: 'response' })
+        );
+      }
+
+      if (response.status === 401 && path.startsWith('/admin')) {
+        this.state.showAdminAuth.set(true);
+      }
+      if (response.status === 401 && this.state.openSettings().needAuth) {
+        this.state.showAuth.set(true);
+      }
+      if (response.status >= 300) {
+        throw new Error(`[${response.status}]: ${response.body}` || 'error');
+      }
+
+      return response.body as T;
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        if (error.status === 401 && path.startsWith('/admin')) {
+          this.state.showAdminAuth.set(true);
+        }
+        if (error.status === 401 && this.state.openSettings().needAuth) {
+          this.state.showAuth.set(true);
+        }
+        throw new Error(`[${error.status}]: ${error.error}` || 'error');
+      }
+      throw error;
+    }
+  }
 
   async fetch<T = any>(path: string, options: { method?: string; body?: any; userJwt?: string } = {}): Promise<T> {
     this.state.loading.set(true);
     try {
-      // 检查用户 JWT 是否即将过期，尝试刷新
+      // 检查用户 JWT 是否即将过期，尝试刷新（避免在 settings 请求中递归）
       if (!path.includes('/user_api/settings')) {
         await this.tryRefreshUserJwt();
       }
@@ -91,66 +151,12 @@ export class ApiService {
         throw new Error('JWT expired, please login again');
       }
 
-      const headers = new HttpHeaders({
-        'Content-Type': 'application/json',
-        'x-lang': this.translate.currentLang || 'zh',
-        'x-user-token': options.userJwt || this.state.userJwt() || '',
-        'x-user-access-token': this.state.userSettings().access_token || '',
-        'x-custom-auth': this.state.auth() || '',
-        'x-admin-auth': this.state.adminAuth() || '',
-        'x-fingerprint': this.state.browserFingerprint() || '',
-        'Authorization': `Bearer ${this.state.jwt() || ''}`,
-      });
-
-      const url = API_BASE + path;
-      let response: any;
-
-      try {
-        if (options.method === 'POST') {
-          response = await firstValueFrom(
-            this.http.post(url, options.body, { headers, observe: 'response' })
-          );
-        } else if (options.method === 'DELETE') {
-          response = await firstValueFrom(
-            this.http.delete(url, { headers, observe: 'response' })
-          );
-        } else if (options.method === 'PUT') {
-          response = await firstValueFrom(
-            this.http.put(url, options.body, { headers, observe: 'response' })
-          );
-        } else {
-          response = await firstValueFrom(
-            this.http.get(url, { headers, observe: 'response' })
-          );
-        }
-
-        if (response.status === 401 && path.startsWith('/admin')) {
-          this.state.showAdminAuth.set(true);
-        }
-        if (response.status === 401 && this.state.openSettings().needAuth) {
-          this.state.showAuth.set(true);
-        }
-        if (response.status >= 300) {
-          throw new Error(`[${response.status}]: ${response.body}` || 'error');
-        }
-
-        return response.body as T;
-      } catch (error) {
-        if (error instanceof HttpErrorResponse) {
-          if (error.status === 401 && path.startsWith('/admin')) {
-            this.state.showAdminAuth.set(true);
-          }
-          if (error.status === 401 && this.state.openSettings().needAuth) {
-            this.state.showAuth.set(true);
-          }
-          throw new Error(`[${error.status}]: ${error.error}` || 'error');
-        }
-        throw error;
-      }
+      return await this.fetchInternal<T>(path, options);
     } finally {
       this.state.loading.set(false);
     }
   }
+
 
   // 获取公开设置
   async getOpenSettings(): Promise<void> {
@@ -323,6 +329,7 @@ export class ApiService {
       body: { email, cf_token: cfToken },
     });
   }
+
 
   // Passkey 认证请求
   async passkeyAuthenticateRequest(domain: string): Promise<any> {
