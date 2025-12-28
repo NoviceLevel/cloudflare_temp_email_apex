@@ -286,8 +286,8 @@ interface NavItem {
   `,
   styles: [`
     .app-page{min-height:100vh;background:#f8f9fa}
-    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998}
-    .sidebar-overlay.show{opacity:1}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998;opacity:0;pointer-events:none}
+    .sidebar-overlay.show{opacity:1;pointer-events:auto}
     .app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:100}
     .menu-btn,.header-btn,.close-btn{width:40px;height:40px;border:none;background:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5f6368}
     .menu-btn{display:none;margin-right:8px}
