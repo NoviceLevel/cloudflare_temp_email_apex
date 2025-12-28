@@ -58,7 +58,30 @@ interface NavItem {
     AdminUserOauth2SettingsComponent, AdminRoleAddressConfigComponent, AdminWebhookSettingsComponent,
   ],
   template: `
-    @if (state.openSettings().fetched) {
+    @if (!state.openSettings().fetched) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else if (showAdminPasswordModal()) {
+      <div class="password-page">
+        <div class="password-card">
+          <div class="password-icon">
+            <mat-icon>admin_panel_settings</mat-icon>
+          </div>
+          <h1>管理员验证</h1>
+          <p>请输入管理员密码以访问管理控制台</p>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>密码</mat-label>
+            <input matInput [(ngModel)]="adminPassword" [type]="showPassword ? 'text' : 'password'" (keyup.enter)="submitPassword()">
+            <button mat-icon-button matSuffix (click)="showPassword = !showPassword" type="button">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+          <button mat-raised-button color="primary" class="submit-btn" (click)="submitPassword()">确认</button>
+          <button mat-button class="back-btn" (click)="goHome()">返回首页</button>
+        </div>
+      </div>
+    } @else {
       <div class="admin-page">
         <!-- Header -->
         <header class="admin-header">
@@ -141,9 +164,6 @@ interface NavItem {
           </main>
         </div>
       </div>
-    } @else {
-      <div class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
       </div>
     }
   `,
@@ -195,6 +215,17 @@ interface NavItem {
 
     .loading-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
 
+    /* Password Page */
+    .password-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f8f9fa; padding: 24px; }
+    .password-card { background: #fff; border-radius: 12px; padding: 48px; text-align: center; max-width: 400px; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .password-icon { width: 80px; height: 80px; border-radius: 50%; background: #e8f0fe; color: #1a73e8; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+    .password-icon mat-icon { font-size: 40px; width: 40px; height: 40px; }
+    .password-card h1 { font-size: 24px; font-weight: 400; color: #202124; margin: 0 0 8px; }
+    .password-card p { font-size: 14px; color: #5f6368; margin: 0 0 24px; }
+    .full-width { width: 100%; }
+    .submit-btn { width: 100%; margin-top: 8px; }
+    .back-btn { width: 100%; margin-top: 8px; }
+
     @media (max-width: 900px) {
       .sidebar { width: 72px; padding: 8px; }
       .nav-label { display: none; }
@@ -209,6 +240,8 @@ export class AdminComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   currentView = signal('home');
+  adminPassword = '';
+  showPassword = false;
 
   navItems: NavItem[] = [
     { id: 'home', icon: 'home', label: '首页', color: '#4285f4' },
@@ -239,12 +272,16 @@ export class AdminComponent implements OnInit {
     if (!this.state.userSettings().user_id) {
       await this.api.getUserSettings();
     }
-    if (this.showAdminPasswordModal()) {
-      this.openAdminPasswordDialog();
-    }
   }
 
   goHome() { window.location.href = '/'; }
+
+  submitPassword() {
+    if (this.adminPassword) {
+      this.state.setAdminAuth(this.adminPassword);
+      location.reload();
+    }
+  }
 
   openAdminPasswordDialog() {
     const dialogRef = this.dialog.open(AdminPasswordDialogComponent, {
