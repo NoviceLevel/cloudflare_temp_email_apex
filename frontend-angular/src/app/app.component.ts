@@ -2,8 +2,6 @@ import { Component, inject, OnInit, effect } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HeaderComponent } from './views/header/header.component';
-import { FooterComponent } from './views/footer/footer.component';
 import { GlobalStateService } from './services/global-state.service';
 import { ApiService } from './services/api.service';
 
@@ -13,20 +11,15 @@ const DARK_THEME = 'https://unpkg.com/@angular/material@19/prebuilt-themes/cyan-
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterOutlet, MatProgressSpinnerModule],
   template: `
-    <div class="app-container">
+    <div class="app-container" [class.dark-mode]="state.isDark()">
       @if (state.loading()) {
         <div class="loading-overlay">
           <mat-spinner diameter="50"></mat-spinner>
         </div>
       }
-      
-      <app-header></app-header>
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
-      <app-footer></app-footer>
+      <router-outlet></router-outlet>
     </div>
   `,
   styles: [`
@@ -35,12 +28,6 @@ const DARK_THEME = 'https://unpkg.com/@angular/material@19/prebuilt-themes/cyan-
     }
     .app-container {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .main-content {
-      flex: 1;
-      padding: 16px 0;
     }
     .loading-overlay {
       position: fixed;

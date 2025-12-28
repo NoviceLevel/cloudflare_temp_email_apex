@@ -1,14 +1,13 @@
-import { Component, inject, OnInit, computed } from '@angular/core';
+import { Component, inject, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { GlobalStateService } from '../../services/global-state.service';
 import { ApiService } from '../../services/api.service';
@@ -36,217 +35,112 @@ import { AdminUserOauth2SettingsComponent } from '../../views/admin/user-oauth2-
 import { AdminRoleAddressConfigComponent } from '../../views/admin/role-address-config/role-address-config.component';
 import { AdminWebhookSettingsComponent } from '../../views/admin/webhook-settings/webhook-settings.component';
 
+interface NavItem {
+  id: string;
+  icon: string;
+  label: string;
+  color: string;
+}
+
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatTabsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    TranslateModule,
-    MatDialogModule,
-    AdminAccountComponent,
-    AdminMailsComponent,
-    AdminStatisticsComponent,
-    AppearanceComponent,
-    AboutComponent,
-    CreateAccountComponent,
-    AdminAccountSettingsComponent,
-    UserManagementComponent,
-    AdminUserSettingsComponent,
-    MailsUnknowComponent,
-    AdminSendboxComponent,
-    AdminSendMailComponent,
-    MailWebhookComponent,
-    AdminTelegramComponent,
-    MaintenanceComponent,
-    DatabaseManagerComponent,
-    WorkerConfigComponent,
-    IpBlacklistSettingsComponent,
-    AiExtractSettingsComponent,
-    SenderAccessComponent,
-    AdminUserOauth2SettingsComponent,
-    AdminRoleAddressConfigComponent,
-    AdminWebhookSettingsComponent,
+    CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule,
+    MatIconModule, MatProgressSpinnerModule, TranslateModule, MatDialogModule,
+    MatTooltipModule,
+    AdminAccountComponent, AdminMailsComponent, AdminStatisticsComponent,
+    AppearanceComponent, AboutComponent, CreateAccountComponent, AdminAccountSettingsComponent,
+    UserManagementComponent, AdminUserSettingsComponent, MailsUnknowComponent,
+    AdminSendboxComponent, AdminSendMailComponent, MailWebhookComponent, AdminTelegramComponent,
+    MaintenanceComponent, DatabaseManagerComponent, WorkerConfigComponent,
+    IpBlacklistSettingsComponent, AiExtractSettingsComponent, SenderAccessComponent,
+    AdminUserOauth2SettingsComponent, AdminRoleAddressConfigComponent, AdminWebhookSettingsComponent,
   ],
   template: `
     @if (state.openSettings().fetched) {
-        <div class="admin-container">
-          <!-- Main Tabs -->
-          <mat-tab-group [(selectedIndex)]="mainTab" color="primary" animationDuration="0ms">
-            <!-- 快速设置 -->
-            <mat-tab [label]="'quickSetup' | translate">
-              <div class="tab-content">
-                <mat-tab-group [(selectedIndex)]="quickSetupTab" color="primary">
-                  <mat-tab [label]="'accountSettings' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-account-settings></app-admin-account-settings>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'userSettings' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-user-settings></app-admin-user-settings>
-                    </div>
-                  </mat-tab>
-                </mat-tab-group>
-              </div>
-            </mat-tab>
+      <div class="admin-page">
+        <!-- Header -->
+        <header class="admin-header">
+          <div class="header-title">管理控制台</div>
+          <div class="header-actions">
+            <button class="header-btn" (click)="goHome()" matTooltip="返回首页">
+              <mat-icon>home</mat-icon>
+            </button>
+          </div>
+        </header>
 
-            <!-- 账号 -->
-            <mat-tab [label]="'account' | translate">
-              <div class="tab-content">
-                <mat-tab-group [(selectedIndex)]="accountTab" color="primary">
-                  <mat-tab [label]="'accountList' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-account></app-admin-account>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'createAccount' | translate">
-                    <div class="sub-tab-content">
-                      <app-create-account></app-create-account>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'senderAccess' | translate">
-                    <div class="sub-tab-content">
-                      <app-sender-access></app-sender-access>
-                    </div>
-                  </mat-tab>
-                </mat-tab-group>
-              </div>
-            </mat-tab>
+        <div class="admin-body">
+          <!-- Left Sidebar -->
+          <nav class="sidebar">
+            @for (item of navItems; track item.id) {
+              <button class="nav-item" [class.active]="currentView() === item.id" (click)="currentView.set(item.id)">
+                <span class="nav-icon" [style.background]="item.color">
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                </span>
+                <span class="nav-label">{{ item.label }}</span>
+              </button>
+            }
+          </nav>
 
-            <!-- 用户 -->
-            <mat-tab [label]="'user' | translate">
-              <div class="tab-content">
-                <mat-tab-group [(selectedIndex)]="userTab" color="primary">
-                  <mat-tab [label]="'userManagement' | translate">
-                    <div class="sub-tab-content">
-                      <app-user-management></app-user-management>
+          <!-- Main Content -->
+          <main class="main-content">
+            <div class="content-wrapper">
+              @switch (currentView()) {
+                @case ('home') {
+                  <div class="home-view">
+                    <div class="welcome-section">
+                      <div class="welcome-icons">
+                        <span class="welcome-icon" style="background: #4285f4;"><mat-icon>settings</mat-icon></span>
+                        <span class="welcome-icon" style="background: #34a853;"><mat-icon>security</mat-icon></span>
+                        <span class="welcome-icon large" style="background: #ea4335;"><mat-icon>admin_panel_settings</mat-icon></span>
+                        <span class="welcome-icon" style="background: #fbbc04;"><mat-icon>email</mat-icon></span>
+                        <span class="welcome-icon" style="background: #9c27b0;"><mat-icon>people</mat-icon></span>
+                      </div>
+                      <h1 class="welcome-title">临时邮箱管理</h1>
+                      <p class="welcome-subtitle">管理您的邮箱服务</p>
                     </div>
-                  </mat-tab>
-                  <mat-tab [label]="'userSettings' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-user-settings></app-admin-user-settings>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'oauth2Settings' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-user-oauth2-settings></app-admin-user-oauth2-settings>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'roleAddressConfig' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-role-address-config></app-admin-role-address-config>
-                    </div>
-                  </mat-tab>
-                </mat-tab-group>
-              </div>
-            </mat-tab>
 
-            <!-- 邮件 -->
-            <mat-tab [label]="'mails' | translate">
-              <div class="tab-content">
-                <mat-tab-group [(selectedIndex)]="mailsTab" color="primary">
-                  <mat-tab [label]="'mailList' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-mails></app-admin-mails>
+                    <div class="search-box">
+                      <mat-icon>search</mat-icon>
+                      <input type="text" placeholder="搜索管理功能" class="search-input">
                     </div>
-                  </mat-tab>
-                  <mat-tab [label]="'unknownMails' | translate">
-                    <div class="sub-tab-content">
-                      <app-mails-unknow></app-mails-unknow>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'sendbox' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-sendbox></app-admin-sendbox>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'sendMail' | translate">
-                    <div class="sub-tab-content">
-                      <app-admin-send-mail></app-admin-send-mail>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'mailWebhook' | translate">
-                    <div class="sub-tab-content">
-                      <app-mail-webhook></app-mail-webhook>
-                    </div>
-                  </mat-tab>
-                  <mat-tab label="Telegram">
-                    <div class="sub-tab-content">
-                      <app-admin-telegram></app-admin-telegram>
-                    </div>
-                  </mat-tab>
-                </mat-tab-group>
-              </div>
-            </mat-tab>
 
-            <!-- 统计 -->
-            <mat-tab [label]="'statistics' | translate">
-              <div class="tab-content">
-                <app-admin-statistics></app-admin-statistics>
-              </div>
-            </mat-tab>
-
-            <!-- 维护 -->
-            <mat-tab [label]="'maintenance' | translate">
-              <div class="tab-content">
-                <mat-tab-group [(selectedIndex)]="maintenanceTab" color="primary">
-                  <mat-tab [label]="'database' | translate">
-                    <div class="sub-tab-content">
-                      <app-database-manager></app-database-manager>
+                    <div class="quick-actions">
+                      @for (item of navItems.slice(1, 6); track item.id) {
+                        <button class="quick-btn" (click)="currentView.set(item.id)">{{ item.label }}</button>
+                      }
                     </div>
-                  </mat-tab>
-                  <mat-tab [label]="'cleanup' | translate">
-                    <div class="sub-tab-content">
-                      <app-maintenance></app-maintenance>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'workerConfig' | translate">
-                    <div class="sub-tab-content">
-                      <app-worker-config></app-worker-config>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'ipBlacklist' | translate">
-                    <div class="sub-tab-content">
-                      <app-ip-blacklist-settings></app-ip-blacklist-settings>
-                    </div>
-                  </mat-tab>
-                  <mat-tab [label]="'aiExtract' | translate">
-                    <div class="sub-tab-content">
-                      <app-ai-extract-settings></app-ai-extract-settings>
-                    </div>
-                  </mat-tab>
-                  <mat-tab label="Webhook">
-                    <div class="sub-tab-content">
-                      <app-admin-webhook-settings></app-admin-webhook-settings>
-                    </div>
-                  </mat-tab>
-                </mat-tab-group>
-              </div>
-            </mat-tab>
-
-            <!-- 外观 -->
-            <mat-tab [label]="'appearance' | translate">
-              <div class="tab-content">
-                <app-appearance [showUseSimpleIndex]="true"></app-appearance>
-              </div>
-            </mat-tab>
-
-            <!-- 关于 -->
-            <mat-tab [label]="'about' | translate">
-              <div class="tab-content">
-                <app-about></app-about>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
+                  </div>
+                }
+                @case ('account-settings') { <app-admin-account-settings></app-admin-account-settings> }
+                @case ('user-settings') { <app-admin-user-settings></app-admin-user-settings> }
+                @case ('accounts') { <app-admin-account></app-admin-account> }
+                @case ('create-account') { <app-create-account></app-create-account> }
+                @case ('sender-access') { <app-sender-access></app-sender-access> }
+                @case ('users') { <app-user-management></app-user-management> }
+                @case ('oauth2') { <app-admin-user-oauth2-settings></app-admin-user-oauth2-settings> }
+                @case ('role-address') { <app-admin-role-address-config></app-admin-role-address-config> }
+                @case ('mails') { <app-admin-mails></app-admin-mails> }
+                @case ('unknown-mails') { <app-mails-unknow></app-mails-unknow> }
+                @case ('sendbox') { <app-admin-sendbox></app-admin-sendbox> }
+                @case ('send-mail') { <app-admin-send-mail></app-admin-send-mail> }
+                @case ('webhook') { <app-mail-webhook></app-mail-webhook> }
+                @case ('telegram') { <app-admin-telegram></app-admin-telegram> }
+                @case ('statistics') { <app-admin-statistics></app-admin-statistics> }
+                @case ('database') { <app-database-manager></app-database-manager> }
+                @case ('cleanup') { <app-maintenance></app-maintenance> }
+                @case ('worker-config') { <app-worker-config></app-worker-config> }
+                @case ('ip-blacklist') { <app-ip-blacklist-settings></app-ip-blacklist-settings> }
+                @case ('ai-extract') { <app-ai-extract-settings></app-ai-extract-settings> }
+                @case ('webhook-settings') { <app-admin-webhook-settings></app-admin-webhook-settings> }
+                @case ('appearance') { <app-appearance [showUseSimpleIndex]="true"></app-appearance> }
+                @case ('about') { <app-about></app-about> }
+              }
+            </div>
+          </main>
         </div>
+      </div>
     } @else {
       <div class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
@@ -254,10 +148,59 @@ import { AdminWebhookSettingsComponent } from '../../views/admin/webhook-setting
     }
   `,
   styles: [`
-    .admin-container { padding: 16px; }
-    .tab-content { padding: 16px; }
-    .sub-tab-content { padding: 16px 0; }
-    .loading-container { display: flex; justify-content: center; padding: 48px; }
+    .admin-page { min-height: 100vh; background: #f8f9fa; }
+
+    /* Header */
+    .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: #fff; border-bottom: 1px solid #e0e0e0; }
+    .header-title { font-size: 22px; color: #5f6368; }
+    .header-actions { display: flex; gap: 8px; }
+    .header-btn { width: 40px; height: 40px; border: none; background: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; }
+    .header-btn:hover { background: rgba(0,0,0,0.04); }
+
+    /* Body */
+    .admin-body { display: flex; min-height: calc(100vh - 73px); }
+
+    /* Sidebar */
+    .sidebar { width: 280px; background: #fff; padding: 8px 12px; flex-shrink: 0; }
+    .nav-item { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: none; background: none; border-radius: 28px; cursor: pointer; gap: 16px; margin-bottom: 4px; transition: background 0.2s; }
+    .nav-item:hover { background: #f1f3f4; }
+    .nav-item.active { background: #e8f0fe; }
+    .nav-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-icon mat-icon { font-size: 18px; width: 18px; height: 18px; color: white; }
+    .nav-label { font-size: 14px; color: #202124; font-weight: 500; }
+    .nav-item.active .nav-label { color: #1a73e8; }
+
+    /* Main Content */
+    .main-content { flex: 1; padding: 24px 48px; overflow-y: auto; }
+    .content-wrapper { max-width: 900px; margin: 0 auto; }
+
+    /* Home View */
+    .home-view { text-align: center; padding-top: 40px; }
+    .welcome-section { margin-bottom: 32px; }
+    .welcome-icons { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 24px; }
+    .welcome-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .welcome-icon.large { width: 72px; height: 72px; }
+    .welcome-icon mat-icon { color: white; font-size: 24px; width: 24px; height: 24px; }
+    .welcome-icon.large mat-icon { font-size: 36px; width: 36px; height: 36px; }
+    .welcome-title { font-size: 36px; font-weight: 400; color: #202124; margin: 0 0 8px; }
+    .welcome-subtitle { font-size: 16px; color: #5f6368; margin: 0; }
+
+    .search-box { display: flex; align-items: center; max-width: 600px; margin: 0 auto 32px; padding: 12px 20px; background: #fff; border: 1px solid #dfe1e5; border-radius: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .search-box mat-icon { color: #9aa0a6; margin-right: 12px; }
+    .search-input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
+
+    .quick-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .quick-btn { padding: 8px 16px; border: 1px solid #dadce0; border-radius: 8px; background: #fff; font-size: 14px; color: #3c4043; cursor: pointer; transition: all 0.2s; }
+    .quick-btn:hover { background: #f8f9fa; border-color: #1a73e8; color: #1a73e8; }
+
+    .loading-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+
+    @media (max-width: 900px) {
+      .sidebar { width: 72px; padding: 8px; }
+      .nav-label { display: none; }
+      .nav-item { justify-content: center; padding: 12px; }
+      .main-content { padding: 16px; }
+    }
   `]
 })
 export class AdminComponent implements OnInit {
@@ -265,12 +208,21 @@ export class AdminComponent implements OnInit {
   private api = inject(ApiService);
   private dialog = inject(MatDialog);
 
-  mainTab = 0;
-  quickSetupTab = 0;
-  accountTab = 0;
-  userTab = 0;
-  mailsTab = 0;
-  maintenanceTab = 0;
+  currentView = signal('home');
+
+  navItems: NavItem[] = [
+    { id: 'home', icon: 'home', label: '首页', color: '#4285f4' },
+    { id: 'account-settings', icon: 'tune', label: '账号设置', color: '#34a853' },
+    { id: 'user-settings', icon: 'person', label: '用户设置', color: '#ea4335' },
+    { id: 'accounts', icon: 'manage_accounts', label: '账号管理', color: '#fbbc04' },
+    { id: 'users', icon: 'people', label: '用户管理', color: '#9c27b0' },
+    { id: 'mails', icon: 'email', label: '邮件管理', color: '#00bcd4' },
+    { id: 'statistics', icon: 'bar_chart', label: '统计数据', color: '#ff5722' },
+    { id: 'database', icon: 'storage', label: '数据库', color: '#607d8b' },
+    { id: 'cleanup', icon: 'cleaning_services', label: '数据清理', color: '#795548' },
+    { id: 'appearance', icon: 'palette', label: '外观设置', color: '#e91e63' },
+    { id: 'about', icon: 'info', label: '关于', color: '#9e9e9e' },
+  ];
 
   showAdminPasswordModal = computed(() => {
     const hasAdminAuth = !!this.state.adminAuth();
@@ -287,11 +239,12 @@ export class AdminComponent implements OnInit {
     if (!this.state.userSettings().user_id) {
       await this.api.getUserSettings();
     }
-    // 检查是否需要显示密码对话框
     if (this.showAdminPasswordModal()) {
       this.openAdminPasswordDialog();
     }
   }
+
+  goHome() { window.location.href = '/'; }
 
   openAdminPasswordDialog() {
     const dialogRef = this.dialog.open(AdminPasswordDialogComponent, {
@@ -307,17 +260,16 @@ export class AdminComponent implements OnInit {
   }
 }
 
-// Admin Password Dialog
 @Component({
   selector: 'app-admin-password-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, TranslateModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
   template: `
-    <h2 mat-dialog-title>{{ 'adminPassword' | translate }}</h2>
+    <h2 mat-dialog-title>管理员密码</h2>
     <mat-dialog-content>
-      <p class="mb-3">{{ 'enterAdminPassword' | translate }}</p>
+      <p class="hint">请输入管理员密码以继续</p>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ 'password' | translate }}</mat-label>
+        <mat-label>密码</mat-label>
         <input matInput [(ngModel)]="password" [type]="showPassword ? 'text' : 'password'" (keyup.enter)="submit()">
         <button mat-icon-button matSuffix (click)="showPassword = !showPassword" type="button">
           <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
@@ -325,17 +277,14 @@ export class AdminComponent implements OnInit {
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button color="primary" (click)="submit()">{{ 'confirm' | translate }}</button>
+      <button mat-raised-button color="primary" (click)="submit()">确认</button>
     </mat-dialog-actions>
   `,
-  styles: [`.full-width { width: 100%; } .mb-3 { margin-bottom: 12px; }`]
+  styles: [`.full-width { width: 100%; } .hint { margin-bottom: 16px; color: #5f6368; }`]
 })
 export class AdminPasswordDialogComponent {
   private dialogRef = inject(MatDialogRef<AdminPasswordDialogComponent>);
   password = '';
   showPassword = false;
-
-  submit() {
-    this.dialogRef.close(this.password);
-  }
+  submit() { this.dialogRef.close(this.password); }
 }

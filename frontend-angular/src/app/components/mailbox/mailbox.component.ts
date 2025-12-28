@@ -23,7 +23,7 @@ import { ApiService } from '../../services/api.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { processItem, ParsedMail } from '../../utils/email-parser';
 import { utcToLocalDate } from '../../utils/index';
-import { MailContentRendererComponent } from '../mail-content-renderer/mail-content-renderer.component';
+import { ContentRendererComponent } from '../content-renderer/content-renderer.component';
 
 @Component({
   selector: 'app-mailbox',
@@ -46,7 +46,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
     MatBottomSheetModule,
     MatDividerModule,
     TranslateModule,
-    MailContentRendererComponent,
+    ContentRendererComponent,
   ],
   template: `
     <div class="mailbox-container">
@@ -126,7 +126,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
                   </button>
                 </div>
               </div>
-              <app-mail-content-renderer
+              <app-content-renderer
                 [mail]="curMail()!"
                 [enableUserDeleteEmail]="enableUserDeleteEmail"
                 [showReply]="showReply"
@@ -134,7 +134,7 @@ import { MailContentRendererComponent } from '../mail-content-renderer/mail-cont
                 (onDelete)="deleteMailAction()"
                 (onReply)="replyMail()"
                 (onForward)="forwardMail()">
-              </app-mail-content-renderer>
+              </app-content-renderer>
             } @else {
               <div class="empty-content">
                 <mat-icon>email</mat-icon>
@@ -522,7 +522,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
 @Component({
   selector: 'app-mobile-mail-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, MailContentRendererComponent],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule, ContentRendererComponent],
   template: `
     <div class="fullscreen-mail-dialog">
       <div class="dialog-header">
@@ -532,7 +532,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
         <span class="dialog-title">{{ data.mail.subject }}</span>
       </div>
       <div class="dialog-content">
-        <app-mail-content-renderer
+        <app-content-renderer
           [mail]="data.mail"
           [enableUserDeleteEmail]="data.enableUserDeleteEmail"
           [showReply]="data.showReply"
@@ -540,7 +540,7 @@ export class MailboxComponent implements OnInit, OnDestroy {
           (onDelete)="onDelete()"
           (onReply)="data.onReply()"
           (onForward)="data.onForward()">
-        </app-mail-content-renderer>
+        </app-content-renderer>
       </div>
     </div>
   `,

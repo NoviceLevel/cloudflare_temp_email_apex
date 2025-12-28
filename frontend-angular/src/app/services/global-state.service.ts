@@ -67,6 +67,11 @@ export interface SendMailModel {
   content: string;
 }
 
+export interface SavedAddress {
+  address: string;
+  jwt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class GlobalStateService {
   // Theme - use system preference if no localStorage value
@@ -199,6 +204,15 @@ export class GlobalStateService {
   // Browser fingerprint
   browserFingerprint = signal('');
 
+  // Gmail layout state
+  searchQuery = signal('');
+  refreshTrigger = signal(0);
+
+  // Saved addresses for multi-address support
+  savedAddresses = signal<SavedAddress[]>(
+    JSON.parse(localStorage.getItem('savedAddresses') || '[]')
+  );
+
   // Computed
   showAdminPage = computed(() =>
     !!this.adminAuth() ||
@@ -305,5 +319,55 @@ export class GlobalStateService {
         this.useSimpleIndex.set(value);
         break;
     }
+  }
+
+  // Trigger refresh for Gmail inbox
+  triggerRefresh() {
+    this.refreshTrigger.update(v => v + 1);
+  }
+
+  // Save address to list
+  addSavedAddress(address: string, jwt: string) {
+    const addresses = this.savedAddresses();
+    // Remove if already exists (to update jwt)
+    const filtered = addresses.filter(a => a.address !== address);
+    const updated = [...filtered, { address, jwt }];
+    this.savedAddresses.set(updated);
+    localStorage.setItem('savedAddresses', JSON.stringify(updated));
+  }
+
+  // Remove address from list
+  removeSavedAddress(address: string) {
+    const updated = this.savedAddresses().filter(a => a.address !== address);
+    this.savedAddresses.set(updated);
+    localStorage.setItem('savedAddresses', JSON.stringify(updated));
+  }
+
+  // Switch to a saved address
+  switchToAddress(address: string) {
+    const saved = this.savedAddresses().find(a => a.address === address);
+    if (saved) {
+      this.setJwt(saved.jwt);
+      return true;
+    }
+    return false;
+  }
+
+  // Logout
+  logout() {
+    this.setJwt('');
+    this.setUserJwt('');
+    this.settings.set({
+      fetched: false,
+      send_balance: 0,
+      address: '',
+      auto_reply: {
+        subject: '',
+        message: '',
+        enabled: false,
+        source_prefix: '',
+        name: '',
+      },
+    });
   }
 }

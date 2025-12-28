@@ -22,6 +22,8 @@ export interface ParsedMail {
   checked?: boolean;
   metadata?: string;
   address?: string;
+  starred?: boolean;
+  read?: boolean;
 }
 
 export async function processItem(item: any): Promise<ParsedMail> {

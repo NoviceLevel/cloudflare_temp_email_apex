@@ -11,7 +11,7 @@ import { ApiService } from '../../../services/api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 import { LoginComponent } from '../../common/login/login.component';
 import { AccountSettingsComponent } from '../account-settings/account-settings.component';
-import { MailContentRendererComponent } from '../../../components/mail-content-renderer/mail-content-renderer.component';
+import { ContentRendererComponent } from '../../../components/content-renderer/content-renderer.component';
 import { processItem } from '../../../utils/email-parser';
 
 @Component({
@@ -27,7 +27,7 @@ import { processItem } from '../../../utils/email-parser';
     TranslateModule,
     LoginComponent,
     AccountSettingsComponent,
-    MailContentRendererComponent,
+    ContentRendererComponent,
   ],
   template: `
     <div class="simple-index-container">
@@ -108,13 +108,13 @@ import { processItem } from '../../../utils/email-parser';
                 @if (currentMail()?.subject) {
                   <h3 class="mb-4">{{ currentMail()?.subject }}</h3>
                 }
-                <app-mail-content-renderer
+                <app-content-renderer
                   [mail]="currentMail()!"
                   [showReply]="false"
                   [showEMailTo]="false"
                   [enableUserDeleteEmail]="state.openSettings().enableUserDeleteEmail"
                   (onDelete)="deleteMail()">
-                </app-mail-content-renderer>
+                </app-content-renderer>
               }
             </mat-card-content>
           </mat-card>

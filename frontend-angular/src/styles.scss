@@ -94,7 +94,29 @@ $dark-theme: mat.m2-define-dark-theme((
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'Google Sans', Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Gmail dialog styles
+.gmail-dialog .mat-mdc-dialog-container {
+  border-radius: 24px !important;
+}
+
+.gmail-dialog .mat-mdc-dialog-surface {
+  border-radius: 24px !important;
+}
+
+// Dark mode for Gmail layout
+.dark {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: #2d2d2d;
+  }
+  .mat-mdc-dialog-surface {
+    background-color: #2d2d2d !important;
+  }
+  .mat-mdc-menu-panel {
+    background-color: #2d2d2d !important;
+  }
 }
 
 // Responsive utilities
