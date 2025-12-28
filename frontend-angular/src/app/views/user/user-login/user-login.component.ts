@@ -102,6 +102,7 @@ export class UserLoginComponent implements OnInit {
   selectedTab = 0;
   verifyCodeTimeout = signal(0);
   private verifyCodeExpire = 0;
+  private verifyCodeIntervalId: any = null;
   user = { email: '', password: '', code: '' };
   cfToken = '';
 
@@ -161,10 +162,16 @@ export class UserLoginComponent implements OnInit {
   }
 
   private startVerifyCodeCountdown() {
-    const intervalId = setInterval(() => {
+    // 清除之前的定时器
+    if (this.verifyCodeIntervalId) {
+      clearInterval(this.verifyCodeIntervalId);
+    }
+    
+    this.verifyCodeIntervalId = setInterval(() => {
       const remaining = Math.round((this.verifyCodeExpire - Date.now()) / 1000);
       if (remaining <= 0) {
-        clearInterval(intervalId);
+        clearInterval(this.verifyCodeIntervalId);
+        this.verifyCodeIntervalId = null;
         this.verifyCodeTimeout.set(0);
       } else {
         this.verifyCodeTimeout.set(remaining);
@@ -279,6 +286,7 @@ export class ForgotPasswordDialogComponent {
   code = '';
   verifyCodeTimeout = 0;
   private verifyCodeExpire = 0;
+  private verifyCodeIntervalId: any = null;
 
   async sendVerificationCode() {
     if (!this.email) {
@@ -298,10 +306,16 @@ export class ForgotPasswordDialogComponent {
   }
 
   private startVerifyCodeCountdown() {
-    const intervalId = setInterval(() => {
+    // 清除之前的定时器
+    if (this.verifyCodeIntervalId) {
+      clearInterval(this.verifyCodeIntervalId);
+    }
+    
+    this.verifyCodeIntervalId = setInterval(() => {
       const remaining = Math.round((this.verifyCodeExpire - Date.now()) / 1000);
       if (remaining <= 0) {
-        clearInterval(intervalId);
+        clearInterval(this.verifyCodeIntervalId);
+        this.verifyCodeIntervalId = null;
         this.verifyCodeTimeout = 0;
       } else {
         this.verifyCodeTimeout = remaining;
