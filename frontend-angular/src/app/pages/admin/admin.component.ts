@@ -5,12 +5,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { GlobalStateService } from '../../services/global-state.service';
 import { ApiService } from '../../services/api.service';
+import { LoadingComponent } from '../../components/loading/loading.component';
 import { AdminAccountComponent } from '../../views/admin/account/account.component';
 import { AdminMailsComponent } from '../../views/admin/mails/mails.component';
 import { AdminStatisticsComponent } from '../../views/admin/statistics/statistics.component';
@@ -47,8 +47,7 @@ interface NavItem {
   standalone: true,
   imports: [
     CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule,
-    MatIconModule, MatProgressSpinnerModule, TranslateModule, MatDialogModule,
-    MatTooltipModule,
+    MatIconModule, TranslateModule, MatDialogModule, MatTooltipModule, LoadingComponent,
     AdminAccountComponent, AdminMailsComponent, AdminStatisticsComponent,
     AppearanceComponent, AboutComponent, CreateAccountComponent, AdminAccountSettingsComponent,
     UserManagementComponent, AdminUserSettingsComponent, MailsUnknowComponent,
@@ -59,9 +58,7 @@ interface NavItem {
   ],
   template: `
     @if (!state.openSettings().fetched) {
-      <div class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
+      <app-loading [fullscreen]="true" text="加载中..."></app-loading>
     } @else if (showAdminPasswordModal()) {
       <div class="password-page">
         <div class="password-card">
@@ -232,8 +229,6 @@ interface NavItem {
     .quick-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
     .quick-btn { padding: 8px 16px; border: 1px solid #dadce0; border-radius: 8px; background: #fff; font-size: 14px; color: #3c4043; cursor: pointer; transition: all 0.2s; }
     .quick-btn:hover { background: #f8f9fa; border-color: #1a73e8; color: #1a73e8; }
-
-    .loading-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
 
     /* Password Page */
     .password-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f8f9fa; padding: 24px; }

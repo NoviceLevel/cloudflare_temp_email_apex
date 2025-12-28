@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,7 +11,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -23,6 +22,8 @@ import { AddressManagementComponent } from '../../views/user/address-management/
 import { UserSettingsComponent } from '../../views/user/user-settings/user-settings.component';
 import { UserMailboxComponent } from '../../views/user/user-mailbox/user-mailbox.component';
 import { BindAddressComponent } from '../../views/user/bind-address/bind-address.component';
+import { InboxComponent } from '../../components/inbox/inbox.component';
+import { LoadingComponent } from '../../components/loading/loading.component';
 
 interface NavItem {
   id: string;
@@ -36,12 +37,12 @@ interface NavItem {
   selector: 'app-layout',
   standalone: true,
   imports: [
-    CommonModule, RouterOutlet, FormsModule, MatButtonModule, MatIconModule,
+    CommonModule, FormsModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule,
-    MatDividerModule, MatDialogModule, MatSelectModule, MatProgressSpinnerModule, 
+    MatDividerModule, MatDialogModule, MatSelectModule,
     MatTabsModule, TranslateModule,
     UserLoginComponent, AddressManagementComponent, UserSettingsComponent,
-    UserMailboxComponent, BindAddressComponent,
+    UserMailboxComponent, BindAddressComponent, InboxComponent, LoadingComponent,
   ],
   template: `
     <div class="app-page">
@@ -173,7 +174,7 @@ interface NavItem {
                 </div>
               }
               @case ('inbox') {
-                <router-outlet></router-outlet>
+                <app-inbox></app-inbox>
               }
               @case ('addresses') {
                 <div class="addresses-view">
@@ -226,7 +227,7 @@ interface NavItem {
               @case ('user') {
                 <div class="user-view">
                   @if (!state.userSettings().fetched) {
-                    <div class="loading-box"><mat-spinner diameter="40"></mat-spinner></div>
+                    <app-loading text="加载中..."></app-loading>
                   } @else if (state.userSettings().user_email) {
                     <div class="user-logged-in">
                       <div class="user-info-card">
@@ -355,7 +356,6 @@ interface NavItem {
     .setting-item{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;gap:16px;flex-wrap:wrap}
     .setting-title{font-weight:500}
     .setting-desc{font-size:13px;color:#5f6368}
-    .loading-box{display:flex;justify-content:center;padding:48px}
     .user-info-card{display:flex;align-items:center;gap:16px;padding:20px 24px;background:#e8f0fe;border-radius:12px;margin-bottom:24px}
     .user-avatar{width:56px;height:56px;font-size:24px}
     .user-email{font-size:18px;font-weight:500;word-break:break-all}
