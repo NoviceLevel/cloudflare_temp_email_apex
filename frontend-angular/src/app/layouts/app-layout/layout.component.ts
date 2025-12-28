@@ -467,6 +467,18 @@ export class AppLayoutComponent implements OnInit {
   }
 
   async ngOnInit() {
+    // Load open settings first
+    if (!this.state.openSettings().fetched) {
+      await this.api.getOpenSettings();
+    }
+    // Load address settings if jwt exists
+    if (this.state.jwt()) {
+      try {
+        await this.api.getSettings();
+      } catch (e) {
+        console.error('getSettings error:', e);
+      }
+    }
     await this.loadMails();
     // Auto-load user settings if userJwt exists (for page refresh)
     if (this.state.userJwt()) {
