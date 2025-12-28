@@ -12,11 +12,17 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { GlobalStateService } from '../../services/global-state.service';
 import { ApiService } from '../../services/api.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { UserLoginComponent } from '../../views/user/user-login/user-login.component';
+import { AddressManagementComponent } from '../../views/user/address-management/address-management.component';
+import { UserSettingsComponent } from '../../views/user/user-settings/user-settings.component';
+import { UserMailboxComponent } from '../../views/user/user-mailbox/user-mailbox.component';
+import { BindAddressComponent } from '../../views/user/bind-address/bind-address.component';
 
 interface NavItem {
   id: string;
@@ -27,12 +33,15 @@ interface NavItem {
 }
 
 @Component({
-  selector: 'app-gmail-layout',
+  selector: 'app-layout',
   standalone: true,
   imports: [
     CommonModule, RouterOutlet, FormsModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule,
-    MatDividerModule, MatDialogModule, MatSelectModule, MatProgressSpinnerModule, TranslateModule,
+    MatDividerModule, MatDialogModule, MatSelectModule, MatProgressSpinnerModule, 
+    MatTabsModule, TranslateModule,
+    UserLoginComponent, AddressManagementComponent, UserSettingsComponent,
+    UserMailboxComponent, BindAddressComponent,
   ],
   template: `
     <div class="app-page">
@@ -42,6 +51,9 @@ interface NavItem {
         <div class="header-actions">
           <button class="header-btn" (click)="toggleTheme()" [matTooltip]="state.isDark() ? '浅色模式' : '深色模式'">
             <mat-icon>{{ state.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          </button>
+          <button class="header-btn" (click)="currentView.set('user'); loadUserSettings()" matTooltip="用户登录">
+            <mat-icon>person</mat-icon>
           </button>
           <button class="header-btn" *ngIf="state.showAdminPage()" (click)="goAdmin()" matTooltip="管理后台">
             <mat-icon>admin_panel_settings</mat-icon>
@@ -196,15 +208,52 @@ interface NavItem {
                         {{ state.isDark() ? '切换浅色' : '切换深色' }}
                       </button>
                     </div>
-                    <mat-divider></mat-divider>
-                    <div class="setting-item">
-                      <div class="setting-info">
-                        <div class="setting-title">账户管理</div>
-                        <div class="setting-desc">管理您的用户账户</div>
-                      </div>
-                      <button mat-stroked-button (click)="goUser()">前往</button>
-                    </div>
                   </div>
+                </div>
+              }
+              @case ('user') {
+                <div class="user-view">
+                  @if (!state.userSettings().fetched) {
+                    <div class="loading-box"><mat-spinner diameter="40"></mat-spinner></div>
+                  } @else if (state.userSettings().user_email) {
+                    <div class="user-logged-in">
+                      <div class="user-info-card">
+                        <div class="user-avatar">{{ state.userSettings().user_email.charAt(0).toUpperCase() }}</div>
+                        <div class="user-details">
+                          <div class="user-email">{{ state.userSettings().user_email }}</div>
+                          <div class="user-status">已登录</div>
+                        </div>
+                      </div>
+                      <mat-tab-group color="primary">
+                        <mat-tab label="地址管理">
+                          <div class="tab-content"><app-address-management></app-address-management></div>
+                        </mat-tab>
+                        <mat-tab label="收件箱">
+                          <div class="tab-content"><app-user-mailbox></app-user-mailbox></div>
+                        </mat-tab>
+                        <mat-tab label="用户设置">
+                          <div class="tab-content"><app-user-settings></app-user-settings></div>
+                        </mat-tab>
+                        <mat-tab label="绑定地址">
+                          <div class="tab-content"><app-bind-address></app-bind-address></div>
+                        </mat-tab>
+                      </mat-tab-group>
+                    </div>
+                  } @else {
+                    <div class="login-section">
+                      <h2>用户登录</h2>
+                      <p class="login-hint">登录后可以管理多个邮箱地址</p>
+                      @if (state.userJwt()) {
+                        <div class="warning-alert">
+                          <mat-icon>warning</mat-icon>
+                          <span>登录信息已过期，请重新登录</span>
+                        </div>
+                      }
+                      <div class="login-card">
+                        <app-user-login></app-user-login>
+                      </div>
+                    </div>
+                  }
                 </div>
               }
             }
@@ -304,6 +353,22 @@ interface NavItem {
     .setting-title { font-size: 14px; font-weight: 500; color: #202124; }
     .setting-desc { font-size: 13px; color: #5f6368; margin-top: 2px; }
 
+    /* User View */
+    .user-view { }
+    .loading-box { display: flex; justify-content: center; padding: 48px; }
+    .user-logged-in { }
+    .user-info-card { display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: #e8f0fe; border-radius: 12px; margin-bottom: 24px; }
+    .user-avatar { width: 56px; height: 56px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 500; }
+    .user-details { }
+    .user-email { font-size: 18px; font-weight: 500; color: #202124; }
+    .user-status { font-size: 14px; color: #1a73e8; margin-top: 2px; }
+    .tab-content { padding: 16px 0; }
+    .login-section { text-align: center; max-width: 500px; margin: 0 auto; }
+    .login-section h2 { font-size: 28px; font-weight: 400; color: #202124; margin: 0 0 8px; }
+    .login-hint { font-size: 16px; color: #5f6368; margin: 0 0 24px; }
+    .warning-alert { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; background: #fef7e0; border-radius: 8px; color: #ea8600; margin-bottom: 16px; }
+    .login-card { background: #fff; border: 1px solid #dadce0; border-radius: 12px; padding: 24px; text-align: left; }
+
     .loading-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
 
     @media (max-width: 900px) {
@@ -325,7 +390,7 @@ interface NavItem {
     }
   `]
 })
-export class GmailLayoutComponent implements OnInit {
+export class AppLayoutComponent implements OnInit {
   state = inject(GlobalStateService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
@@ -341,6 +406,7 @@ export class GmailLayoutComponent implements OnInit {
     { id: 'home', icon: 'home', label: '首页', color: '#4285f4' },
     { id: 'inbox', icon: 'inbox', label: '收件箱', color: '#ea4335' },
     { id: 'addresses', icon: 'alternate_email', label: '我的地址', color: '#34a853' },
+    { id: 'user', icon: 'person', label: '用户登录', color: '#9c27b0' },
     { id: 'settings', icon: 'settings', label: '设置', color: '#fbbc04' },
   ];
 
@@ -373,8 +439,15 @@ export class GmailLayoutComponent implements OnInit {
 
   selectNav(item: NavItem) {
     this.currentView.set(item.id);
-    if (item.route) {
-      this.router.navigate([item.route]);
+    if (item.id === 'user') {
+      this.loadUserSettings();
+    }
+  }
+
+  async loadUserSettings() {
+    await this.api.getUserOpenSettings();
+    if (!this.state.userSettings().user_id) {
+      await this.api.getUserSettings();
     }
   }
 

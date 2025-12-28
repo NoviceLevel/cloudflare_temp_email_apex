@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./layouts/gmail-layout/gmail-layout.component').then(m => m.GmailLayoutComponent),
+    loadComponent: () => import('./layouts/app-layout/layout.component').then(m => m.AppLayoutComponent),
     children: [
       { 
         path: '', 
